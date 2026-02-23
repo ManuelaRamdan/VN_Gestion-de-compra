@@ -16,4 +16,15 @@
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
+        <action>
+            <actionName>CUSTOM-envvv</actionName>
+            <displayName>envvv</displayName>
+            <properties>
+                <Env.SPRING_DATASOURCE_URL>jdbc:postgresql://localhost:5432/gestioncompra</Env.SPRING_DATASOURCE_URL>
+                <Env.SPRING_DATASOURCE_USERNAME>postgres</Env.SPRING_DATASOURCE_USERNAME>
+                <Env.SPRING_DATASOURCE_PASSWORD>root</Env.SPRING_DATASOURCE_PASSWORD>
+                <Env.JWT_SECRET>GmnpcGyoTnpsNu7QRjfdevswafybEQFHcgrdc</Env.JWT_SECRET>
+                <Env.PDF_STORAGE_PATH>C:/temp/pdfs</Env.PDF_STORAGE_PATH>
+            </properties>
+        </action>
     </actions>
