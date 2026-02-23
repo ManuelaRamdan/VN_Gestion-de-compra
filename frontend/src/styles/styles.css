@@ -1,0 +1,29 @@
+@import "./color.css";
+
+@import "tailwindcss";
+
+@font-face {
+    font-family: 'Asap Condensed';
+    src: url('/fonts/AsapCondensed-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Definimos la variante Bold (peso 700) */
+@font-face {
+    font-family: 'Asap Condensed';
+    src: url('/fonts/AsapCondensed-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Aplicamos la fuente a toda la app */
+body {
+    font-family: 'Asap Condensed', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    /* Hace que se vea mejor en Mac */
+}
+
+

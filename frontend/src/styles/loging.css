@@ -1,0 +1,291 @@
+
+    /* =========================
+    PAGE WRAPPER
+    ========================= */
+    .page-wrapper.login-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f6f8f9;
+        font-family: "Inter", system-ui, sans-serif;
+    }
+
+    /* =========================
+        LOGIN CARD
+    ========================= */
+    .login-page .card {
+        width: 100%;
+        max-width: 380px;
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 32px 28px;
+        box-shadow: 0 8px 24px var(--shadow);
+        border: 1px solid #eef2f3;
+    }
+
+    /* =========================
+        TITLE
+    ========================= */
+    .login-page h2 {
+        margin-bottom: 24px;
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--color1);
+        text-align: center;
+    }
+
+    /* =========================
+        FORM
+    ========================= */
+    .login-page form {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    /* =========================
+        INPUTS
+    ========================= */
+    .login-page input {
+        height: 44px;
+        padding: 0 14px;
+        font-size: 14px;
+        border-radius: 8px;
+        border: 1px solid #dfe6e8;
+        background-color: #ffffff;
+        transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .login-page input::placeholder {
+        color: #9aa6ac;
+    }
+
+    .login-page input:focus {
+        outline: none;
+        border-color: var(--color2);
+        box-shadow: 0 0 0 3px rgba(25, 94, 99, 0.12);
+    }
+
+    /* =========================
+        BUTTON
+    ========================= */
+    .login-btn {
+        margin-top: 10px;
+        height: 46px;
+        border-radius: 8px;
+        border: none;
+        background-color: var(--color1);
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .login-btn:hover {
+        background-color: var(--color2);
+        box-shadow: 0 6px 16px var(--shadow-soft);
+    }
+
+    .login-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    /* =========================
+        MESSAGES
+    ========================= */
+    .msg-error {
+        background: rgba(220, 53, 69, 0.08);
+        color: #b02a37;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    .msg-success {
+        background: rgba(25, 135, 84, 0.08);
+        color: #0f5132;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    /* =========================
+    INPUT WITH ICON
+    ========================= */
+    .input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 14px;
+        font-size: 14px;
+        color: var(--color3);
+        pointer-events: none;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding-left: 40px;
+    }
+
+    /* ============================
+    HAMBURGUESA (SOLO MOBILE)
+    ============================ */
+    .hamburger {
+        /* Estado por defecto: OCULTO en escritorio */
+        display: none;
+        position: fixed;
+        top: 18px;
+        left: 18px;
+        width: 50px;
+        height: 50px;
+        background: var(--color5);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        font-size: 28px;
+        cursor: pointer;
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.25s ease;
+    }
+
+    .hamburger:hover {
+        background: #43473f;
+    }
+
+
+    /* ============================
+    RESPONSIVE
+    ============================ */
+    @media (max-width: 900px) {
+
+        .hamburger {
+            display: flex;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            width: 270px;
+            left: -270px;
+            height: 100%;
+            transition: left 0.35s ease;
+            z-index: 1500;
+            height: 100vh;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .padre-layout {
+            padding-left: 0;
+        }
+
+        .content {
+            padding: 30px;
+            margin-top: 60px;
+            width: 100%;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+    }
+
+    .tabla-wrapper {
+        width: 100%;
+        display: block;
+        overflow-x: auto;
+        margin-top: 10px;
+    }
+
+    .tabla-wrapper table {
+        width: max-content;
+        min-width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap;
+    }
+
+    /* Ajustes más estrictos para pantallas realmente chicas */
+    @media (max-width: 450px) {
+
+        .tabla-wrapper {
+            overflow-x: auto;
+            padding-bottom: 10px;
+            /* Para que el scroll no tape contenido */
+        }
+
+        .tabla-wrapper table {
+            font-size: 12px;
+        }
+
+        .tabla-wrapper table td,
+        .tabla-wrapper table th {
+            padding: 6px;
+        }
+
+        /* Si tenés botones/iconos dentro de celdas */
+        .tabla-wrapper button,
+        .tabla-wrapper .icon-btn {
+            min-width: 36px;
+            padding: 6px;
+            font-size: 14px;
+        }
+    }
+
+    .botones-acciones {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    @media (max-width: 480px) {
+        .botones-acciones {
+            justify-content: center;
+        }
+
+        .botones-acciones button {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    /* Estilo para cuando el spinner se muestra en pantalla completa */
+    .loading-fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.5);
+        /* Fondo semitransparente */
+        z-index: 1000;
+        /* Asegura que se muestre por encima de otros elementos */
+    }
+
+    /* Estilo para los spinners que se muestran dentro de un contenedor normal */
+    .loading-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }

@@ -1,0 +1,14 @@
+# Dependencias y compilados
+node_modules/
+target/
+dist/
+build/
+*.jar
+*.zip
+
+# Archivos de configuración y sistema
+.env
+.idea/
+.vscode/
+.DS_Store
+*.xml

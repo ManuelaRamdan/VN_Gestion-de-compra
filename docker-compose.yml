@@ -1,0 +1,65 @@
+services:
+
+  postgres:
+    image: postgres:18
+    container_name: gestion_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: gestioncompra
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./gC_postgreSql.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - red_privada
+    # ADDED: Healthcheck to ensure DB is actually ready
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gestioncompra"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend/gestion-compras
+    container_name: gestion_backend
+    restart: always
+    # MODIFIED: Wait for the database to be healthy, not just started
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # MODIFIED: Changed 'postgres' to 'gestion_postgres'
+      SPRING_DATASOURCE_URL: jdbc:postgresql://gestion_postgres:5432/gestioncompra
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+      PDF_STORAGE_PATH: /app/pdfs
+      JWT_SECRET: GmnpcGyoTnpsNu7QRjfdevswafybEQFHcgrdc
+    volumes:
+      - pdf_data:/app/pdfs
+    networks:
+      - red_privada
+      - red_publica
+    ports:
+      - "8081:8081"
+
+  frontend:
+    build: ./frontend
+    container_name: gestion_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - red_publica
+
+volumes:
+  postgres_data:
+  pdf_data:
+
+networks:
+  red_privada:
+    driver: bridge
+  red_publica:
+    driver: bridge

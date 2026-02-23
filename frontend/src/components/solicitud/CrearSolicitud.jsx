@@ -1,0 +1,233 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Layout from '../../components/Layout';
+import { ArrowLeft, Package, AlertCircle, Check } from 'lucide-react'; // Check ya estaba importado
+import { listarProductos, listarPrioridades, crearSolicitud } from '../../services/solicitudService';
+import { useAuth } from '../../context/AuthContext';
+
+export default function CrearSolicitud() {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+
+    // Estados para datos del formulario
+    const [formData, setFormData] = useState({
+        idProducto: "",
+        cantidad: 1,
+        idNivelPrioridad: "",
+        fechaAdmisible: "",
+        justificacion: ""
+    });
+
+    // Estados para listas y UI
+    const [productos, setProductos] = useState([]);
+    const [prioridades, setPrioridades] = useState([]);
+    const [loading, setLoading] = useState(true);
+    
+    // Estados para feedback (Error y Éxito)
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState(""); // <--- Nuevo estado
+
+    // Cargar listas al iniciar
+    useEffect(() => {
+        const cargarDatos = async () => {
+            try {
+                const [resProd, resPrio] = await Promise.all([listarProductos(), listarPrioridades()]);
+                setProductos(resProd.data?.contenido || []);
+                setPrioridades(resPrio.data?.contenido || []);
+            } catch (err) {
+                console.error("Error cargando listas", err);
+                setError("Error cargando productos o prioridades.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        cargarDatos();
+    }, []);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");   // Limpiamos error previo
+        setSuccess(""); // Limpiamos éxito previo
+
+        try {
+            // Validaciones básicas
+            if (!formData.idProducto || !formData.idNivelPrioridad ) {
+                setError("Por favor completa todos los campos obligatorios.");
+                return;
+            }
+
+            const payload = {
+                cantidad: parseInt(formData.cantidad),
+                idProducto: parseInt(formData.idProducto),
+                idNivelPrioridad: parseInt(formData.idNivelPrioridad),
+                idUsuario: user.idUsuario
+            };
+
+            await crearSolicitud(payload);
+
+            // --- ÉXITO ---
+            setSuccess("¡Solicitud creada exitosamente! Redirigiendo...");
+            
+            // Esperamos 2 segundos para que el usuario lea el mensaje y luego navegamos
+            setTimeout(() => {
+                navigate('/solicitudes');
+            }, 2000);
+
+        } catch (err) {
+            console.error(err);
+            // Intentamos obtener el mensaje del backend, si no, uno genérico
+            const msg = err.response?.data?.error || "Hubo un error al crear la solicitud.";
+            setError(msg);
+        }
+    };
+
+    return (
+        <Layout>
+            <div className="max-w-4xl mx-auto">
+
+                {/* Header con botón Volver */}
+                <div className="mb-6 flex items-center gap-4">
+                    <button
+                        onClick={() => navigate('/solicitudes')}
+                        className="p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-500"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h1 className="text-xl font-bold text-slate-900">Nueva Solicitud de Compra</h1>
+                    </div>
+                </div>
+
+                {/* Tarjeta Principal del Formulario */}
+                <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+
+                    {/* Barra de Progreso Visual */}
+                    <div className="flex border-b border-slate-100">
+                        <div className="px-6 py-3 border-b-2 border-[#1C5B5A] text-[#1C5B5A] text-sm font-semibold flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full bg-[#1C5B5A] text-white flex items-center justify-center text-xs">1</span>
+                            Crear Solicitud
+                        </div>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="p-8">
+
+                        {/* --- MENSAJES DE FEEDBACK --- */}
+                        
+                        {/* Mensaje de Error */}
+                        {error && (
+                            <div className="mb-6 bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center gap-2 border border-red-200 animate-in fade-in slide-in-from-top-2">
+                                <AlertCircle size={16} /> {error}
+                            </div>
+                        )}
+
+                        {/* Mensaje de Éxito */}
+                        {success && (
+                            <div className="mb-6 bg-emerald-50 text-emerald-700 p-3 rounded-md text-sm flex items-center gap-2 border border-emerald-200 animate-in fade-in slide-in-from-top-2">
+                                <Check size={16} /> 
+                                <span className="font-medium">{success}</span>
+                            </div>
+                        )}
+
+                        {/* 1. Selección de Producto */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                Buscar Producto del Catálogo
+                            </label>
+                            <div className="relative">
+                                <Package className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <select
+                                    name="idProducto"
+                                    value={formData.idProducto}
+                                    onChange={handleChange}
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none appearance-none"
+                                >
+                                    <option value="">Selecciona un producto...</option>
+                                    {productos.map(prod => (
+                                        <option key={prod.idProducto} value={prod.idProducto}>
+                                            {prod.nombre} 
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                            {/* 2. Cantidad */}
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Cantidad</label>
+                                <div className="flex items-center">
+                                    <input
+                                        type="number"
+                                        name="cantidad"
+                                        min="1"
+                                        value={formData.cantidad}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-l-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                                    />
+                                    <span className="bg-slate-100 border border-l-0 border-slate-200 px-4 py-2.5 rounded-r-lg text-gray-500 text-sm">
+                                        Unidades
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 4. Prioridad (Radio Buttons) */}
+                        <div className="mb-8">
+                            <label className="block text-sm font-semibold text-slate-700 mb-3">Nivel de Prioridad</label>
+                            <div className="flex gap-4">
+                                {prioridades.map(prio => (
+                                    <label
+                                        key={prio.idNivelPrioridad}
+                                        className={`
+                                            flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all
+                                            ${formData.idNivelPrioridad == prio.idNivelPrioridad
+                                                ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500'
+                                                : 'border-slate-200 hover:border-emerald-300'
+                                            }
+                                        `}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="idNivelPrioridad"
+                                            value={prio.idNivelPrioridad}
+                                            checked={formData.idNivelPrioridad == prio.idNivelPrioridad}
+                                            onChange={handleChange}
+                                            className="accent-emerald-600 w-4 h-4"
+                                        />
+                                        <span className="text-sm font-medium text-slate-700">
+                                            {prio.categoria}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Botones del Footer */}
+                        <div className="flex justify-end gap-4 border-t border-slate-100 pt-6">
+                            <button
+                                type="button"
+                                onClick={() => navigate('/solicitudes')}
+                                className="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={!!success} // Deshabilitar si ya se envió con éxito
+                                className={`px-6 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-medium hover:bg-[#164a49] transition-colors flex items-center gap-2 shadow-sm ${success ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                {success ? 'Guardado' : 'Crear Solicitud'} <Check size={18} />
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </Layout>
+    );
+}
