@@ -87,14 +87,14 @@ export default function CrearSolicitud() {
 
     return (
         <Layout>
-            {/* px-4 para dar un pequeño margen en móviles */}
-            <div className="max-w-4xl mx-auto px-4 sm:px-0">
+            {/* Se asegura w-full y un padding lateral consistente para que no choque con los bordes del celular */}
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 w-full pb-8">
 
                 {/* Header con botón Volver */}
                 <div className="mb-6 flex items-center gap-4 mt-4 sm:mt-0">
                     <button
                         onClick={() => navigate('/solicitudes')}
-                        className="p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-500"
+                        className="p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-500 flex-shrink-0"
                     >
                         <ArrowLeft size={20} />
                     </button>
@@ -114,8 +114,7 @@ export default function CrearSolicitud() {
                         </div>
                     </div>
 
-                    {/* Ajustado el padding para móviles (p-4) y escritorio (sm:p-8) */}
-                    <form onSubmit={handleSubmit} className="p-4 sm:p-8">
+                    <form onSubmit={handleSubmit} className="p-4 sm:p-6 md:p-8">
 
                         {/* Mensaje de Error */}
                         {error && (
@@ -143,7 +142,8 @@ export default function CrearSolicitud() {
                                     name="idProducto"
                                     value={formData.idProducto}
                                     onChange={handleChange}
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none appearance-none"
+                                    // Se agrega w-full y truncate para que el texto largo no rompa el select
+                                    className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none appearance-none truncate"
                                 >
                                     <option value="">Selecciona un producto...</option>
                                     {productos.map(prod => (
@@ -155,36 +155,38 @@ export default function CrearSolicitud() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-6 w-full">
                             {/* 2. Cantidad */}
-                            <div>
+                            <div className="w-full">
                                 <label className="block text-sm font-semibold text-slate-700 mb-2">Cantidad</label>
-                                <div className="flex items-center">
+                                {/* SOLUCIÓN PRINCIPAL: flex items-stretch y flex-1 en el input */}
+                                <div className="flex items-stretch w-full">
                                     <input
                                         type="number"
                                         name="cantidad"
                                         min="1"
                                         value={formData.cantidad}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-l-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                                        // flex-1 permite que el input tome el espacio restante sin empujar al span hacia afuera
+                                        className="flex-1 min-w-0 px-4 py-2.5 bg-slate-50 border border-slate-200 border-r-0 rounded-l-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                                     />
-                                    <span className="bg-slate-100 border border-l-0 border-slate-200 px-4 py-2.5 rounded-r-lg text-gray-500 text-sm whitespace-nowrap">
+                                    <span className="bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-r-lg text-gray-500 text-sm whitespace-nowrap flex items-center">
                                         Unidades
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* 4. Prioridad (Radio Buttons) */}
-                        <div className="mb-8">
+                        {/* 3. Prioridad (Radio Buttons) */}
+                        <div className="mb-8 w-full">
                             <label className="block text-sm font-semibold text-slate-700 mb-3">Nivel de Prioridad</label>
-                            {/* AQUÍ ESTÁ EL ARREGLO PRINCIPAL: flex-col para móviles, flex-row y wrap para escritorio */}
-                            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4">
+                            {/* SOLUCIÓN: Cambiar flex por un grid. Esto fuerza a que se apilen 1 sobre otro en móvil (grid-cols-1) */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                                 {prioridades.map(prio => (
                                     <label
                                         key={prio.idNivelPrioridad}
                                         className={`
-                                            flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all w-full sm:w-auto
+                                            flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all w-full
                                             ${formData.idNivelPrioridad == prio.idNivelPrioridad
                                                 ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500'
                                                 : 'border-slate-200 hover:border-emerald-300 bg-white'
@@ -207,8 +209,8 @@ export default function CrearSolicitud() {
                             </div>
                         </div>
 
-                        {/* Botones del Footer */}
-                        {/* flex-col-reverse en móviles para que "Crear" quede arriba y "Cancelar" abajo, ocupando todo el ancho */}
+                        {/* 4. Botones del Footer */}
+                        {/* El w-full en los botones funciona perfectamente ahora que el input no está "estirando" el contenedor padre */}
                         <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 border-t border-slate-100 pt-6">
                             <button
                                 type="button"
