@@ -48,7 +48,7 @@ public class JwtUtil {
                 .setClaims(claims) // Son datos extra que guardas dentro del token (en este caso, el sector/rol).
                 .setSubject(usuario.getUsername()) // Define el dueño del token (el nombre de usuario).
                 .setIssuedAt(new Date(System.currentTimeMillis())) // Marca el momento exacto en que se creó el token.
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 5)) // 10 horas
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 10 horas
                 .signWith(key, SignatureAlgorithm.HS256) // Firma el token usando tu clave y el algoritmo de seguridad.
                 .compact();
     }

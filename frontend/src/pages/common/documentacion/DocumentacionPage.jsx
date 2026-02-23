@@ -30,7 +30,14 @@ export default function DocumentacionPage() {
 
     const filteredData = cierres.filter(c => {
         const prod = c.evaluacionEntrega?.compra?.aprobacionPresupuesto?.presupuesto?.aprobacionSolicitud?.solicitud?.producto?.nombre || "";
-        return c.idCierre?.toString().includes(searchTerm) || prod.toLowerCase().includes(searchTerm.toLowerCase());
+        const prov = c.evaluacionEntrega?.compra?.aprobacionPresupuesto?.presupuesto?.proveedor?.nombreEmpresa || "";
+        const term = searchTerm.toLowerCase();
+        
+        return (
+            c.idCierre?.toString().includes(term) || 
+            prod.toLowerCase().includes(term) ||
+            prov.toLowerCase().includes(term) 
+        );
     });
 
     return (

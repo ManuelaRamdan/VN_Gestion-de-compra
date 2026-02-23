@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
-import { ArrowLeft, Package, AlertCircle, Check } from 'lucide-react'; // Check ya estaba importado
+import { ArrowLeft, Package, AlertCircle, Check } from 'lucide-react';
 import { listarProductos, listarPrioridades, crearSolicitud } from '../../services/solicitudService';
 import { useAuth } from '../../context/AuthContext';
 
@@ -25,7 +25,7 @@ export default function CrearSolicitud() {
     
     // Estados para feedback (Error y Éxito)
     const [error, setError] = useState("");
-    const [success, setSuccess] = useState(""); // <--- Nuevo estado
+    const [success, setSuccess] = useState("");
 
     // Cargar listas al iniciar
     useEffect(() => {
@@ -51,8 +51,8 @@ export default function CrearSolicitud() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");   // Limpiamos error previo
-        setSuccess(""); // Limpiamos éxito previo
+        setError("");
+        setSuccess("");
 
         try {
             // Validaciones básicas
@@ -80,7 +80,6 @@ export default function CrearSolicitud() {
 
         } catch (err) {
             console.error(err);
-            // Intentamos obtener el mensaje del backend, si no, uno genérico
             const msg = err.response?.data?.error || "Hubo un error al crear la solicitud.";
             setError(msg);
         }
@@ -88,10 +87,11 @@ export default function CrearSolicitud() {
 
     return (
         <Layout>
-            <div className="max-w-4xl mx-auto">
+            {/* px-4 para dar un pequeño margen en móviles */}
+            <div className="max-w-4xl mx-auto px-4 sm:px-0">
 
                 {/* Header con botón Volver */}
-                <div className="mb-6 flex items-center gap-4">
+                <div className="mb-6 flex items-center gap-4 mt-4 sm:mt-0">
                     <button
                         onClick={() => navigate('/solicitudes')}
                         className="p-2 rounded-full hover:bg-white hover:shadow-sm transition-all text-gray-500"
@@ -104,31 +104,30 @@ export default function CrearSolicitud() {
                 </div>
 
                 {/* Tarjeta Principal del Formulario */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden mb-8">
 
                     {/* Barra de Progreso Visual */}
                     <div className="flex border-b border-slate-100">
-                        <div className="px-6 py-3 border-b-2 border-[#1C5B5A] text-[#1C5B5A] text-sm font-semibold flex items-center gap-2">
+                        <div className="px-4 sm:px-6 py-3 border-b-2 border-[#1C5B5A] text-[#1C5B5A] text-sm font-semibold flex items-center gap-2">
                             <span className="w-5 h-5 rounded-full bg-[#1C5B5A] text-white flex items-center justify-center text-xs">1</span>
                             Crear Solicitud
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="p-8">
+                    {/* Ajustado el padding para móviles (p-4) y escritorio (sm:p-8) */}
+                    <form onSubmit={handleSubmit} className="p-4 sm:p-8">
 
-                        {/* --- MENSAJES DE FEEDBACK --- */}
-                        
                         {/* Mensaje de Error */}
                         {error && (
                             <div className="mb-6 bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center gap-2 border border-red-200 animate-in fade-in slide-in-from-top-2">
-                                <AlertCircle size={16} /> {error}
+                                <AlertCircle size={16} className="flex-shrink-0" /> {error}
                             </div>
                         )}
 
                         {/* Mensaje de Éxito */}
                         {success && (
                             <div className="mb-6 bg-emerald-50 text-emerald-700 p-3 rounded-md text-sm flex items-center gap-2 border border-emerald-200 animate-in fade-in slide-in-from-top-2">
-                                <Check size={16} /> 
+                                <Check size={16} className="flex-shrink-0" /> 
                                 <span className="font-medium">{success}</span>
                             </div>
                         )}
@@ -156,7 +155,7 @@ export default function CrearSolicitud() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-6">
                             {/* 2. Cantidad */}
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 mb-2">Cantidad</label>
@@ -169,7 +168,7 @@ export default function CrearSolicitud() {
                                         onChange={handleChange}
                                         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-l-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                                     />
-                                    <span className="bg-slate-100 border border-l-0 border-slate-200 px-4 py-2.5 rounded-r-lg text-gray-500 text-sm">
+                                    <span className="bg-slate-100 border border-l-0 border-slate-200 px-4 py-2.5 rounded-r-lg text-gray-500 text-sm whitespace-nowrap">
                                         Unidades
                                     </span>
                                 </div>
@@ -179,15 +178,16 @@ export default function CrearSolicitud() {
                         {/* 4. Prioridad (Radio Buttons) */}
                         <div className="mb-8">
                             <label className="block text-sm font-semibold text-slate-700 mb-3">Nivel de Prioridad</label>
-                            <div className="flex gap-4">
+                            {/* AQUÍ ESTÁ EL ARREGLO PRINCIPAL: flex-col para móviles, flex-row y wrap para escritorio */}
+                            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4">
                                 {prioridades.map(prio => (
                                     <label
                                         key={prio.idNivelPrioridad}
                                         className={`
-                                            flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all
+                                            flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all w-full sm:w-auto
                                             ${formData.idNivelPrioridad == prio.idNivelPrioridad
                                                 ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500'
-                                                : 'border-slate-200 hover:border-emerald-300'
+                                                : 'border-slate-200 hover:border-emerald-300 bg-white'
                                             }
                                         `}
                                     >
@@ -197,7 +197,7 @@ export default function CrearSolicitud() {
                                             value={prio.idNivelPrioridad}
                                             checked={formData.idNivelPrioridad == prio.idNivelPrioridad}
                                             onChange={handleChange}
-                                            className="accent-emerald-600 w-4 h-4"
+                                            className="accent-emerald-600 w-4 h-4 flex-shrink-0"
                                         />
                                         <span className="text-sm font-medium text-slate-700">
                                             {prio.categoria}
@@ -208,18 +208,19 @@ export default function CrearSolicitud() {
                         </div>
 
                         {/* Botones del Footer */}
-                        <div className="flex justify-end gap-4 border-t border-slate-100 pt-6">
+                        {/* flex-col-reverse en móviles para que "Crear" quede arriba y "Cancelar" abajo, ocupando todo el ancho */}
+                        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 border-t border-slate-100 pt-6">
                             <button
                                 type="button"
                                 onClick={() => navigate('/solicitudes')}
-                                className="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+                                className="w-full sm:w-auto px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-medium hover:bg-slate-50 transition-colors text-center"
                             >
                                 Cancelar
                             </button>
                             <button
                                 type="submit"
-                                disabled={!!success} // Deshabilitar si ya se envió con éxito
-                                className={`px-6 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-medium hover:bg-[#164a49] transition-colors flex items-center gap-2 shadow-sm ${success ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                disabled={!!success}
+                                className={`w-full sm:w-auto px-6 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-medium hover:bg-[#164a49] transition-colors flex items-center justify-center gap-2 shadow-sm ${success ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 {success ? 'Guardado' : 'Crear Solicitud'} <Check size={18} />
                             </button>
