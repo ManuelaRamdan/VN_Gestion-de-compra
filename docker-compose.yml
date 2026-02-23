@@ -46,9 +46,10 @@ services:
       - "8081:8081"
 
   frontend:
-    build: ./frontend
-    args:
-        - VITE_API_BASE_URL=http://192.168.1.200:8081
+    build: 
+      context: ./frontend
+      args:
+          - VITE_API_BASE_URL=http://192.168.1.200:8081
     container_name: gestion_frontend
     restart: always
     depends_on:
