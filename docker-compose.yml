@@ -35,6 +35,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       PDF_STORAGE_PATH: /app/pdfs
       JWT_SECRET: GmnpcGyoTnpsNu7QRjfdevswafybEQFHcgrdc
+      APP_CORS_ALLOWED_ORIGINS: http://192.168.1.200
+      SERVER_PORT: 8081
     volumes:
       - pdf_data:/app/pdfs
     networks:
@@ -45,6 +47,8 @@ services:
 
   frontend:
     build: ./frontend
+    args:
+        - VITE_API_BASE_URL=http://192.168.1.200:8081
     container_name: gestion_frontend
     restart: always
     depends_on:
