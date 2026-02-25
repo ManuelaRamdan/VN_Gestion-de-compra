@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Calendar, Package, User, CheckCircle, Clock } from 'lucide-react';
+// IMPORTANTE: Agregamos MessageSquare a la lista de íconos
+import { X, Calendar, Package, User, CheckCircle, Clock, MessageSquare } from 'lucide-react';
 
 export default function DetallesSolicitud({ request, onClose }) {
     if (!request) return null;
@@ -29,7 +30,7 @@ export default function DetallesSolicitud({ request, onClose }) {
                 <div className="p-6 overflow-y-auto max-h-[80vh]">
 
                     {/* Grid de Información Principal */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         {/* Producto */}
                         <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
                             <div className="flex items-center gap-2 mb-3 text-emerald-700 font-semibold text-sm uppercase tracking-wide">
@@ -58,9 +59,11 @@ export default function DetallesSolicitud({ request, onClose }) {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm text-gray-500">Estado Actual:</span>
-                                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${request.aprobacion?.estado === 'APROBADA' ? 'bg-emerald-100 text-emerald-700' :
-                                            request.aprobacion?.estado === 'PENDIENTE' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
-                                        }`}>
+                                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                                        request.aprobacion?.estado === 'APROBADA' ? 'bg-emerald-100 text-emerald-700' :
+                                        request.aprobacion?.estado === 'PENDIENTE' ? 'bg-yellow-100 text-yellow-700' : 
+                                        'bg-red-100 text-red-700'
+                                    }`}>
                                         {request.aprobacion?.estado}
                                     </span>
                                 </div>
@@ -68,7 +71,22 @@ export default function DetallesSolicitud({ request, onClose }) {
                         </div>
                     </div>
 
-                    <div className="border-t border-slate-100 my-4"></div>
+                    {/* NUEVA SECCIÓN: Comentarios del Solicitante */}
+                    <div className="mb-6">
+                        <div className="flex items-center gap-2 mb-2">
+                            <MessageSquare size={16} className="text-gray-400" />
+                            <h3 className="text-sm font-bold text-slate-800">Comentarios del Solicitante</h3>
+                        </div>
+                        <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                            {request.comentarios ? (
+                                <p className="text-sm text-slate-700 whitespace-pre-wrap">{request.comentarios}</p>
+                            ) : (
+                                <p className="text-sm text-gray-400 italic">No se agregaron comentarios en esta solicitud.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="border-t border-slate-100 my-6"></div>
 
                     {/* Detalles Técnicos / Usuario */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

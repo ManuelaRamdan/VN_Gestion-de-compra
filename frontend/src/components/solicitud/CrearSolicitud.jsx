@@ -15,14 +15,14 @@ export default function CrearSolicitud() {
         cantidad: 1,
         idNivelPrioridad: "",
         fechaAdmisible: "",
-        justificacion: ""
+        comentarios: ""
     });
 
     // Estados para listas y UI
     const [productos, setProductos] = useState([]);
     const [prioridades, setPrioridades] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+
     // Estados para feedback (Error y Éxito)
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -56,7 +56,7 @@ export default function CrearSolicitud() {
 
         try {
             // Validaciones básicas
-            if (!formData.idProducto || !formData.idNivelPrioridad ) {
+            if (!formData.idProducto || !formData.idNivelPrioridad) {
                 setError("Por favor completa todos los campos obligatorios.");
                 return;
             }
@@ -65,14 +65,15 @@ export default function CrearSolicitud() {
                 cantidad: parseInt(formData.cantidad),
                 idProducto: parseInt(formData.idProducto),
                 idNivelPrioridad: parseInt(formData.idNivelPrioridad),
-                idUsuario: user.idUsuario
+                idUsuario: user.idUsuario,
+                comentarios: formData.comentarios
             };
 
             await crearSolicitud(payload);
 
             // --- ÉXITO ---
             setSuccess("¡Solicitud creada exitosamente! Redirigiendo...");
-            
+
             // Esperamos 2 segundos para que el usuario lea el mensaje y luego navegamos
             setTimeout(() => {
                 navigate('/solicitudes');
@@ -126,7 +127,7 @@ export default function CrearSolicitud() {
                         {/* Mensaje de Éxito */}
                         {success && (
                             <div className="mb-6 bg-emerald-50 text-emerald-700 p-3 rounded-md text-sm flex items-center gap-2 border border-emerald-200 animate-in fade-in slide-in-from-top-2">
-                                <Check size={16} className="flex-shrink-0" /> 
+                                <Check size={16} className="flex-shrink-0" />
                                 <span className="font-medium">{success}</span>
                             </div>
                         )}
@@ -148,7 +149,7 @@ export default function CrearSolicitud() {
                                     <option value="">Selecciona un producto...</option>
                                     {productos.map(prod => (
                                         <option key={prod.idProducto} value={prod.idProducto}>
-                                            {prod.nombre} 
+                                            {prod.nombre}
                                         </option>
                                     ))}
                                 </select>
@@ -207,6 +208,21 @@ export default function CrearSolicitud() {
                                     </label>
                                 ))}
                             </div>
+                        </div>
+
+                        <div>
+                            <div>
+                                <label
+                                    className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                                    Comentarios
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    name="comentarios" /* Agregamos el name para usar handleChange */
+                                    value={formData.comentarios} /* Todo en minúscula */
+                                    onChange={handleChange} /* Usamos la función genérica */
+                                    className="w-full border border-slate-300 rounded p-2 text-sm outline-none resize-none focus:border-emerald-500"
+                                /></div>
                         </div>
 
                         {/* 4. Botones del Footer */}

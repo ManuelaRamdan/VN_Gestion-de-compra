@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Plus, FileText, Calendar, CheckCircle, UploadCloud, Pencil, X, Trash2, AlertCircle, Check, Lock } from 'lucide-react';
+import { ArrowLeft, Plus, FileText, Calendar, CheckCircle, UploadCloud, Pencil, X, Trash2, AlertCircle, Check, Lock, MessageSquare } from 'lucide-react';
 import { listarPresupuestosPorAprobacion, listarProveedores, guardarPresupuesto, actualizarPresupuesto, obtenerUrlPdf } from '../../services/presupuestoService';
 import Loading from '../Loading';
 
@@ -7,19 +7,19 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
     const [presupuestos, setPresupuestos] = useState([]);
     const [proveedores, setProveedores] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+
     // Estados para el Modal
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState(null);
 
     // Estados para el Archivo (Drag & Drop)
-    const [file, setFile] = useState(null); 
-    const [isDragging, setIsDragging] = useState(false); 
+    const [file, setFile] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
 
     // --- ESTADOS DE FEEDBACK (Mensajes) ---
-    const [error, setError] = useState(""); 
-    const [success, setSuccess] = useState(""); 
-    const [modalError, setModalError] = useState(""); 
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+    const [modalError, setModalError] = useState("");
 
     const initialForm = {
         idProveedor: "",
@@ -37,12 +37,12 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
 
     const cargarDatos = async () => {
         try {
-            const idAprob = aprobacion.id || aprobacion.idAprobSolicitud; 
+            const idAprob = aprobacion.id || aprobacion.idAprobSolicitud;
             const [resPresupuestos, resProveedores] = await Promise.all([
                 listarPresupuestosPorAprobacion(idAprob),
                 listarProveedores()
             ]);
-            
+
             setPresupuestos(resPresupuestos.data?.contenido || resPresupuestos.data || []);
             setProveedores(resProveedores.data?.contenido || resProveedores.data || []);
         } catch (error) {
@@ -66,18 +66,18 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
     const handleDragLeave = () => { setIsDragging(false); };
     const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); validarYSetearArchivo(e.dataTransfer.files[0]); };
     const handleFileSelect = (e) => { validarYSetearArchivo(e.target.files[0]); };
-    
-    const validarYSetearArchivo = (archivo) => { 
+
+    const validarYSetearArchivo = (archivo) => {
         if (archivo && archivo.type === "application/pdf") {
             setFile(archivo);
-            setModalError(""); 
+            setModalError("");
         } else {
             setModalError("Solo se permiten archivos PDF.");
         }
     };
-    
+
     const removeFile = () => { setFile(null); };
-    
+
     const handleVerPdf = async (nombreArchivo) => {
         setError("");
         try {
@@ -95,7 +95,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
     const handleNuevo = () => {
         // Bloqueo extra por si acaso
         if (hayDecisionTomada) return;
-        
+
         setEditingId(null);
         setFile(null);
         setFormData(initialForm);
@@ -110,7 +110,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
             idProveedor: presupuesto.proveedor?.idProveedor || "",
             fechaSolicitud: presupuesto.fechaSolicitud || "",
             fechaRecepcion: presupuesto.fechaRecepcion || "",
-            archivoPdfPath: presupuesto.archivoPdfPath || "", 
+            archivoPdfPath: presupuesto.archivoPdfPath || "",
             observaciones: presupuesto.observaciones || "",
             cotizacionSatisfactoria: presupuesto.cotizacionSatisfactoria || false
         });
@@ -120,7 +120,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
 
     const handleGuardar = async (e) => {
         e.preventDefault();
-        setModalError(""); 
+        setModalError("");
 
         try {
             const dataToSend = new FormData();
@@ -141,10 +141,10 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                 await guardarPresupuesto(idAprob, dataToSend);
             }
 
-            setShowModal(false); 
-            cargarDatos(); 
+            setShowModal(false);
+            cargarDatos();
             setSuccess("¡Operación realizada correctamente!");
-            setError(""); 
+            setError("");
             setTimeout(() => { setSuccess(""); }, 3000);
 
         } catch (error) {
@@ -153,9 +153,9 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
         }
     };
 
-   // if (loading) return <Loading fullScreen />;
-    
-    const slots = [0, 1, 2, 3]; 
+    // if (loading) return <Loading fullScreen />;
+
+    const slots = [0, 1, 2, 3];
 
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
@@ -170,7 +170,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                             Gestionar Presupuestos
                             {hayDecisionTomada && (
                                 <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-bold uppercase rounded border border-gray-200 flex items-center gap-1">
-                                    <Lock size={10}/> Cerrado
+                                    <Lock size={10} /> Cerrado
                                 </span>
                             )}
                         </h2>
@@ -185,17 +185,17 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
             {error && (
                 <div className="mb-6 bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center gap-2 border border-red-200 animate-in fade-in">
                     <AlertCircle size={16} /> {error}
-                    <button onClick={() => setError("")} className="ml-auto hover:text-red-800"><X size={14}/></button>
+                    <button onClick={() => setError("")} className="ml-auto hover:text-red-800"><X size={14} /></button>
                 </div>
             )}
 
             {success && (
                 <div className="mb-6 bg-emerald-50 text-emerald-700 p-3 rounded-lg text-sm flex items-center gap-2 border border-emerald-200 animate-in fade-in slide-in-from-top-2">
                     <Check size={16} /> <span className="font-medium">{success}</span>
-                    <button onClick={() => setSuccess("")} className="ml-auto hover:text-emerald-900"><X size={14}/></button>
+                    <button onClick={() => setSuccess("")} className="ml-auto hover:text-emerald-900"><X size={14} /></button>
                 </div>
             )}
-            
+
             {/* Aviso de Bloqueo */}
             {hayDecisionTomada && !success && (
                 <div className="mb-6 bg-blue-50 text-blue-700 p-3 rounded-lg text-sm flex items-center gap-2 border border-blue-100">
@@ -206,11 +206,35 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                 </div>
             )}
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {/* Comentarios de la Solicitud */}
+                <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                        <MessageSquare size={16} className="text-gray-400" />
+                        <h3 className="text-sm font-bold text-slate-800">Comentarios del Solicitante</h3>
+                    </div>
+                    <p className="text-sm text-gray-600 italic whitespace-pre-wrap">
+                        {aprobacion.solicitud?.comentarios ? aprobacion.solicitud.comentarios : "Sin comentarios adicionales en el pedido."}
+                    </p>
+                </div>
+
+                {/* Comentarios de la Aprobación (Gerencia) */}
+                <div className="bg-emerald-50/30 border border-emerald-100 p-4 rounded-xl shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                        <MessageSquare size={16} className="text-emerald-500" />
+                        <h3 className="text-sm font-bold text-emerald-800">Evaluación de Gerencia</h3>
+                    </div>
+                    <p className="text-sm text-emerald-700 italic whitespace-pre-wrap">
+                        {aprobacion.comentarios ? aprobacion.comentarios : "Sin justificación de gerencia."}
+                    </p>
+                </div>
+            </div>
+
             {/* Grid de 4 Casillas */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {slots.map((index) => {
                     const item = presupuestos[index];
-                    
+
                     if (item) {
                         // Lógica individual (sigue aplicando por si acaso)
                         const estadoAprobacion = item.estadoAprobacion || 'PENDIENTE';
@@ -219,52 +243,51 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                         return (
                             <div key={item.idPresupuesto} className={`bg-white border border-slate-200 rounded-xl p-5 shadow-sm relative overflow-hidden group hover:shadow-md transition-all ${!isEditable ? 'opacity-90' : ''}`}>
                                 <div className={`absolute top-0 left-0 w-1 h-full ${item.cotizacionSatisfactoria ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
-                                
+
                                 {/* Badge de Estado */}
                                 {estadoAprobacion !== 'PENDIENTE' && (
                                     <div className="absolute top-3 right-3 z-20">
-                                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase border ${
-                                            estadoAprobacion === 'APROBADA' 
-                                                ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
+                                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase border ${estadoAprobacion === 'APROBADA'
+                                                ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
                                                 : 'bg-red-100 text-red-700 border-red-200'
-                                        }`}>
+                                            }`}>
                                             {estadoAprobacion}
                                         </span>
                                     </div>
                                 )}
 
                                 {/* Botón Editar/Ver */}
-                                <button 
+                                <button
                                     onClick={() => isEditable && handleEditar(item)}
                                     disabled={!isEditable}
                                     className={`absolute top-3 ${estadoAprobacion !== 'PENDIENTE' ? 'right-auto left-4' : 'right-3'} px-3 py-1 border shadow-sm rounded-md transition-all flex items-center gap-2 text-xs font-bold z-10
-                                        ${isEditable 
-                                            ? 'bg-white border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-300 cursor-pointer' 
+                                        ${isEditable
+                                            ? 'bg-white border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-300 cursor-pointer'
                                             : 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed'
                                         }`}
                                 >
-                                    {isEditable ? <Pencil size={16} /> : <FileText size={16}/>}
+                                    {isEditable ? <Pencil size={16} /> : <FileText size={16} />}
                                     {isEditable ? "Editar" : "Ver"}
                                 </button>
 
-                                <div className="mt-6"> 
+                                <div className="mt-6">
                                     <h3 className="font-bold text-slate-800 truncate pr-2">{item.proveedor?.nombreEmpresa}</h3>
                                     <p className="text-xs text-gray-500 mb-3">{item.proveedor?.mail || "Sin email"}</p>
 
                                     <div className="space-y-2 text-xs text-gray-600">
                                         <div className="flex items-center gap-2">
-                                            <Calendar size={14} className="text-gray-400"/>
+                                            <Calendar size={14} className="text-gray-400" />
                                             <span>Recibido: {item.fechaRecepcion || 'Pendiente'}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <CheckCircle size={14} className={item.cotizacionSatisfactoria ? "text-emerald-500" : "text-gray-300"}/>
+                                            <CheckCircle size={14} className={item.cotizacionSatisfactoria ? "text-emerald-500" : "text-gray-300"} />
                                             <span>{item.cotizacionSatisfactoria ? "Satisfactorio" : "Normal"}</span>
                                         </div>
                                         {item.archivoPdfPath && (
-                                            <div className="flex items-center gap-2 text-blue-600 font-medium cursor-pointer hover:underline mt-2 pt-2 border-t border-slate-50" 
-                                                onClick={() => handleVerPdf(item.archivoPdfPath)} 
+                                            <div className="flex items-center gap-2 text-blue-600 font-medium cursor-pointer hover:underline mt-2 pt-2 border-t border-slate-50"
+                                                onClick={() => handleVerPdf(item.archivoPdfPath)}
                                             >
-                                                <FileText size={14}/>
+                                                <FileText size={14} />
                                                 <span className="truncate max-w-[150px]">Ver PDF adjunto</span>
                                             </div>
                                         )}
@@ -277,7 +300,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                         // Si ya hay decisión tomada, mostramos la casilla bloqueada (Gris)
                         if (hayDecisionTomada) {
                             return (
-                                <div 
+                                <div
                                     key={index}
                                     className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-300 bg-slate-50 h-48 cursor-not-allowed"
                                     title="No se pueden agregar más presupuestos porque ya hay una decisión tomada."
@@ -292,7 +315,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
 
                         // Si NO hay decisión, mostramos el botón habilitado
                         return (
-                            <button 
+                            <button
                                 key={index}
                                 onClick={handleNuevo}
                                 className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50/10 transition-all h-48"
@@ -315,7 +338,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                             <h3 className="font-bold text-lg">{editingId ? "Modificar Presupuesto" : "Nuevo Presupuesto"}</h3>
                             <button onClick={() => setShowModal(false)}><X size={20} className="hover:text-emerald-200" /></button>
                         </div>
-                        
+
                         <form onSubmit={handleGuardar} className="p-6 space-y-4">
                             {modalError && (
                                 <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center gap-2 border border-red-200 animate-in slide-in-from-top-2">
@@ -325,10 +348,10 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
 
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Proveedor</label>
-                                <select 
+                                <select
                                     className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50 outline-none"
                                     value={formData.idProveedor}
-                                    onChange={e => setFormData({...formData, idProveedor: e.target.value})}
+                                    onChange={e => setFormData({ ...formData, idProveedor: e.target.value })}
                                     required
                                     disabled={hayDecisionTomada} // Bloqueo extra por seguridad
                                 >
@@ -342,16 +365,16 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Fecha Solicitud</label>
-                                    <input type="date" required className="w-full border border-slate-300 rounded-lg p-2 text-sm" 
+                                    <input type="date" required className="w-full border border-slate-300 rounded-lg p-2 text-sm"
                                         value={formData.fechaSolicitud}
-                                        onChange={e => setFormData({...formData, fechaSolicitud: e.target.value})} 
+                                        onChange={e => setFormData({ ...formData, fechaSolicitud: e.target.value })}
                                         disabled={hayDecisionTomada} />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Fecha Recepción</label>
-                                    <input type="date" className="w-full border border-slate-300 rounded-lg p-2 text-sm" 
+                                    <input type="date" className="w-full border border-slate-300 rounded-lg p-2 text-sm"
                                         value={formData.fechaRecepcion}
-                                        onChange={e => setFormData({...formData, fechaRecepcion: e.target.value})} 
+                                        onChange={e => setFormData({ ...formData, fechaRecepcion: e.target.value })}
                                         disabled={hayDecisionTomada} />
                                 </div>
                             </div>
@@ -360,7 +383,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Conversación (PDF)</label>
                                 {!file ? (
-                                    <div 
+                                    <div
                                         onDragOver={handleDragOver}
                                         onDragLeave={handleDragLeave}
                                         onDrop={handleDrop}
@@ -368,7 +391,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                                     >
                                         <UploadCloud size={30} className={isDragging ? "text-emerald-500" : "text-gray-400"} />
                                         <p className="mt-2 text-sm font-medium text-slate-700">Arrastra tu PDF aquí o <span className="text-emerald-600 underline">haz clic</span></p>
-                                        <input type="file" accept="application/pdf" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleFileSelect} disabled={hayDecisionTomada}/>
+                                        <input type="file" accept="application/pdf" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleFileSelect} disabled={hayDecisionTomada} />
                                     </div>
                                 ) : (
                                     <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
@@ -381,30 +404,30 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                                 )}
                                 {editingId && !file && formData.archivoPdfPath && (
                                     <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
-                                        <CheckCircle size={12}/> Archivo actual guardado: {formData.archivoPdfPath}
+                                        <CheckCircle size={12} /> Archivo actual guardado: {formData.archivoPdfPath}
                                     </p>
                                 )}
                             </div>
 
-                             <div>
+                            <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Observaciones</label>
-                                <textarea className="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none resize-none h-20" value={formData.observaciones} onChange={e => setFormData({...formData, observaciones: e.target.value})} disabled={hayDecisionTomada}></textarea>
+                                <textarea className="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none resize-none h-20" value={formData.observaciones} onChange={e => setFormData({ ...formData, observaciones: e.target.value })} disabled={hayDecisionTomada}></textarea>
                             </div>
 
                             <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                                <input type="checkbox" id="satisfactorio" className="w-5 h-5 accent-emerald-600 cursor-pointer" checked={formData.cotizacionSatisfactoria} onChange={e => setFormData({...formData, cotizacionSatisfactoria: e.target.checked})} disabled={hayDecisionTomada} />
+                                <input type="checkbox" id="satisfactorio" className="w-5 h-5 accent-emerald-600 cursor-pointer" checked={formData.cotizacionSatisfactoria} onChange={e => setFormData({ ...formData, cotizacionSatisfactoria: e.target.checked })} disabled={hayDecisionTomada} />
                                 <label htmlFor="satisfactorio" className="text-sm font-medium text-emerald-900 cursor-pointer select-none">Cotización Satisfactoria</label>
                             </div>
 
                             <div className="flex gap-3 pt-2">
                                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-slate-300 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50">Cancelar</button>
-                                
-                                <button 
-                                    type="submit" 
+
+                                <button
+                                    type="submit"
                                     disabled={hayDecisionTomada} // Bloqueo final del botón guardar
                                     className={`flex-1 py-2.5 text-white rounded-lg text-sm font-medium shadow-md transition-all
                                         ${hayDecisionTomada
-                                            ? 'bg-gray-400 cursor-not-allowed' 
+                                            ? 'bg-gray-400 cursor-not-allowed'
                                             : 'bg-[#1C5B5A] hover:bg-[#164a49]'
                                         }`}
                                 >
