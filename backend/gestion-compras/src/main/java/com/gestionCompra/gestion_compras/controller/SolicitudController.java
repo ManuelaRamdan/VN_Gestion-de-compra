@@ -82,6 +82,7 @@ public class SolicitudController {
             solicitud.setNivelPrioridad(nivel);
             solicitud.setFecha(LocalDateTime.now());
             solicitud.setFechaAdmisible(solicitud.getFecha().plusDays(nivel.getDias()));
+            solicitud.setComentarios(request.comentarios());
 
             // 4. Guardar
             solicitudService.guardar(solicitud);

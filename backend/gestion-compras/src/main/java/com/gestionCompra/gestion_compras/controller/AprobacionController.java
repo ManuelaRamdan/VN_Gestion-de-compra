@@ -50,10 +50,11 @@ public class AprobacionController {
 
         String estado = validarYObtenerEstado(body);
         Usuario gerente = obtenerGerenteAutenticado();
+        String cometarios = body.get("comentarios");
 
         try {
             // El servicio procesa la solicitud
-            AprobacionSolicitud resultado = aprobacionService.procesarDecision(id, estado, gerente);
+            AprobacionSolicitud resultado = aprobacionService.procesarDecision(id, estado, gerente,  cometarios);
 
             return ResponseEntity.ok(Map.of(
                     "mensaje", "Solicitud actualizada",

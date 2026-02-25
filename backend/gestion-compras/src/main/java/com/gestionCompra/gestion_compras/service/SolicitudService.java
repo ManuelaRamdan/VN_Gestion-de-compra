@@ -127,6 +127,15 @@ public class SolicitudService extends ABMGenerico<Solicitud, Integer> {
             }
         }
 
+        if (camposActualizar.containsKey("comentarios")) {
+            // Convertimos el valor a Number y luego sacamos el intValue
+            Object valor = camposActualizar.get("comentarios");
+            if (valor != null) {
+
+                solicitud.setComentarios((String) valor);
+            }
+        }
+
         return getRepository().save(solicitud);
     }
 

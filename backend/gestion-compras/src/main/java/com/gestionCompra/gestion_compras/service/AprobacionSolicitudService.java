@@ -26,7 +26,7 @@ public class AprobacionSolicitudService extends ABMGenerico<AprobacionSolicitud,
     }
 
     @Transactional
-    public AprobacionSolicitud procesarDecision(Integer idSolicitud, String nuevoEstado, Usuario gerente) {
+    public AprobacionSolicitud procesarDecision(Integer idSolicitud, String nuevoEstado, Usuario gerente, String comntarios) {
         AprobacionSolicitud aprobacion = aprobacionRepo.findBySolicitud_IdSolicitud(idSolicitud)
                 .orElseThrow(() -> new RuntimeException("No existe registro de aprobación para la solicitud: " + idSolicitud));
 
@@ -34,6 +34,7 @@ public class AprobacionSolicitudService extends ABMGenerico<AprobacionSolicitud,
         aprobacion.setEstado(nuevoEstado.toUpperCase());
         aprobacion.setFecha(LocalDateTime.now());
         aprobacion.setUsuario(gerente);
+        aprobacion.setComentarios(comntarios);
 
         return aprobacionRepo.save(aprobacion);
     }

@@ -31,7 +31,13 @@ public class AprobacionSolicitud extends AprobacionBase implements Serializable 
     
     @ManyToOne
     @JoinColumn(name = "id_solicitud")
-    private Solicitud solicitud; // Relación con la clase Solicitud
+    private Solicitud solicitud;
+    
+        
+    @Column(length = 255)
+    private String comentarios;
+    
+    
 
     public Solicitud getSolicitud() {
         return solicitud;
@@ -41,6 +47,14 @@ public class AprobacionSolicitud extends AprobacionBase implements Serializable 
         this.solicitud = solicitud;
     }
 
-    
+    public String getComentarios() {
+        return comentarios;
+    }
+
+    public void setComentarios(String comentarios) {
+        this.comentarios = comentarios;
+    }
+
+
     
 }

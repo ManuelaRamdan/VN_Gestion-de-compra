@@ -40,6 +40,10 @@ public class Solicitud implements Serializable {
     @OneToOne(mappedBy = "solicitud")
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties("solicitud") // <--- AGREGAR ESTO
     private AprobacionSolicitud aprobacion;
+    
+    
+    @Column(length = 255)
+    private String comentarios;
     private boolean cerrado = false;
 
     public boolean isCerrado() {
@@ -112,6 +116,14 @@ public class Solicitud implements Serializable {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public String getComentarios() {
+        return comentarios;
+    }
+
+    public void setComentarios(String comentarios) {
+        this.comentarios = comentarios;
     }
 
 }
