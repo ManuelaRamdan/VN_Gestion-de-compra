@@ -28,15 +28,21 @@ export default function DocumentacionPage() {
         }
     };
 
+    const formatDateLocal = (dateString) => {
+        if (!dateString) return 'N/A';
+        const date = dateString.includes('T') ? new Date(dateString) : new Date(dateString + 'T00:00:00');
+        return date.toLocaleDateString();
+    };
+
     const filteredData = cierres.filter(c => {
         const prod = c.evaluacionEntrega?.compra?.aprobacionPresupuesto?.presupuesto?.aprobacionSolicitud?.solicitud?.producto?.nombre || "";
         const prov = c.evaluacionEntrega?.compra?.aprobacionPresupuesto?.presupuesto?.proveedor?.nombreEmpresa || "";
         const term = searchTerm.toLowerCase();
-        
+
         return (
-            c.idCierre?.toString().includes(term) || 
+            c.idCierre?.toString().includes(term) ||
             prod.toLowerCase().includes(term) ||
-            prov.toLowerCase().includes(term) 
+            prov.toLowerCase().includes(term)
         );
     });
 
@@ -88,10 +94,10 @@ export default function DocumentacionPage() {
                                                 {c.evaluacionEntrega?.compra?.aprobacionPresupuesto?.presupuesto?.proveedor?.nombreEmpresa}
                                             </td>
                                             <td className="px-6 py-4 text-slate-500">
-                                                {new Date(c.fechaCierre).toLocaleDateString()}
+                                                {formatDateLocal(c.fechaCierre)}
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <button 
+                                                <button
                                                     onClick={() => setCierreSeleccionado(c)}
                                                     className="inline-flex items-center gap-1 text-[#1C5B5A] font-bold text-xs hover:underline"
                                                 >
@@ -108,7 +114,7 @@ export default function DocumentacionPage() {
             </div>
 
             {cierreSeleccionado && (
-                <ModalDetalleExpediente 
+                <ModalDetalleExpediente
                     cierre={cierreSeleccionado}
                     onClose={() => setCierreSeleccionado(null)}
                 />

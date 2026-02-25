@@ -17,6 +17,12 @@ export default function GestionAprobPresu({ grupoSeleccionado, soloLectura, onCl
         }
     };
 
+    const formatDateLocal = (dateString) => {
+        if (!dateString) return 'Pendiente';
+        const date = dateString.includes('T') ? new Date(dateString) : new Date(dateString + 'T00:00:00');
+        return date.toLocaleDateString();
+    };
+
     const handleDecidir = async (idPresupuesto, decision) => {
         try {
             setLoadingId(idPresupuesto);
@@ -99,7 +105,7 @@ export default function GestionAprobPresu({ grupoSeleccionado, soloLectura, onCl
                                     <div className="space-y-3 text-sm text-slate-600 mb-5">
                                         <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-md border border-slate-100">
                                             <Calendar size={16} className="text-gray-400 shrink-0"/> 
-                                            <span className="text-xs">Recibido: <b className="text-slate-700">{new Date(p.fechaRecepcion).toLocaleDateString()}</b></span>
+                                            <span className="text-xs">Recibido: <b className="text-slate-700">{formatDateLocal(p.fechaRecepcion)}</b></span>
                                         </div>
                                         <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-md border border-slate-100">
                                             <CheckCircle size={16} className={`shrink-0 ${p.cotizacionSatisfactoria ? "text-emerald-500" : "text-gray-400"}`}/> 

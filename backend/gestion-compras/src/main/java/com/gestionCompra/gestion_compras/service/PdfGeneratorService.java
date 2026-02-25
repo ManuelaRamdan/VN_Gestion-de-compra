@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 
 @Service
@@ -41,6 +42,9 @@ public class PdfGeneratorService {
 
     @Autowired
     private EvalProveedorRepo evalProveedorRepo;
+
+    @Value("${pdf.storage.path}")
+    private String storagePath;
 
     private final DateTimeFormatter formateo = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -102,9 +106,9 @@ public class PdfGeneratorService {
 
             // 3. PRODUCTOS
             addSectionTitle(document, "2. DETALLE DE PRODUCTOS", sectionFont);
-            PdfPTable soliTable = new PdfPTable(4);
+            PdfPTable soliTable = new PdfPTable(5);
             soliTable.setWidthPercentage(100);
-            String[] headers = {"Producto", "Cantidad", "Prioridad", "Fecha Admisible"};
+            String[] headers = {"Producto", "Cantidad", "Prioridad", "Fecha Admisible", "Comentarios"};
             for (String h : headers) {
                 PdfPCell c = new PdfPCell(new Phrase(h, headerTableFont));
                 c.setBackgroundColor(COL_TABLE_HEADER);
@@ -116,6 +120,8 @@ public class PdfGeneratorService {
             soliTable.addCell(new Phrase(solicitud.getCantidad().toString(), normalFont));
             soliTable.addCell(new Phrase(solicitud.getNivelPrioridad().getCategoria(), normalFont));
             soliTable.addCell(new Phrase(solicitud.getFechaAdmisible().format(formateo), normalFont));
+            soliTable.addCell(new Phrase(solicitud.getComentarios(), normalFont));
+
             document.add(soliTable);
             document.add(new Paragraph("\n"));
 
@@ -128,6 +134,9 @@ public class PdfGeneratorService {
                 firmaSolTable.addCell(createFieldCell("Aprobado por", as.getUsuario().getUsername(), normalFont, boldValueFont));
                 firmaSolTable.addCell(createFieldCell("Sector", as.getUsuario().getSector().getNombre(), normalFont, boldValueFont));
                 firmaSolTable.addCell(createFieldCell("Fecha", as.getFecha().format(formateo), normalFont, boldValueFont));
+                PdfPCell cellComentarios = createFieldCell("Comentarios", as.getComentarios(), normalFont, boldValueFont);
+                cellComentarios.setColspan(3);
+                firmaSolTable.addCell(cellComentarios);
             } else {
                 firmaSolTable.addCell(new Phrase("PENDIENTE", normalFont));
             }
@@ -223,7 +232,11 @@ public class PdfGeneratorService {
                 File facturaFile = null;
 
                 if (pathFactura != null && !pathFactura.trim().isEmpty()) {
-                    facturaFile = new File("uploads/" + pathFactura.trim());
+                    // CAMBIO CLAVE: Usamos una coma en lugar de un '+'
+                    facturaFile = new File(storagePath, pathFactura.trim());
+
+                    // Agrega esta línea temporalmente para ver en la consola EXACTAMENTE dónde está buscando
+                    System.out.println("Buscando factura en la ruta absoluta: " + facturaFile.getAbsolutePath());
                 }
 
                 if (facturaFile != null && facturaFile.exists()) {
@@ -237,7 +250,7 @@ public class PdfGeneratorService {
 
                     // Estilo del link
                     Font linkFont = new Font(boldValueFont);
-                    linkFont.setColor(COL_LINK); 
+                    linkFont.setColor(COL_LINK);
                     linkFont.setStyle(Font.UNDERLINE);
                     linkChunk.setFont(linkFont);
 
@@ -348,48 +361,45 @@ public class PdfGeneratorService {
         return cell;
     }
 
-    // --- HELPER 2: FUSIONAR PDF EXTERNO Y PONER EL ANCLA ---
-   private void fusionarPdfExterno(Document document, PdfWriter writer,
-                                String fileName, String destinationName, String title) {
-    try {
-        String filePath = "uploads/" + fileName.trim();
-        File file = new File(filePath);
+    private void fusionarPdfExterno(Document document, PdfWriter writer,
+            String fileName, String destinationName, String title) {
+        try {
+            File file = new File(storagePath, fileName.trim());
 
-        if (!file.exists()) {
-            return;
-        }
+            if (file.exists()) {
+                PdfReader reader = new PdfReader(file.getAbsolutePath());
+                int n = reader.getNumberOfPages();
 
-        PdfReader reader = new PdfReader(filePath);
-        int n = reader.getNumberOfPages();
+                for (int i = 1; i <= n; i++) {
+                    Rectangle pageSize = reader.getPageSizeWithRotation(i);
+                    document.setPageSize(pageSize);
+                    document.newPage();
 
-        for (int i = 1; i <= n; i++) {
-            // 1. ADAPTAR EL TAMAÑO: Lee el tamaño y rotación original del PDF adjunto
-            Rectangle pageSize = reader.getPageSizeWithRotation(i);
-            document.setPageSize(pageSize);
-            document.newPage(); // Crea la hoja con el tamaño correcto
+                    if (i == 1) {
+                        PdfContentByte cb = writer.getDirectContent();
+                        cb.localDestination(destinationName, new PdfDestination(PdfDestination.FIT));
+                    }
 
-            // 2. CREAR EL ANCLA: Solo en la primera página del anexo
-            if (i == 1) {
-                PdfContentByte cb = writer.getDirectContent();
-                cb.localDestination(destinationName, new PdfDestination(PdfDestination.FIT));
+                    PdfImportedPage page = writer.getImportedPage(reader, i);
+                    Image image = Image.getInstance(page);
+                    image.setAbsolutePosition(0, 0);
+                    document.add(image);
+                }
+                reader.close();
+
+            } else {
+                // Si no existe, solo lo logueamos, sin romper el flujo
+                System.err.println("Atención: No se encontró el anexo en la ruta -> " + file.getAbsolutePath());
             }
 
-            // 3. INSERTAR COMO IMAGEN: Esto soluciona las deformaciones y respeta la rotación
-            PdfImportedPage page = writer.getImportedPage(reader, i);
-            Image image = Image.getInstance(page);
-            image.setAbsolutePosition(0, 0);
-            document.add(image);
+            // Se ejecuta siempre al final, exista o no el archivo
+            document.setPageSize(PageSize.A4.rotate());
+
+        } catch (Exception e) {
+            System.err.println("Error fusionando PDF: " + fileName + " - " + e.getMessage());
         }
-
-        reader.close();
-
-        // 4. RESTAURAR TAMAÑO ORIGINAL: Volvemos al A4 Horizontal por si agregas más cosas después
-        document.setPageSize(PageSize.A4.rotate());
-
-    } catch (Exception e) {
-        System.err.println("Error fusionando PDF: " + fileName + " - " + e.getMessage());
     }
-}
+
     // --- MÉTODOS AUXILIARES EXISTENTES (Resumidos para no ocupar espacio) ---
     private void generarHeader(Document doc, Font titleFont, Font wl, Font wv, Font nf) throws Exception {
         PdfPTable headerTable = new PdfPTable(3);

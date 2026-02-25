@@ -48,7 +48,7 @@ public class CierreController {
         Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.DESC, "idCierre")
+                Sort.by(Sort.Direction.DESC, "evaluacionEntrega.idEvaluacionEntrega")
         );
         return ResponseEntity.ok(service.findAll(pageable));
     }
