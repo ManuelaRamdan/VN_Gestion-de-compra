@@ -1,21 +1,19 @@
 services:
-
   postgres:
     image: postgres:18
     container_name: gestion_postgres
     restart: always
     environment:
-      POSTGRES_DB: gestioncompra
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql
       - ./gC_postgreSql.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - red_privada
-    # ADDED: Healthcheck to ensure DB is actually ready
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d gestioncompra"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -24,32 +22,29 @@ services:
     build: ./backend/gestion-compras
     container_name: gestion_backend
     restart: always
-    # MODIFIED: Wait for the database to be healthy, not just started
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      # MODIFIED: Changed 'postgres' to 'gestion_postgres'
-      SPRING_DATASOURCE_URL: jdbc:postgresql://gestion_postgres:5432/gestioncompra
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: root
-      PDF_STORAGE_PATH: /app/pdfs
-      JWT_SECRET: GmnpcGyoTnpsNu7QRjfdevswafybEQFHcgrdc
-      APP_CORS_ALLOWED_ORIGINS: http://192.168.1.200
-      SERVER_PORT: 8081
+      DB_HOST: gestion_postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - pdf_data:/app/pdfs
+      - pdf_data:${PDF_STORAGE_PATH}
     networks:
       - red_privada
       - red_publica
     ports:
-      - "8081:8081"
+      - "${SERVER_PORT}:${SERVER_PORT}"
 
   frontend:
     build: 
       context: ./frontend
       args:
-          - VITE_API_BASE_URL=http://192.168.1.200:8081
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     container_name: gestion_frontend
     restart: always
     depends_on:

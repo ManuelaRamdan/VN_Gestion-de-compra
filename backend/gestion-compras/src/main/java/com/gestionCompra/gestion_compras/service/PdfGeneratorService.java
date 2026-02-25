@@ -398,7 +398,7 @@ public class PdfGeneratorService {
 
         // Logo
         try {
-            var resource = resourceLoader.getResource("classpath:static/logo.jpeg");
+            var resource = resourceLoader.getResource("classpath:static/logo2.png");
             Image logo = Image.getInstance(resource.getURL());
             logo.scaleToFit(80, 80);
             PdfPCell logoCell = new PdfPCell(logo);

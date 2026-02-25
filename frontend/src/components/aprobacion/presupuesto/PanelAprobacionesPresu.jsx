@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Clock, Archive, Search, Eye, AlertCircle, X, Package } from 'lucide-react';
+import { Clock, Archive, Search, Eye, AlertCircle, X, Package, CheckCircle } from 'lucide-react';
 import { listarAprobacionesPresupuesto } from '../../../services/aprobPresuService'; 
 import Loading from '../../Loading';
 import ModalGestionAprobPresu from './GestionAprobPresu';
