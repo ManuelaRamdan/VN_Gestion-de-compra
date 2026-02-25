@@ -35,10 +35,16 @@ function Login() {
       const { token, rol, username: usernameResponse } = response.data;
 
       login(token, { username: usernameResponse, rol });
-      navigate("/solicitudes");
+      if (rol === 'GERENCIA') {
+        navigate('/aprobSolicitud'); // Gerencia aterriza aquí primero
+      } else {
+        navigate('/solicitudes'); // Calidad y Admin aterrizan aquí
+      }
     } catch (error) {
       setErrorMessage("Credenciales incorrectas");
       localStorage.removeItem("SESSION_EXPIRED");
+
+      
     } finally {
       setLoading(false);
     }

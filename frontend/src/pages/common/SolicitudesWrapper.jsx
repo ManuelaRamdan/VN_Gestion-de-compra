@@ -15,12 +15,7 @@ export default function SolicitudesWrapper() {
         return <Navigate to="/login" replace />;
     }
 
-
-
-    // 2. Si es CALIDAD o GERENCIA, le mostramos la vista de Aprobación/Selección
     if (user.rol === 'CALIDAD' || user.rol === 'GERENCIA' || user.rol === 'ADMINISTRACION') {
-        // NOTA: Si aún no creaste SolicitudesPage, usa AdminPanel temporalmente para probar
-        // return <AdminPanel />; 
         return <SolicitudPanel />;
     }
 
