@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Map;
+import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/api/evalEntrega")
@@ -110,7 +111,11 @@ public class EvaluacionEntregaController {
     
     @GetMapping("/sinCierre")
     public ResponseEntity<?> ListarComprasSinEvalEntrega(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+         Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "idEvaluacionEntrega")
+        );
         return ResponseEntity.ok(service.listarEvalSinCierre(pageable));
     }
     
