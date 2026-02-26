@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, CheckCircle, XCircle, Package, AlertCircle, Lock } from 'lucide-react'; // <-- Importamos Lock
+import { X, Save, CheckCircle, XCircle, Package, AlertCircle, Lock, MessageSquare } from 'lucide-react'; // <-- Agregamos MessageSquare
 import { decidirAprobacionSoli, modificarSolicitud } from '../../../services/aprobSoliService';
 import { listarProductos, listarPrioridades } from '../../../services/solicitudService'; 
 
@@ -10,8 +10,6 @@ export default function GestionAprobSolicitud({ aprobacion, soloLectura, onClose
     
     // --- ESTADO DE BLOQUEO ---
     const estadoAprobacion = aprobacion.estado || 'PENDIENTE';
-    // Se bloquea si viene como soloLectura desde la tabla (pestañas Aprobadas/Rechazadas)
-    // o si el estado interno ya no es PENDIENTE.
     const isLocked = soloLectura || estadoAprobacion !== 'PENDIENTE';
 
     // --- ESTADOS DE FEEDBACK ---
@@ -21,13 +19,17 @@ export default function GestionAprobSolicitud({ aprobacion, soloLectura, onClose
     const [productos, setProductos] = useState([]);
     const [prioridades, setPrioridades] = useState([]);
 
+    // 1. ESTADO: Datos de la solicitud (Incluye los comentarios originales)
     const [formData, setFormData] = useState({
         cantidad: soli?.cantidad || 0,
         idProducto: soli?.producto?.idProducto || "",
-        idNivelPrioridad: soli?.nivelPrioridad?.idNivelPrioridad || ""
+        idNivelPrioridad: soli?.nivelPrioridad?.idNivelPrioridad || "",
+        comentariosSolicitud: soli?.comentarios || "" // <-- Agregado
     });
 
-    // Cargamos siempre las listas para que los <select> puedan mostrar el nombre correcto del producto y prioridad
+    // 2. ESTADO: Comentarios de la decisión del Gerente
+    const [comentariosAprobacion, setComentariosAprobacion] = useState(aprobacion.comentarios || ""); // <-- Agregado
+
     useEffect(() => {
         const fetchListas = async () => {
             setCargandoListas(true);
@@ -46,16 +48,18 @@ export default function GestionAprobSolicitud({ aprobacion, soloLectura, onClose
     }, []);
 
     const handleActualizarDatos = async () => {
-        if (isLocked) return; // Bloqueo extra de seguridad
+        if (isLocked) return;
         try {
             setLoading(true);
             setError('');
             setSuccess('');
             
+            // Agregamos los comentarios al payload de actualización
             const payload = {
                 cantidad: parseInt(formData.cantidad),
                 idProducto: parseInt(formData.idProducto),
-                idNivelPrioridad: parseInt(formData.idNivelPrioridad)
+                idNivelPrioridad: parseInt(formData.idNivelPrioridad),
+                comentarios: formData.comentariosSolicitud // <-- Agregado
             };
 
             await modificarSolicitud(soli.idSolicitud, payload);
@@ -71,11 +75,14 @@ export default function GestionAprobSolicitud({ aprobacion, soloLectura, onClose
     };
 
     const handleDecidir = async (decision) => {
-        if (isLocked) return; // Bloqueo extra de seguridad
+        if (isLocked) return;
         try {
             setLoading(true);
             setError('');
-            await decidirAprobacionSoli(soli.idSolicitud, decision);
+            
+            // Pasamos los comentarios de aprobación al servicio
+            await decidirAprobacionSoli(soli.idSolicitud, decision, comentariosAprobacion); // <-- Agregado el 3er parámetro
+            
             onSuccess(`La solicitud fue ${decision.toLowerCase()} con éxito.`); 
         } catch (err) {
             setError(err.response?.data?.error || `Error al marcar como ${decision}`);
@@ -85,10 +92,10 @@ export default function GestionAprobSolicitud({ aprobacion, soloLectura, onClose
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95">
+            <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 max-h-[90vh] flex flex-col">
                 
                 {/* --- HEADER --- */}
-                <div className={`px-6 py-4 flex justify-between items-center text-white ${isLocked ? 'bg-slate-700' : 'bg-[#1C5B5A]'}`}>
+                <div className={`px-6 py-4 flex justify-between items-center text-white shrink-0 ${isLocked ? 'bg-slate-700' : 'bg-[#1C5B5A]'}`}>
                     <div>
                         <h3 className="font-bold text-lg flex items-center gap-2">
                             {isLocked ? 'Detalle de Solicitud' : 'Evaluación de Solicitud'}
@@ -103,37 +110,36 @@ export default function GestionAprobSolicitud({ aprobacion, soloLectura, onClose
                     <button onClick={onClose}><X size={20} className="hover:opacity-75" /></button>
                 </div>
 
-                <div className="p-6 space-y-5">
-                    {/* --- MENSAJES DE ERROR Y ÉXITO --- */}
+                {/* --- CUERPO SCROLLEABLE --- */}
+                <div className="p-6 space-y-5 overflow-y-auto">
                     {error && (
-                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center gap-2 border border-red-200 animate-in fade-in">
-                            <AlertCircle size={16} /> {error}
+                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center gap-2 border border-red-200">
+                            <AlertCircle size={16} className="shrink-0" /> {error}
                             <button onClick={() => setError("")} className="ml-auto hover:text-red-800"><X size={14}/></button>
                         </div>
                     )}
 
                     {success && (
-                        <div className="bg-emerald-50 text-emerald-700 p-3 rounded-lg text-sm flex items-center gap-2 border border-emerald-200 animate-in fade-in slide-in-from-top-2">
-                            <CheckCircle size={16} /> <span className="font-medium">{success}</span>
+                        <div className="bg-emerald-50 text-emerald-700 p-3 rounded-lg text-sm flex items-center gap-2 border border-emerald-200">
+                            <CheckCircle size={16} className="shrink-0" /> <span className="font-medium">{success}</span>
                             <button onClick={() => setSuccess("")} className="ml-auto hover:text-emerald-900"><X size={14}/></button>
                         </div>
                     )}
 
-                    {/* --- MENSAJE DE BLOQUEO (Tipo Presupuestos) --- */}
                     {isLocked && !success && !error && (
                         <div className="bg-blue-50 text-blue-700 p-3 rounded-lg text-sm flex items-center gap-2 border border-blue-100">
                             <Lock size={16} className="shrink-0" />
                             <span>
-                                <strong>Gestión Finalizada:</strong> Esta solicitud ya fue <b>{estadoAprobacion}</b>. No se puede modificar ni volver a evaluar.
+                                <strong>Gestión Finalizada:</strong> Esta solicitud ya fue <b>{estadoAprobacion}</b>.
                             </span>
                         </div>
                     )}
 
-                    {/* --- FORMULARIO UNIFICADO --- */}
+                    {/* --- FORMULARIO DE LA SOLICITUD --- */}
                     <div className="space-y-4">
                         {!isLocked && (
                             <p className="text-[11px] text-gray-500 bg-emerald-50 p-2 rounded border border-emerald-100">
-                                Puedes ajustar el pedido antes de aprobarlo o rechazarlo. No olvides hacer clic en <b>Actualizar Datos</b> si modificas algo.
+                                Puedes ajustar el pedido antes de evaluarlo. Haz clic en <b>Actualizar Datos</b> si modificas algo.
                             </p>
                         )}
 
@@ -182,9 +188,23 @@ export default function GestionAprobSolicitud({ aprobacion, soloLectura, onClose
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none disabled:bg-slate-50 disabled:text-slate-500"
                                 />
                             </div>
+
+                            {/* TEXTAREA 1: Comentarios de la Solicitud */}
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1 flex items-center gap-1">
+                                    <MessageSquare size={12} /> Comentarios del Solicitante
+                                </label>
+                                <textarea
+                                    disabled={isLocked || loading || cargandoListas}
+                                    rows={2}
+                                    value={formData.comentariosSolicitud}
+                                    onChange={(e) => setFormData({...formData, comentariosSolicitud: e.target.value})}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none disabled:bg-slate-50 disabled:text-slate-500 resize-none"
+                                    placeholder={isLocked ? "Sin comentarios" : "Modificar o agregar comentarios al pedido..."}
+                                />
+                            </div>
                         </div>
 
-                        {/* Botón de actualizar solo visible si NO está bloqueado */}
                         {!isLocked && (
                             <button 
                                 onClick={handleActualizarDatos}
@@ -196,32 +216,50 @@ export default function GestionAprobSolicitud({ aprobacion, soloLectura, onClose
                         )}
                     </div>
 
-                    {/* --- BOTONES DE DECISIÓN (Solo si no está bloqueado) --- */}
-                    {!isLocked ? (
-                        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100 mt-2">
-                            <button 
-                                onClick={() => handleDecidir('RECHAZADA')}
-                                disabled={loading || cargandoListas}
-                                className="flex items-center justify-center gap-2 py-3 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 border border-red-200 transition-all disabled:opacity-50"
-                            >
-                                <XCircle size={18} /> Rechazar
-                            </button>
-                            <button 
-                                onClick={() => handleDecidir('APROBADA')}
-                                disabled={loading || cargandoListas}
-                                className="flex items-center justify-center gap-2 py-3 bg-emerald-500 text-white rounded-lg text-sm font-bold hover:bg-emerald-600 shadow-sm transition-all disabled:opacity-50"
-                            >
-                                <CheckCircle size={18} /> Aprobar
-                            </button>
+                    {/* --- SECCIÓN DE DECISIÓN DE GERENCIA --- */}
+                    <div className="pt-4 border-t border-slate-100 mt-2">
+                        
+                        {/* TEXTAREA 2: Comentarios del Gerente al aprobar/rechazar */}
+                        <div className="mb-4">
+                            <label className="block text-xs font-bold text-emerald-800 uppercase mb-1">
+                                Comentarios de Evaluación (Gerencia)
+                            </label>
+                            <textarea
+                                disabled={isLocked || loading}
+                                rows={2}
+                                value={comentariosAprobacion}
+                                onChange={(e) => setComentariosAprobacion(e.target.value)}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none disabled:bg-slate-50 disabled:text-slate-500 resize-none bg-emerald-50/30"
+                                placeholder={isLocked ? "Sin comentarios de evaluación" : "Escribe una justificación opcional para tu decisión..."}
+                            />
                         </div>
-                    ) : (
-                        <button 
-                            onClick={onClose}
-                            className="w-full py-3 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all mt-4 border border-slate-200"
-                        >
-                            Cerrar
-                        </button>
-                    )}
+
+                        {!isLocked ? (
+                            <div className="grid grid-cols-2 gap-3">
+                                <button 
+                                    onClick={() => handleDecidir('RECHAZADA')}
+                                    disabled={loading || cargandoListas}
+                                    className="flex items-center justify-center gap-2 py-3 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 border border-red-200 transition-all disabled:opacity-50"
+                                >
+                                    <XCircle size={18} /> Rechazar
+                                </button>
+                                <button 
+                                    onClick={() => handleDecidir('APROBADA')}
+                                    disabled={loading || cargandoListas}
+                                    className="flex items-center justify-center gap-2 py-3 bg-emerald-500 text-white rounded-lg text-sm font-bold hover:bg-emerald-600 shadow-sm transition-all disabled:opacity-50"
+                                >
+                                    <CheckCircle size={18} /> Aprobar
+                                </button>
+                            </div>
+                        ) : (
+                            <button 
+                                onClick={onClose}
+                                className="w-full py-3 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all border border-slate-200"
+                            >
+                                Cerrar
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

@@ -9,11 +9,17 @@ export const listarAprobacionesSoli = async (estado='PENDIENTE',page = 0, size =
     return response.data;
 };
 
-export const decidirAprobacionSoli = async (idSolicitud, decision) => {
-    const response = await api.post(`/api/aprobaciones/solicitudes/${idSolicitud}`, {
-        estado: decision
-    });
-    return response.data;
+
+export const decidirAprobacionSoli = async (idSolicitud, decision, comentarios) => {
+    const payload = {
+        estado: decision,        // Esto será 'APROBADA' o 'RECHAZADA'
+        comentarios: comentarios // Esto será el texto del textarea
+    };
+
+
+    return await api.post(`/api/aprobaciones/solicitudes/${idSolicitud}`, payload);
+    
+
 };
 
 export const modificarSolicitud = async (idSolicitud, datos) => {
