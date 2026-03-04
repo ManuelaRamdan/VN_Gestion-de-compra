@@ -700,7 +700,6 @@ COPY public.producto (id_producto, nombre, activo) FROM stdin;
 2	Lapiceras	t
 1	Hojas A3	t
 3	Calibrador	t
-
 \.
 
 
