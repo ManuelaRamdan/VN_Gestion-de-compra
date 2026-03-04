@@ -48,7 +48,7 @@ public class CierreController {
         Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.ASC, "evaluacionEntrega.fechaEntrega") 
+                Sort.by(Sort.Direction.ASC, "fechaCierre") 
         );
         return ResponseEntity.ok(service.findAll(pageable));
     }

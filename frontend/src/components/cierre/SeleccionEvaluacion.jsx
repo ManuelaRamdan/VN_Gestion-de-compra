@@ -1,6 +1,6 @@
 // src/components/cierre/SeleccionEvaluacion.jsx
 import React, { useEffect, useState } from 'react';
-import { listarEvaluaciones } from '../../services/evalEntregaService'; // Asegúrate que esta ruta sea correcta
+import { listarEvaluaciones } from '../../services/cierreService'; // Asegúrate que esta ruta sea correcta
 import { Archive, ChevronRight, Search, ChevronDown, CheckCircle, AlertTriangle } from 'lucide-react';
 import Loading from '../Loading';
 
@@ -41,6 +41,12 @@ export default function SeleccionEvaluacion({ onSelect }) {
             setLoading(false);
             setIsLoadingMore(false);
         }
+    };
+
+    const handleLoadMore = () => {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        cargarDatos(nextPage);
     };
 
     const filteredData = evaluaciones.filter((item) => {
@@ -119,6 +125,26 @@ export default function SeleccionEvaluacion({ onSelect }) {
                         ))}
                     </tbody>
                 </table>
+                {hasMore && (
+                    <div className="p-4 bg-white border-t border-slate-50 flex justify-center">
+                        <button
+                            onClick={handleLoadMore}
+                            disabled={isLoadingMore}
+                            className="text-xs text-gray-400 hover:text-emerald-700 flex items-center gap-1 transition-colors font-medium disabled:opacity-50"
+                        >
+                            {isLoadingMore ? (
+                                <>
+                                    <div className="w-3 h-3 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                                    Cargando...
+                                </>
+                            ) : (
+                                <>
+                                    Ver más <ChevronDown size={12} />
+                                </>
+                            )}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,11 +1,6 @@
 import api from "./api";
 
-// ===============================
-// LISTAR TODAS
-// ===============================
-export const listarEvaluaciones = async () => {
-    return api.get("/api/evalEntrega/");
-};
+
 
 // ===============================
 // CREAR
