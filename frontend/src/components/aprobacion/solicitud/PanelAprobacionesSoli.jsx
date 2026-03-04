@@ -30,7 +30,7 @@ export default function PanelAprobacionesSoli() {
     const getPriorityBadge = (prioridadObj) => {
         const cat = prioridadObj?.categoria || "";
         const catLower = cat.toLowerCase();
-        
+
         // Asignamos colores según el nombre (ajusta las palabras según tu base de datos)
         if (catLower.includes('inmediata') || catLower.includes('alta')) {
             return <span className="px-2 py-1 text-[10px] font-bold text-red-600 bg-red-50 rounded border border-red-100 uppercase">{cat || 'ALTA'}</span>;
@@ -41,6 +41,35 @@ export default function PanelAprobacionesSoli() {
         // Por defecto (baja, normal, etc.)
         return <span className="px-2 py-1 text-[10px] font-bold text-gray-600 bg-gray-100 rounded border border-gray-200 uppercase">{cat || 'BAJA'}</span>;
     };
+
+    const renderFechaLimite = (fechaString) => {
+        if (!fechaString) return <span className="text-slate-500">No especificada</span>;
+
+        const limitDate = new Date(fechaString);
+        const today = new Date();
+
+        // Igualamos las horas a cero para comparar solo los días
+        limitDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        const isVencida = limitDate < today;
+        const formattedDate = limitDate.toLocaleDateString('es-ES');
+
+        if (isVencida) {
+            return (
+                <div className="flex flex-col gap-1">
+                    <span className="text-red-600 font-bold">{formattedDate}</span>
+                    <span className="text-[9px] px-1.5 py-0.5 bg-red-100 text-red-700 font-bold uppercase rounded w-max border border-red-200">
+                        Vencida
+                    </span>
+                </div>
+            );
+        }
+
+        // Si no está vencida, se muestra normal
+        return <span className="text-slate-500">{formattedDate}</span>;
+    };
+
 
     // Modificamos cargarDatos para aceptar la página y saber si es una carga inicial o un "Ver más"
     const cargarDatos = async (numeroPagina = 0, esCargaAdicional = false) => {
@@ -131,8 +160,8 @@ export default function PanelAprobacionesSoli() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`pb-3 text-sm font-bold flex items-center gap-2 transition-all border-b-2 ${isActive
-                                    ? `border-[#1C5B5A] text-[#1C5B5A]`
-                                    : `border-transparent text-slate-400 hover:text-slate-600`
+                                ? `border-[#1C5B5A] text-[#1C5B5A]`
+                                : `border-transparent text-slate-400 hover:text-slate-600`
                                 }`}
                         >
                             <Icon size={18} className={isActive ? tab.color : 'text-slate-400'} />
@@ -144,20 +173,20 @@ export default function PanelAprobacionesSoli() {
 
             {/* Controles de Búsqueda */}
             <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-6 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h2 className="text-base font-bold text-slate-800">Seleccione una solicitud</h2>
+                <div className="p-6 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <h2 className="text-base font-bold text-slate-800">Seleccione una solicitud</h2>
 
-                <div className="relative w-full sm:w-64 ml-auto">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                    <input
-                        type="text"
-                        placeholder="Buscar por ID, proveedor, producto..."
-                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                    <div className="relative w-full sm:w-64 ml-auto">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Buscar por ID, proveedor, producto..."
+                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                 </div>
-            </div>
 
                 {/* Tabla */}
                 {loading ? (
@@ -194,17 +223,15 @@ export default function PanelAprobacionesSoli() {
                                             <td className="px-6 py-4 text-sm text-slate-600">
                                                 {item.solicitud?.cantidad} un.
                                             </td>
-                                            
-                                           {/* --- CELDAS DE PRIORIDAD Y FECHA --- */}
-                                           <td className="px-6 py-4 whitespace-nowrap">
+
+                                            {/* --- CELDAS DE PRIORIDAD Y FECHA --- */}
+                                            <td className="px-6 py-4 whitespace-nowrap">
                                                 {/* Usamos el nuevo helper aquí */}
                                                 {getPriorityBadge(item.solicitud?.nivelPrioridad)}
                                             </td>
-                                            
-                                            <td className="px-6 py-4 text-sm font-medium text-slate-700 whitespace-nowrap">
-                                                {item.solicitud?.fechaAdmisible 
-                                                    ? new Date(item.solicitud.fechaAdmisible).toLocaleDateString() 
-                                                    : 'No especificada'}
+
+                                            <td className="px-6 py-4 whitespace-nowrap font-medium">
+                                                {renderFechaLimite(item.solicitud?.fechaAdmisible)}
                                             </td>
                                             {/* ---------------------------------- */}
                                             <td className="px-6 py-4 text-sm text-slate-600">

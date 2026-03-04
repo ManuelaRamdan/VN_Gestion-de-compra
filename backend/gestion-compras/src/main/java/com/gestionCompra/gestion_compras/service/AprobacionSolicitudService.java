@@ -60,4 +60,9 @@ public class AprobacionSolicitudService extends ABMGenerico<AprobacionSolicitud,
                     "No se encontró la aprobación de solucion con ID: " + id + " o la solicitud ya está cerrada"
             ));
     }
+
+   public Paginacion<AprobacionSolicitud> listarAprobadasConPresupuestosValidos(String estado, Pageable pageable) {
+    Page<AprobacionSolicitud> pagina = aprobacionRepo.findAprobadasConPresupuestosValidos(estado, pageable);
+    return new Paginacion<>(pagina);
+}
 }

@@ -28,6 +28,35 @@ export default function SeleccionPresupuesto({ onSelect }) {
         }
         return <span className="px-2 py-1 text-[10px] font-bold text-gray-600 bg-gray-100 rounded border border-gray-200 uppercase">{cat || 'BAJA'}</span>;
     };
+
+    const renderFechaLimite = (fechaString) => {
+        if (!fechaString) return <span className="text-slate-500">No especificada</span>;
+
+        const limitDate = new Date(fechaString);
+        const today = new Date();
+
+        // Igualamos las horas a cero para comparar solo los días
+        limitDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        const isVencida = limitDate < today;
+        const formattedDate = limitDate.toLocaleDateString('es-ES');
+
+        if (isVencida) {
+            return (
+                <div className="flex flex-col gap-1">
+                    <span className="text-red-600 font-bold">{formattedDate}</span>
+                    <span className="text-[9px] px-1.5 py-0.5 bg-red-100 text-red-700 font-bold uppercase rounded w-max border border-red-200">
+                        Vencida
+                    </span>
+                </div>
+            );
+        }
+
+        // Si no está vencida, se muestra normal
+        return <span className="text-slate-500">{formattedDate}</span>;
+    };
+
     const cargarDatos = async (pageToLoad = 0) => {
         try {
             if (pageToLoad === 0) {
@@ -156,11 +185,9 @@ export default function SeleccionPresupuesto({ onSelect }) {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {getPriorityBadge(solicitud?.nivelPrioridad)}
                                         </td>
-                                        <td className="px-6 py-4 text-slate-500 font-medium whitespace-nowrap">
-                                            {solicitud?.fechaAdmisible 
-                                                ? new Date(solicitud.fechaAdmisible).toLocaleDateString() 
-                                                : 'No especificada'}
-                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap font-medium">
+                                        {renderFechaLimite(solicitud?.fechaAdmisible)}
+                                    </td>
                                         {/* ------------------------------ */}
 
                                         <td className="px-6 py-4 text-slate-500 font-medium">

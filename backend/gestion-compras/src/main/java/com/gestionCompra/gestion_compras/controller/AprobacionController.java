@@ -102,21 +102,22 @@ public class AprobacionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
+        // 1. Corregido: Ahora ordena siempre por la fecha admisible de la solicitud
         Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.DESC, "fecha")
+                Sort.by(Sort.Direction.ASC, "solicitud.fechaAdmisible")
         );
         String estado = "APROBADA";
 
         try {
-            // Usamos el nuevo método que filtra por cerrado = false
-            Paginacion<AprobacionSolicitud> lista = aprobacionService.listarPorEstadoAbiertas(estado.toUpperCase(), pageable);
+            // 2. Corregido: Llamamos a un NUEVO método en el servicio diseñado para esta regla
+            Paginacion<AprobacionSolicitud> lista = aprobacionService.listarAprobadasConPresupuestosValidos(estado.toUpperCase(), pageable);
 
             if (lista.estaVacio()) {
                 return ResponseEntity.ok(Map.of(
                         "status", "success",
-                        "message", "No hay aprobaciones de solicitudes " + estado + " activas",
+                        "message", "No hay aprobaciones de solicitudes " + estado + " activas y con presupuestos viables",
                         "contenido", List.of()
                 ));
             }

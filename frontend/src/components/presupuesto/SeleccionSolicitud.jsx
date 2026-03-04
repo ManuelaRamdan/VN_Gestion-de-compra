@@ -20,7 +20,7 @@ export default function SeleccionSolicitud({ onSelect }) {
     const getPriorityBadge = (prioridadObj) => {
         const cat = prioridadObj?.categoria || "";
         const catLower = cat.toLowerCase();
-        
+
         if (catLower.includes('inmediata') || catLower.includes('alta')) {
             return <span className="px-2 py-1 text-[10px] font-bold text-red-600 bg-red-50 rounded border border-red-100 uppercase">{cat || 'ALTA'}</span>;
         }
@@ -28,6 +28,34 @@ export default function SeleccionSolicitud({ onSelect }) {
             return <span className="px-2 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded border border-blue-100 uppercase">{cat || 'MEDIA'}</span>;
         }
         return <span className="px-2 py-1 text-[10px] font-bold text-gray-600 bg-gray-100 rounded border border-gray-200 uppercase">{cat || 'BAJA'}</span>;
+    };
+
+    const renderFechaLimite = (fechaString) => {
+        if (!fechaString) return <span className="text-slate-500">No especificada</span>;
+
+        const limitDate = new Date(fechaString);
+        const today = new Date();
+
+        // Igualamos las horas a cero para comparar solo los días
+        limitDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        const isVencida = limitDate < today;
+        const formattedDate = limitDate.toLocaleDateString('es-ES');
+
+        if (isVencida) {
+            return (
+                <div className="flex flex-col gap-1">
+                    <span className="text-red-600 font-bold">{formattedDate}</span>
+                    <span className="text-[9px] px-1.5 py-0.5 bg-red-100 text-red-700 font-bold uppercase rounded w-max border border-red-200">
+                        Vencida
+                    </span>
+                </div>
+            );
+        }
+
+        // Si no está vencida, se muestra normal
+        return <span className="text-slate-500">{formattedDate}</span>;
     };
 
     const cargarDatos = async (pageToLoad = 0) => {
@@ -145,15 +173,13 @@ export default function SeleccionSolicitud({ onSelect }) {
                                         <div className="font-medium text-slate-800">{item.solicitud?.producto?.nombre}</div>
                                         <div className="text-xs text-gray-400">{item.solicitud?.cantidad} unidades</div>
                                     </td>
-                                    
+
                                     {/* --- NUEVAS CELDAS DE DATOS --- */}
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         {getPriorityBadge(item.solicitud?.nivelPrioridad)}
                                     </td>
-                                    <td className="px-6 py-4 text-slate-500 whitespace-nowrap font-medium">
-                                        {item.solicitud?.fechaAdmisible 
-                                            ? new Date(item.solicitud.fechaAdmisible).toLocaleDateString() 
-                                            : 'No especificada'}
+                                    <td className="px-6 py-4 whitespace-nowrap font-medium">
+                                        {renderFechaLimite(item.solicitud?.fechaAdmisible)}
                                     </td>
                                     {/* ------------------------------ */}
 
