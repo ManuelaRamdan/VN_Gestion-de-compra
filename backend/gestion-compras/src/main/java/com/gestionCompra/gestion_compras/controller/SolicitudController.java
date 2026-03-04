@@ -67,7 +67,7 @@ public class SolicitudController {
         try {
             // 1. Obtener usuario del contexto de seguridad (Token JWT)
             String username = authentication.getName();
-            Usuario usuario = usuarioRepo.findByUsernameAndActivoTrue(username)
+            Usuario usuario = usuarioRepo.findByUsernameIgnoreCaseAndActivoTrue(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             // 2. Buscar Producto y Prioridad

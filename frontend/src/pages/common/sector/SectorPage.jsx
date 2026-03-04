@@ -111,7 +111,7 @@ export default function SectorPage() {
             cargarSectores(0, false); 
             setTimeout(() => setSuccess(""), 3500);
         } catch (err) {
-            setModalError(err.response?.data?.error || "Error al guardar el sector.");
+            setModalError(err.response?.data?.message || err.response?.data?.error || "Error al guardar el sector.");
         }
     };
 

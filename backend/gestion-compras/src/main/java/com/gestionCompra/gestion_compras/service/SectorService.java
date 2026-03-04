@@ -54,4 +54,46 @@ public class SectorService extends ABMLogicoGenerico<Sector, Integer> {
         sector.setActivo(false);
         sectorRepo.save(sector);
     }
+    
+   @Transactional
+    public Sector crearSector(Sector nuevoSector) {
+        // 1. Limpiamos los espacios al principio y al final
+        String nombreLimpio = nuevoSector.getNombre().trim();
+        nuevoSector.setNombre(nombreLimpio);
+
+        // 2. Usamos el nuevo método con IgnoreCase
+        if (sectorRepo.findByNombreIgnoreCaseAndActivoTrue(nombreLimpio).isPresent()) {
+            throw new ManejoErrores(
+                    HttpStatus.BAD_REQUEST, 
+                    "El nombre del sector ya se encuentra registrado"
+            );
+        }
+        
+        nuevoSector.setActivo(true);
+        return sectorRepo.save(nuevoSector);
+    }
+
+    @Transactional
+    public Sector modificarSector(Integer id, Sector datosNuevos) {
+        Sector sectorExistente = this.findById(id);
+
+        if (datosNuevos.getNombre() != null && !datosNuevos.getNombre().isBlank()) {
+            // 1. Limpiamos los espacios
+            String nombreLimpio = datosNuevos.getNombre().trim();
+            
+            // 2. Usamos el nuevo método con IgnoreCase
+            sectorRepo.findByNombreIgnoreCaseAndActivoTrue(nombreLimpio)
+                    .ifPresent(s -> {
+                        if (!s.getIdSector().equals(id)) {
+                            throw new ManejoErrores(
+                                    HttpStatus.BAD_REQUEST, 
+                                    "El nombre del sector ya se encuentra registrado por otro sector"
+                            );
+                        }
+                    });
+            sectorExistente.setNombre(nombreLimpio);
+        }
+
+        return sectorRepo.save(sectorExistente);
+    }
 }

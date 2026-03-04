@@ -76,7 +76,7 @@ public class AprobacionController {
          Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.DESC, "fecha")
+                Sort.by(Sort.Direction.ASC, "solicitud.fechaAdmisible")
         );
 
         try {
@@ -148,7 +148,7 @@ public class AprobacionController {
          Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.DESC, "fecha")
+               Sort.by(Sort.Direction.ASC, "presupuesto.aprobacionSolicitud.solicitud.fechaAdmisible")
         );
 
         try {
@@ -203,7 +203,7 @@ public class AprobacionController {
 
     private Usuario obtenerGerenteAutenticado() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return usuarioRepo.findByUsernameAndActivoTrue(username)
+        return usuarioRepo.findByUsernameIgnoreCaseAndActivoTrue(username)
                 .orElseThrow(() -> new RuntimeException("Usuario gerente no encontrado"));
     }
     
@@ -222,7 +222,7 @@ public class AprobacionController {
        Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.DESC, "fecha")
+                Sort.by(Sort.Direction.ASC, "presupuesto.aprobacionSolicitud.solicitud.fechaAdmisible")
         );
         String estado = "APROBADA";
 

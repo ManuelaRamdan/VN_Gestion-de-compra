@@ -13,4 +13,6 @@ public interface ProveedorRepo extends JpaRepository<Proveedor, Integer> {
         Page<Proveedor> findByActivoTrue(Pageable pageable);
 
     Optional<Proveedor> findByIdAndActivoTrue(Integer id);
+    
+    Optional<Proveedor> findByNombreEmpresaIgnoreCaseAndActivoTrue(String nombreEmpresa);
 }

@@ -70,10 +70,12 @@ export default function SeleccionEvaluacion({ onSelect }) {
             </div>
 
             <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 text-slate-500 font-medium uppercase text-xs">
                         <tr>
                             <th className="px-6 py-4">ID Eval.</th>
+                            {/* --- NUEVA COLUMNA --- */}
+                            <th className="px-6 py-4">Fecha Entrega</th>
                             <th className="px-6 py-4">Producto (Compra)</th>
                             <th className="px-6 py-4">Estado Entrega</th>
                             <th className="px-6 py-4 text-right">Acción</th>
@@ -83,6 +85,14 @@ export default function SeleccionEvaluacion({ onSelect }) {
                         {filteredData.map((item) => (
                             <tr key={item.idEvaluacionEntrega} className="hover:bg-slate-50 transition-colors">
                                 <td className="px-6 py-4 font-bold text-slate-700">#{item.idEvaluacionEntrega}</td>
+                                
+                                {/* --- NUEVA CELDA DE DATOS --- */}
+                                <td className="px-6 py-4 text-slate-500 font-medium whitespace-nowrap">
+                                    {item.fechaEntrega 
+                                        ? new Date(item.fechaEntrega + 'T00:00:00').toLocaleDateString() 
+                                        : 'Sin fecha'}
+                                </td>
+
                                 <td className="px-6 py-4">
                                     <div className="font-bold text-slate-800">
                                         {item.compra?.aprobacionPresupuesto?.presupuesto?.aprobacionSolicitud?.solicitud?.producto?.nombre}
@@ -91,11 +101,11 @@ export default function SeleccionEvaluacion({ onSelect }) {
                                 </td>
                                 <td className="px-6 py-4">
                                     {item.cumpleCondiciones ? (
-                                        <span className="flex items-center gap-1 text-emerald-600 font-medium text-xs bg-emerald-50 px-2 py-1 rounded w-max">
+                                        <span className="flex items-center gap-1 text-emerald-600 font-medium text-xs bg-emerald-50 px-2 py-1 rounded w-max border border-emerald-100">
                                             <CheckCircle size={14}/> Conforme
                                         </span>
                                     ) : (
-                                        <span className="flex items-center gap-1 text-red-600 font-medium text-xs bg-red-50 px-2 py-1 rounded w-max">
+                                        <span className="flex items-center gap-1 text-red-600 font-medium text-xs bg-red-50 px-2 py-1 rounded w-max border border-red-100">
                                             <AlertTriangle size={14}/> No Conforme
                                         </span>
                                     )}

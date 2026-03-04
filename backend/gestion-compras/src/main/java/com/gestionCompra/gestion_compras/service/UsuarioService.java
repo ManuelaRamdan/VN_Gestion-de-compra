@@ -47,7 +47,7 @@ public class UsuarioService extends ABMLogicoGenerico<Usuario, Integer> implemen
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usuarioRepository.findByUsernameAndActivoTrue(username)
+        return usuarioRepository.findByUsernameIgnoreCaseAndActivoTrue(username)
                 .map(u -> new UsuarioDetalles(
                 u.getUsername(),
                 u.getPassword(),
@@ -60,15 +60,17 @@ public class UsuarioService extends ABMLogicoGenerico<Usuario, Integer> implemen
 
     @Transactional
     public Usuario registrarNuevoUsuario(RegistroRequest datos) {
+        
+            String nombreLimpio = datos.username().trim();
 
-        if (usuarioRepository.findByUsernameAndActivoTrue(datos.username()).isPresent()) {
+        if (usuarioRepository.findByUsernameIgnoreCaseAndActivoTrue(nombreLimpio).isPresent()) {
             throw new ManejoErrores(
                     HttpStatus.BAD_REQUEST,
                     "El nombre de usuario ya está en uso"
             );
         }
         Usuario nuevoUsuario = new Usuario();
-        nuevoUsuario.setUsername(datos.username());
+        nuevoUsuario.setUsername(nombreLimpio);
         nuevoUsuario.setPassword(passwordEncoder.encode(datos.password()));
 
         Sector sector = sectorRepo.findById(datos.idSector())
@@ -85,13 +87,15 @@ public class UsuarioService extends ABMLogicoGenerico<Usuario, Integer> implemen
         Usuario usuario = findById(id);
 
         if (datos.username() != null) {
-            usuarioRepository.findByUsernameAndActivoTrue(datos.username())
+            
+            String nombreLimpio = datos.username().trim();
+            usuarioRepository.findByUsernameIgnoreCaseAndActivoTrue(nombreLimpio)
                     .ifPresent(u -> {
                         if (!u.getIdUsuario().equals(id)) {
                             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de usuario ya está en uso");
                         }
                     });
-            usuario.setUsername(datos.username());
+           usuario.setUsername(nombreLimpio);
         }
 
         if (datos.password() != null && !datos.password().isBlank()) {

@@ -5,6 +5,7 @@
 package com.gestionCompra.gestion_compras.repository;
 
 import com.gestionCompra.gestion_compras.domain.entidades.NivelPrioridad;
+import com.gestionCompra.gestion_compras.domain.entidades.Producto;
 import com.gestionCompra.gestion_compras.domain.entidades.Sector;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -18,4 +19,6 @@ public interface NivelPrioridadRepo extends JpaRepository<NivelPrioridad, Intege
         Page<NivelPrioridad> findByActivoTrue(Pageable pageable);
 
     Optional<NivelPrioridad> findByIdAndActivoTrue(Integer id);
+    
+     Optional<NivelPrioridad> findByCategoriaIgnoreCaseAndActivoTrue(String nombre);
 }

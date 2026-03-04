@@ -32,7 +32,18 @@ export default function PanelAprobacionesPresu() {
         { id: 'PENDIENTE', label: 'Pendientes', icon: Clock, color: 'text-orange-500' },
         { id: 'EVALUADA', label: 'Evaluadas', icon: Archive, color: 'text-indigo-500' }
     ];
-
+    const getPriorityBadge = (prioridadObj) => {
+        const cat = prioridadObj?.categoria || "";
+        const catLower = cat.toLowerCase();
+        
+        if (catLower.includes('inmediata') || catLower.includes('alta')) {
+            return <span className="px-2 py-1 text-[10px] font-bold text-red-600 bg-red-50 rounded border border-red-100 uppercase">{cat || 'ALTA'}</span>;
+        }
+        if (catLower.includes('media')) {
+            return <span className="px-2 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded border border-blue-100 uppercase">{cat || 'MEDIA'}</span>;
+        }
+        return <span className="px-2 py-1 text-[10px] font-bold text-gray-600 bg-gray-100 rounded border border-gray-200 uppercase">{cat || 'BAJA'}</span>;
+    };
     const cargarDatos = async (numeroPagina = 0, esCargaAdicional = false) => {
         if (esCargaAdicional) {
             setIsLoadingMore(true);
@@ -209,6 +220,10 @@ export default function PanelAprobacionesPresu() {
                                     <th className="px-6 py-4">APROB SOLICITUD</th>
                                     <th className="px-6 py-4">PRODUCTO</th>
                                     <th className="px-6 py-4">CANTIDAD</th>
+                                    {/* --- NUEVAS COLUMNAS --- */}
+                                    <th className="px-6 py-4">PRIORIDAD</th>
+                                    <th className="px-6 py-4">LÍMITE</th>
+                                    {/* ----------------------- */}
                                     <th className="px-6 py-4">PRESUPUESTOS</th>
                                     <th className="px-6 py-4 text-right">ACCIÓN</th>
                                 </tr>
@@ -231,6 +246,18 @@ export default function PanelAprobacionesPresu() {
                                             <td className="px-6 py-4 text-sm text-slate-600">
                                                 {grupo.solicitud.cantidad} un.
                                             </td>
+
+                                            {/* --- NUEVAS CELDAS DE DATOS --- */}
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {getPriorityBadge(grupo.solicitud?.nivelPrioridad)}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm font-medium text-slate-700 whitespace-nowrap">
+                                                {grupo.solicitud?.fechaAdmisible 
+                                                    ? new Date(grupo.solicitud.fechaAdmisible).toLocaleDateString() 
+                                                    : 'No especificada'}
+                                            </td>
+                                            {/* ------------------------------ */}
+
                                             <td className="px-6 py-4">
                                                 <span className="bg-blue-50 text-blue-600 px-2 py-1.5 rounded font-bold text-[10px] flex items-center gap-1 w-max border border-blue-100">
                                                     <Package size={12} /> {grupo.presupuestosAsociados.length} OPCIONES
@@ -248,7 +275,8 @@ export default function PanelAprobacionesPresu() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" className="text-center py-10 text-gray-400 text-sm">
+                                        {/* Aumentamos el colSpan a 7 */}
+                                        <td colSpan="7" className="text-center py-10 text-gray-400 text-sm">
                                             No se encontraron presupuestos {activeTab.toLowerCase()}s.
                                         </td>
                                     </tr>

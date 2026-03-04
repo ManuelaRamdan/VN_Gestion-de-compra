@@ -113,7 +113,7 @@ public class CompraController {
             compra.setAprobacionPresupuesto(as);
 
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            Usuario usuarioCarga = usuarioRepo.findByUsernameAndActivoTrue(username)
+            Usuario usuarioCarga = usuarioRepo.findByUsernameIgnoreCaseAndActivoTrue(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
             compra.setUsuario(usuarioCarga);
 
@@ -202,7 +202,7 @@ public class CompraController {
         Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.DESC, "idCompra")
+                Sort.by(Sort.Direction.DESC, "fechaRecepcion")
         );
         return ResponseEntity.ok(compraService.listarTodo(pageable));
     }

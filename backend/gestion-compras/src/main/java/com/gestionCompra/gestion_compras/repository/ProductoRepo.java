@@ -17,4 +17,6 @@ public interface ProductoRepo extends JpaRepository<Producto, Integer> {
     Page<Producto> findByActivoTrue(Pageable pageable);
 
     Optional<Producto> findByIdAndActivoTrue(Integer id);
+    
+    Optional<Producto> findByNombreIgnoreCaseAndActivoTrue(String nombre);
 }

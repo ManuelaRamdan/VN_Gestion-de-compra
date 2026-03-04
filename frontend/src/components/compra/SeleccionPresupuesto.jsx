@@ -16,7 +16,18 @@ export default function SeleccionPresupuesto({ onSelect }) {
     useEffect(() => {
         cargarDatos(0);
     }, []);
-
+    const getPriorityBadge = (prioridadObj) => {
+        const cat = prioridadObj?.categoria || "";
+        const catLower = cat.toLowerCase();
+        
+        if (catLower.includes('inmediata') || catLower.includes('alta')) {
+            return <span className="px-2 py-1 text-[10px] font-bold text-red-600 bg-red-50 rounded border border-red-100 uppercase">{cat || 'ALTA'}</span>;
+        }
+        if (catLower.includes('media')) {
+            return <span className="px-2 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded border border-blue-100 uppercase">{cat || 'MEDIA'}</span>;
+        }
+        return <span className="px-2 py-1 text-[10px] font-bold text-gray-600 bg-gray-100 rounded border border-gray-200 uppercase">{cat || 'BAJA'}</span>;
+    };
     const cargarDatos = async (pageToLoad = 0) => {
         try {
             if (pageToLoad === 0) {
@@ -109,45 +120,67 @@ export default function SeleccionPresupuesto({ onSelect }) {
 
             {/* --- TABLA --- */}
             <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 text-slate-500 font-medium uppercase text-xs">
                         <tr>
                             <th className="px-6 py-4">ID Aprob.</th>
                             <th className="px-6 py-4">Proveedor</th>
                             <th className="px-6 py-4">Producto Solicitado</th>
+                            {/* --- NUEVAS COLUMNAS --- */}
+                            <th className="px-6 py-4">Prioridad</th>
+                            <th className="px-6 py-4">Límite</th>
+                            {/* ----------------------- */}
                             <th className="px-6 py-4">Aprobado Por</th>
                             <th className="px-6 py-4 text-right">Acción</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                         {filteredData.length > 0 ? (
-                            filteredData.map((item) => (
-                                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                                    <td className="px-6 py-4 font-bold text-slate-700">#{item.id}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="font-bold text-slate-800">{item.presupuesto?.proveedor?.nombreEmpresa}</div>
-                                        <div className="text-xs text-gray-400">{item.presupuesto?.proveedor?.mail}</div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="font-medium text-slate-800">{item.presupuesto?.aprobacionSolicitud?.solicitud?.producto?.nombre}</div>
-                                        <div className="text-[11px] text-gray-400">{item.presupuesto?.aprobacionSolicitud?.solicitud?.cantidad} unidades</div>
-                                    </td>
-                                    <td className="px-6 py-4 text-slate-500 font-medium">
-                                        {item.usuario?.username}
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button
-                                            onClick={() => onSelect(item)}
-                                            className="text-emerald-700 font-bold hover:underline flex items-center justify-end gap-1 ml-auto"
-                                        >
-                                            Iniciar Compra <ChevronRight size={16} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
+                            filteredData.map((item) => {
+                                // Para hacer el código más limpio, guardamos la solicitud en una variable
+                                const solicitud = item.presupuesto?.aprobacionSolicitud?.solicitud;
+
+                                return (
+                                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-6 py-4 font-bold text-slate-700">#{item.id}</td>
+                                        <td className="px-6 py-4">
+                                            <div className="font-bold text-slate-800">{item.presupuesto?.proveedor?.nombreEmpresa}</div>
+                                            <div className="text-xs text-gray-400">{item.presupuesto?.proveedor?.mail}</div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="font-medium text-slate-800">{solicitud?.producto?.nombre}</div>
+                                            <div className="text-[11px] text-gray-400">{solicitud?.cantidad} unidades</div>
+                                        </td>
+
+                                        {/* --- NUEVAS CELDAS DE DATOS --- */}
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {getPriorityBadge(solicitud?.nivelPrioridad)}
+                                        </td>
+                                        <td className="px-6 py-4 text-slate-500 font-medium whitespace-nowrap">
+                                            {solicitud?.fechaAdmisible 
+                                                ? new Date(solicitud.fechaAdmisible).toLocaleDateString() 
+                                                : 'No especificada'}
+                                        </td>
+                                        {/* ------------------------------ */}
+
+                                        <td className="px-6 py-4 text-slate-500 font-medium">
+                                            {item.usuario?.username}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button
+                                                onClick={() => onSelect(item)}
+                                                className="text-emerald-700 font-bold hover:underline flex items-center justify-end gap-1 ml-auto"
+                                            >
+                                                Iniciar Compra <ChevronRight size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         ) : (
                             <tr>
-                                <td colSpan="5" className="px-6 py-10 text-center text-gray-400">
+                                {/* Ajustamos colSpan a 7 */}
+                                <td colSpan="7" className="px-6 py-10 text-center text-gray-400">
                                     No se encontraron resultados para "{searchTerm}"
                                 </td>
                             </tr>

@@ -27,6 +27,21 @@ export default function PanelAprobacionesSoli() {
         { id: 'RECHAZADA', label: 'Rechazadas', icon: XCircle, color: 'text-red-500' }
     ];
 
+    const getPriorityBadge = (prioridadObj) => {
+        const cat = prioridadObj?.categoria || "";
+        const catLower = cat.toLowerCase();
+        
+        // Asignamos colores según el nombre (ajusta las palabras según tu base de datos)
+        if (catLower.includes('inmediata') || catLower.includes('alta')) {
+            return <span className="px-2 py-1 text-[10px] font-bold text-red-600 bg-red-50 rounded border border-red-100 uppercase">{cat || 'ALTA'}</span>;
+        }
+        if (catLower.includes('media')) {
+            return <span className="px-2 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded border border-blue-100 uppercase">{cat || 'MEDIA'}</span>;
+        }
+        // Por defecto (baja, normal, etc.)
+        return <span className="px-2 py-1 text-[10px] font-bold text-gray-600 bg-gray-100 rounded border border-gray-200 uppercase">{cat || 'BAJA'}</span>;
+    };
+
     // Modificamos cargarDatos para aceptar la página y saber si es una carga inicial o un "Ver más"
     const cargarDatos = async (numeroPagina = 0, esCargaAdicional = false) => {
         if (esCargaAdicional) {
@@ -155,6 +170,10 @@ export default function PanelAprobacionesSoli() {
                                     <th className="px-6 py-4">ID SOLICITUD</th>
                                     <th className="px-6 py-4">PRODUCTO</th>
                                     <th className="px-6 py-4">CANTIDAD</th>
+                                    {/* --- NUEVAS COLUMNAS --- */}
+                                    <th className="px-6 py-4">PRIORIDAD</th>
+                                    <th className="px-6 py-4">FECHA ADMISIBLE</th>
+                                    {/* ----------------------- */}
                                     <th className="px-6 py-4">SOLICITANTE</th>
                                     <th className="px-6 py-4 text-right">ACCIÓN</th>
                                 </tr>
@@ -175,6 +194,19 @@ export default function PanelAprobacionesSoli() {
                                             <td className="px-6 py-4 text-sm text-slate-600">
                                                 {item.solicitud?.cantidad} un.
                                             </td>
+                                            
+                                           {/* --- CELDAS DE PRIORIDAD Y FECHA --- */}
+                                           <td className="px-6 py-4 whitespace-nowrap">
+                                                {/* Usamos el nuevo helper aquí */}
+                                                {getPriorityBadge(item.solicitud?.nivelPrioridad)}
+                                            </td>
+                                            
+                                            <td className="px-6 py-4 text-sm font-medium text-slate-700 whitespace-nowrap">
+                                                {item.solicitud?.fechaAdmisible 
+                                                    ? new Date(item.solicitud.fechaAdmisible).toLocaleDateString() 
+                                                    : 'No especificada'}
+                                            </td>
+                                            {/* ---------------------------------- */}
                                             <td className="px-6 py-4 text-sm text-slate-600">
                                                 {item.solicitud?.usuario?.username}
                                             </td>
@@ -190,7 +222,8 @@ export default function PanelAprobacionesSoli() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" className="text-center py-10 text-gray-400 text-sm">
+                                        {/* Ajustamos el colSpan a 7 por las dos nuevas columnas */}
+                                        <td colSpan="7" className="text-center py-10 text-gray-400 text-sm">
                                             No se encontraron solicitudes {activeTab.toLowerCase()}s.
                                         </td>
                                     </tr>

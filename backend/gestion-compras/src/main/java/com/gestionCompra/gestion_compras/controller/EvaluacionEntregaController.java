@@ -99,7 +99,11 @@ public class EvaluacionEntregaController {
     // ... (El resto de tus métodos GET se mantienen igual) ...
     @GetMapping("/")
     public ResponseEntity<?> listarTodo(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(
+                page, 
+                size, 
+                Sort.by(Sort.Direction.ASC, "fechaEntrega") 
+        );
         return ResponseEntity.ok(service.listarAbiertas(pageable));
     }
     
@@ -112,9 +116,9 @@ public class EvaluacionEntregaController {
     @GetMapping("/sinCierre")
     public ResponseEntity<?> ListarComprasSinEvalEntrega(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
          Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "idEvaluacionEntrega")
+                page, 
+                size, 
+                Sort.by(Sort.Direction.ASC, "fechaEntrega") 
         );
         return ResponseEntity.ok(service.listarEvalSinCierre(pageable));
     }

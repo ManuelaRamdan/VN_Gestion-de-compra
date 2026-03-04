@@ -129,7 +129,7 @@ export default function ProveedorPage() {
             cargarProveedores(0, false);
             setTimeout(() => setSuccess(""), 3500);
         } catch (err) {
-            setModalError(err.response?.data?.error || "Error al guardar el proveedor.");
+            setModalError(err.response?.data?.message || err.response?.data?.error || "Error al guardar el proveedor.");
         }
     };
 

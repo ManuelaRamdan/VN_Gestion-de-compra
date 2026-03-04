@@ -34,7 +34,7 @@ public class ProductoController {
 
     @PostMapping("/")
     public ResponseEntity<?> crearProducto(@RequestBody Producto producto) {
-        Producto nuevo = productoRepo.save(producto);
+        Producto nuevo = productoService.crearProducto(producto);
         return ResponseEntity.ok(Map.of(
                 "message", "Producto creado exitosamente",
                 "producto", nuevo
@@ -60,7 +60,7 @@ public class ProductoController {
     @PutMapping("/{id_producto}")
     public ResponseEntity<?> modificar(@PathVariable Integer id_producto, @RequestBody Producto producto) {
         // El método se llama modificar() en el genérico
-        Producto actualizado = productoService.modificar(id_producto, producto);
+        Producto actualizado = productoService.modificarProducto(id_producto, producto);
         return ResponseEntity.ok(Map.of(
                 "message", "Producto actualizado correctamente",
                 "producto", actualizado

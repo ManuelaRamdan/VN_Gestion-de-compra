@@ -1,11 +1,9 @@
 package com.gestionCompra.gestion_compras.service;
 
 import com.gestionCompra.gestion_compras.domain.entidades.NivelPrioridad;
-import com.gestionCompra.gestion_compras.domain.entidades.Producto;
 import com.gestionCompra.gestion_compras.dto.ManejoErrores;
 import com.gestionCompra.gestion_compras.dto.Paginacion;
 import com.gestionCompra.gestion_compras.repository.NivelPrioridadRepo;
-import com.gestionCompra.gestion_compras.util.ABMGenerico;
 import com.gestionCompra.gestion_compras.util.ABMLogicoGenerico;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -35,23 +33,67 @@ public class NivelPrioridadService extends ABMLogicoGenerico<NivelPrioridad, Int
         return nivelPrioridadRepo.findByIdAndActivoTrue(id)
                 .orElseThrow(() -> new ManejoErrores(
                     HttpStatus.NOT_FOUND, 
-                    "Sector no encontrado o se encuentra inactivo"
+                    "Nivel de prioridad no encontrado o se encuentra inactivo" // Corregido: decía Sector
                 ));
     }
 
-    // 2. Sobrescribir el listado general
     @Override
     public Paginacion<NivelPrioridad> findAll(Pageable pageable) {
         return new Paginacion<>(nivelPrioridadRepo.findByActivoTrue(pageable));
     }
 
-    // 3. Modificar la lógica de baja
     @Override
     @Transactional
     public void bajaLogica(Integer id) {
-        // Al usar el findById de arriba, si ya está inactivo lanzará el 404/Error
-        NivelPrioridad producto = this.findById(id); 
-        producto.setActivo(false);
-        nivelPrioridadRepo.save(producto);
+        NivelPrioridad nivel = this.findById(id); // Corregido: la variable se llamaba producto
+        nivel.setActivo(false);
+        nivelPrioridadRepo.save(nivel);
+    }
+
+    // --- NUEVA LÓGICA DE VALIDACIÓN ---
+
+    @Transactional
+    public NivelPrioridad crearNivelPrioridad(NivelPrioridad nuevoNivel) {
+        
+        
+         String nombreLimpio = nuevoNivel.getCategoria().trim();
+        nuevoNivel.setCategoria(nombreLimpio);
+        if (nivelPrioridadRepo.findByCategoriaIgnoreCaseAndActivoTrue(nombreLimpio).isPresent()) {
+            throw new ManejoErrores(
+                    HttpStatus.BAD_REQUEST, 
+                    "La categoría del nivel de prioridad ya se encuentra registrada"
+            );
+        }
+        
+        nuevoNivel.setActivo(true);
+        return nivelPrioridadRepo.save(nuevoNivel);
+    }
+
+    @Transactional
+    public NivelPrioridad modificarNivelPrioridad(Integer id, NivelPrioridad datosNuevos) {
+        NivelPrioridad nivelExistente = this.findById(id);
+
+        // 1. Validar y actualizar la categoría
+        if (datosNuevos.getCategoria() != null && !datosNuevos.getCategoria().isBlank()) {
+            
+            String nombreLimpio = datosNuevos.getCategoria().trim();
+            nivelPrioridadRepo.findByCategoriaIgnoreCaseAndActivoTrue(nombreLimpio)
+                    .ifPresent(n -> {
+                        if (!n.getIdNivelPrioridad().equals(id)) {
+                            throw new ManejoErrores(
+                                    HttpStatus.BAD_REQUEST, 
+                                    "Esta categoría ya se encuentra registrada por otro nivel de prioridad"
+                            );
+                        }
+                    });
+            nivelExistente.setCategoria(nombreLimpio);
+        }
+
+        // 2. Actualizar los días si vienen en el request
+        if (datosNuevos.getDias() != null) {
+            nivelExistente.setDias(datosNuevos.getDias());
+        }
+
+        return nivelPrioridadRepo.save(nivelExistente);
     }
 }

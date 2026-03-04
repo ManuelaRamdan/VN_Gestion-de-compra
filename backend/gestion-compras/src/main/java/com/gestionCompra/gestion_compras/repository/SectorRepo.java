@@ -19,4 +19,6 @@ public interface SectorRepo extends JpaRepository<Sector, Integer> {
     Page<Sector> findByActivoTrue(Pageable pageable);
 
     Optional<Sector> findByIdAndActivoTrue(Integer id);
+    
+    Optional<Sector> findByNombreIgnoreCaseAndActivoTrue(String nombre);
 }

@@ -17,6 +17,19 @@ export default function SeleccionSolicitud({ onSelect }) {
         cargarDatos(0);
     }, []);
 
+    const getPriorityBadge = (prioridadObj) => {
+        const cat = prioridadObj?.categoria || "";
+        const catLower = cat.toLowerCase();
+        
+        if (catLower.includes('inmediata') || catLower.includes('alta')) {
+            return <span className="px-2 py-1 text-[10px] font-bold text-red-600 bg-red-50 rounded border border-red-100 uppercase">{cat || 'ALTA'}</span>;
+        }
+        if (catLower.includes('media')) {
+            return <span className="px-2 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded border border-blue-100 uppercase">{cat || 'MEDIA'}</span>;
+        }
+        return <span className="px-2 py-1 text-[10px] font-bold text-gray-600 bg-gray-100 rounded border border-gray-200 uppercase">{cat || 'BAJA'}</span>;
+    };
+
     const cargarDatos = async (pageToLoad = 0) => {
         try {
             if (pageToLoad === 0) {
@@ -115,8 +128,11 @@ export default function SeleccionSolicitud({ onSelect }) {
                         <thead className="bg-slate-50 text-slate-500 font-medium uppercase text-xs">
                             <tr>
                                 <th className="px-6 py-4">ID Aprob.</th>
-                                <th className="px-6 py-4">Fecha Aprob.</th>
                                 <th className="px-6 py-4">Producto</th>
+                                {/* --- NUEVAS COLUMNAS --- */}
+                                <th className="px-6 py-4">Prioridad</th>
+                                <th className="px-6 py-4">Límite</th>
+                                {/* ----------------------- */}
                                 <th className="px-6 py-4">Solicitante</th>
                                 <th className="px-6 py-4 text-right">Acción</th>
                             </tr>
@@ -125,13 +141,22 @@ export default function SeleccionSolicitud({ onSelect }) {
                             {filteredData.map((item) => (
                                 <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-6 py-4 font-bold text-slate-700">#{item.id}</td>
-                                    <td className="px-6 py-4 text-slate-500">
-                                        {new Date(item.fecha).toLocaleDateString()}
-                                    </td>
                                     <td className="px-6 py-4">
                                         <div className="font-medium text-slate-800">{item.solicitud?.producto?.nombre}</div>
                                         <div className="text-xs text-gray-400">{item.solicitud?.cantidad} unidades</div>
                                     </td>
+                                    
+                                    {/* --- NUEVAS CELDAS DE DATOS --- */}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        {getPriorityBadge(item.solicitud?.nivelPrioridad)}
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-500 whitespace-nowrap font-medium">
+                                        {item.solicitud?.fechaAdmisible 
+                                            ? new Date(item.solicitud.fechaAdmisible).toLocaleDateString() 
+                                            : 'No especificada'}
+                                    </td>
+                                    {/* ------------------------------ */}
+
                                     <td className="px-6 py-4 text-slate-500">
                                         {item.solicitud?.usuario?.username}
                                     </td>

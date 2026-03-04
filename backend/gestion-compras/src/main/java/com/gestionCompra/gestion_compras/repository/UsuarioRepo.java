@@ -24,7 +24,7 @@ public interface UsuarioRepo extends JpaRepository<Usuario, Integer> {
     /*Optional -> en lugar de devolver null devuelve un contenedor si existe el usuario con el estado true,
                   el objeto se guarda en Optional, pero si no esta permite controlar los errores
      */
-    Optional<Usuario> findByUsernameAndActivoTrue(String username);
+    Optional<Usuario> findByUsernameIgnoreCaseAndActivoTrue(String username);
 
     Optional<Usuario> findByIdAndActivoTrue(Integer id);
 

@@ -70,7 +70,7 @@ public class EvaluacionProveedorController {
             }
 
             String username = authentication.getName();
-            Usuario usuario = usuarioRepo.findByUsernameAndActivoTrue(username)
+            Usuario usuario = usuarioRepo.findByUsernameIgnoreCaseAndActivoTrue(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             Integer idProv = ((Number) request.get("idProveedor")).intValue();
@@ -142,7 +142,7 @@ public class EvaluacionProveedorController {
         try {
 
             String username = authentication.getName();
-            Usuario usuario = usuarioRepo.findByUsernameAndActivoTrue(username)
+            Usuario usuario = usuarioRepo.findByUsernameIgnoreCaseAndActivoTrue(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             datos.setFecha(LocalDateTime.now());

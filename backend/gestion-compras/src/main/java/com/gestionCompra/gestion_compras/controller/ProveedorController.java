@@ -27,7 +27,7 @@ public class ProveedorController {
     // CREAR PROVEEDOR
     @PostMapping("/crear")
     public ResponseEntity<?> crearProveedor(@RequestBody Proveedor proveedor) {
-        Proveedor nuevo = proveedorRepo.save(proveedor);
+        Proveedor nuevo = proveedorService.crearProveedor(proveedor);
         return ResponseEntity.ok(Map.of(
                 "mensaje", "Proveedor registrado exitosamente",
                 "id", nuevo.getIdProveedor()
@@ -53,7 +53,7 @@ public class ProveedorController {
 
     @PutMapping("/{id_proveedor}")
     public ResponseEntity<?> modificar(@PathVariable Integer id_proveedor, @RequestBody Proveedor proveedor) {
-        Proveedor actualizado = proveedorService.modificar(id_proveedor, proveedor);
+        Proveedor actualizado = proveedorService.modificarProveedor(id_proveedor, proveedor);
         return ResponseEntity.ok(Map.of(
                 "message", "Proveedor actualizado correctamente",
                 "proveedor", actualizado

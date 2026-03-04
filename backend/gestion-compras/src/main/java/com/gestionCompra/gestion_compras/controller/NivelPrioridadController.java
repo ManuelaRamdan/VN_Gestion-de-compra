@@ -24,7 +24,7 @@ public class NivelPrioridadController {
 
     @PostMapping("/")
     public ResponseEntity<NivelPrioridad> crear(@RequestBody NivelPrioridad prioridad) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(prioridadService.crear(prioridad));
+        return ResponseEntity.status(HttpStatus.CREATED).body(prioridadService.crearNivelPrioridad(prioridad));
     }
 
     @GetMapping("/listar")
@@ -44,7 +44,7 @@ public class NivelPrioridadController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> modificar(@PathVariable Integer id, @RequestBody NivelPrioridad prioridad) {
-        NivelPrioridad actualizado = prioridadService.modificar(id, prioridad);
+        NivelPrioridad actualizado = prioridadService.modificarNivelPrioridad(id, prioridad);
         return ResponseEntity.ok(Map.of(
             "message", "Nivel de prioridad actualizado correctamente",
             "data", actualizado

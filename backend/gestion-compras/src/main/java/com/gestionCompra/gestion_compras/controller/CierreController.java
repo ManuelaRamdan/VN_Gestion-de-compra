@@ -48,7 +48,7 @@ public class CierreController {
         Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.DESC, "evaluacionEntrega.idEvaluacionEntrega")
+                Sort.by(Sort.Direction.ASC, "evaluacionEntrega.fechaEntrega") 
         );
         return ResponseEntity.ok(service.findAll(pageable));
     }
@@ -69,7 +69,7 @@ public class CierreController {
             }
 
             String username = authentication.getName();
-            Usuario usuario = usuarioRepo.findByUsernameAndActivoTrue(username)
+            Usuario usuario = usuarioRepo.findByUsernameIgnoreCaseAndActivoTrue(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
 

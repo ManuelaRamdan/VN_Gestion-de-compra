@@ -111,7 +111,7 @@ public class PresupuestoController {
             presupuesto.setProveedor(proveedorService.findById(idProveedor));
 
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            Usuario usuarioCarga = usuarioRepo.findByUsernameAndActivoTrue(username)
+            Usuario usuarioCarga = usuarioRepo.findByUsernameIgnoreCaseAndActivoTrue(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
             presupuesto.setUsuario(usuarioCarga);
 
@@ -142,7 +142,7 @@ public class PresupuestoController {
     ) {
         try {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            Usuario usuarioModificador = usuarioRepo.findByUsernameAndActivoTrue(username)
+            Usuario usuarioModificador = usuarioRepo.findByUsernameIgnoreCaseAndActivoTrue(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             Map<String, Object> camposActualizar = new HashMap<>();

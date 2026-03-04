@@ -64,7 +64,7 @@ export default function CrearUsuario() {
             }, 2000);
 
         } catch (err) {
-            setError(err.response?.data?.error || "Hubo un error al registrar el usuario.");
+            setError(err.response?.data?.message ||err.response?.data?.error || "Hubo un error al registrar el usuario.");
         }
     };
 

@@ -108,7 +108,7 @@ export default function ProductoPage() {
             cargarProductos(0, false); 
             setTimeout(() => setSuccess(""), 3500);
         } catch (err) {
-            setModalError(err.response?.data?.error || "Error al guardar el producto.");
+            setModalError(err.response?.data?.message || err.response?.data?.error || "Error al guardar el producto.");
         }
     };
 

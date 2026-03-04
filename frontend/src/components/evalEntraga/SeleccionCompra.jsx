@@ -109,12 +109,14 @@ export default function SeleccionCompra({ onSelect }) {
 
             {/* --- TABLA --- */}
             <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 text-slate-500 font-medium uppercase text-xs">
                         <tr>
                             <th className="px-6 py-4">Compra</th>
                             <th className="px-6 py-4">Proveedor</th>
                             <th className="px-6 py-4">Producto</th>
+                            {/* --- NUEVA COLUMNA --- */}
+                            <th className="px-6 py-4">Fecha Recepción</th>
                             <th className="px-6 py-4">Registrada por</th>
                             <th className="px-6 py-4 text-right">Acción</th>
                         </tr>
@@ -146,6 +148,15 @@ export default function SeleccionCompra({ onSelect }) {
                                         </div>
                                     </td>
 
+                                    {/* --- NUEVA CELDA DE DATOS --- */}
+                                    <td className="px-6 py-4">
+                                        <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold border border-blue-100">
+                                            {item.fechaRecepcion 
+                                                ? new Date(item.fechaRecepcion + 'T00:00:00').toLocaleDateString() 
+                                                : 'Pendiente'}
+                                        </span>
+                                    </td>
+
                                     <td className="px-6 py-4 text-slate-500 font-medium">
                                         {item.usuario?.username}
                                     </td>
@@ -163,7 +174,8 @@ export default function SeleccionCompra({ onSelect }) {
                         ) : (
                             // Estado vacío de búsqueda
                             <tr>
-                                <td colSpan="5" className="px-6 py-10 text-center text-gray-400">
+                                {/* Ajustamos el colSpan a 6 por la nueva columna */}
+                                <td colSpan="6" className="px-6 py-10 text-center text-gray-400">
                                     No se encontraron resultados para "{searchTerm}"
                                 </td>
                             </tr>

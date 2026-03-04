@@ -23,7 +23,7 @@ public class SectorController {
 
     @PostMapping("/")
     public ResponseEntity<Sector> crear(@RequestBody Sector sector) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(sectorService.crear(sector));
+        return ResponseEntity.status(HttpStatus.CREATED).body(sectorService.crearSector(sector));
     }
 
     @GetMapping("/listar")
@@ -43,7 +43,7 @@ public class SectorController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> modificar(@PathVariable Integer id, @RequestBody Sector sector) {
-        Sector actualizado = sectorService.modificar(id, sector);
+        Sector actualizado = sectorService.modificarSector(id, sector);
         return ResponseEntity.ok(Map.of(
             "message", "Sector actualizado correctamente",
             "data", actualizado
