@@ -2,14 +2,17 @@
 -- PostgreSQL database dump
 --
 
-\restrict 1D05cEQKCFqwcX31DME1PnLo7rNejPXG6BAdAWGoNgOBQssDuvp5ccH5Vv9sZng
+\restrict PfZdMmDxLWYjeKAQ2J7zCLXXwRvltqakBKpxRF7xXydHMoYblzlN7ZmPU5nOveG
 
 -- Dumped from database version 18.1
 -- Dumped by pg_dump version 18.1
 
--- Started on 2026-02-20 17:06:08
+-- Started on 2026-02-26 15:19:13
 
+SET statement_timeout = 0;
 SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -133,7 +136,8 @@ CREATE TABLE public.aprobacion_solicitud (
     estado character varying(20) DEFAULT 'PENDIENTE'::character varying,
     fecha timestamp(6) without time zone,
     id_solicitud integer,
-    id_usuario integer
+    id_usuario integer,
+    comentarios text
 );
 
 
@@ -567,7 +571,8 @@ CREATE TABLE public.solicitud (
     id_nivel_prioridad integer,
     id_producto integer,
     id_usuario integer,
-    cerrado boolean DEFAULT false
+    cerrado boolean DEFAULT false,
+    comentarios text
 );
 
 
@@ -715,6 +720,10 @@ COPY public.aprobacion_presupuesto (id_aprobacion_presu, id_presupuesto, id_usua
 26	26	5	2026-02-20 14:45:29.985128	APROBADA
 27	27	5	2026-02-20 14:45:30.001129	RECHAZADA
 28	28	5	2026-02-20 14:45:30.002124	RECHAZADA
+29	29	5	2026-02-25 17:29:31.503318	APROBADA
+30	30	5	2026-02-25 18:05:36.997313	APROBADA
+31	31	\N	\N	PENDIENTE
+32	32	\N	\N	PENDIENTE
 \.
 
 
@@ -724,27 +733,30 @@ COPY public.aprobacion_presupuesto (id_aprobacion_presu, id_presupuesto, id_usua
 -- Data for Name: aprobacion_solicitud; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.aprobacion_solicitud (id_aprob_solicitud, estado, fecha, id_solicitud, id_usuario) FROM stdin;
-2	APROBADA	2025-12-22 15:21:33.539067	2	5
-1	APROBADA	2025-12-30 15:01:25.548925	1	5
-6	APROBADA	2026-01-16 21:48:26.328414	6	5
-7	APROBADA	2026-01-20 22:02:51.315412	7	5
-9	PENDIENTE	2026-02-01 21:51:56.263707	9	10
-11	PENDIENTE	2026-02-01 21:59:28.872628	11	10
-12	PENDIENTE	2026-02-02 21:49:50.175956	12	14
-15	PENDIENTE	2026-02-02 22:02:35.647431	15	14
-8	APROBADA	2026-02-03 12:44:52.346866	8	5
-16	APROBADA	2026-02-07 17:46:41.215222	16	5
-13	APROBADA	2026-02-07 20:47:29.110658	13	5
-14	APROBADA	2026-02-07 20:47:59.234361	14	5
-17	PENDIENTE	2026-02-10 19:47:45.907953	17	14
-18	PENDIENTE	2026-02-12 17:07:24.83549	18	14
-19	PENDIENTE	2026-02-12 21:32:48.248501	19	10
-3	APROBADA	2026-02-19 11:12:24.18669	3	5
-10	RECHAZADA	2026-02-19 11:12:40.255714	10	5
-4	RECHAZADA	2026-02-19 11:22:05.168948	4	5
-20	APROBADA	2026-02-20 11:20:00.036203	20	5
-5	APROBADA	2026-02-20 14:42:18.289696	5	5
+COPY public.aprobacion_solicitud (id_aprob_solicitud, estado, fecha, id_solicitud, id_usuario, comentarios) FROM stdin;
+2	APROBADA	2025-12-22 15:21:33.539067	2	5	\N
+1	APROBADA	2025-12-30 15:01:25.548925	1	5	\N
+6	APROBADA	2026-01-16 21:48:26.328414	6	5	\N
+7	APROBADA	2026-01-20 22:02:51.315412	7	5	\N
+11	PENDIENTE	2026-02-01 21:59:28.872628	11	10	\N
+12	PENDIENTE	2026-02-02 21:49:50.175956	12	14	\N
+15	PENDIENTE	2026-02-02 22:02:35.647431	15	14	\N
+8	APROBADA	2026-02-03 12:44:52.346866	8	5	\N
+16	APROBADA	2026-02-07 17:46:41.215222	16	5	\N
+13	APROBADA	2026-02-07 20:47:29.110658	13	5	\N
+14	APROBADA	2026-02-07 20:47:59.234361	14	5	\N
+3	APROBADA	2026-02-19 11:12:24.18669	3	5	\N
+10	RECHAZADA	2026-02-19 11:12:40.255714	10	5	\N
+4	RECHAZADA	2026-02-19 11:22:05.168948	4	5	\N
+20	APROBADA	2026-02-20 11:20:00.036203	20	5	\N
+5	APROBADA	2026-02-20 14:42:18.289696	5	5	\N
+22	APROBADA	2026-02-25 16:53:05.004914	22	5	gshdgajsdgjhgsdjgasdj
+23	APROBADA	2026-02-25 17:32:58.573634	23	5	\N
+21	APROBADA	2026-02-25 17:34:51.244515	21	5	gshdgajsdgjhgsdjgasdj
+19	RECHAZADA	2026-02-25 17:36:31.701005	19	5	\N
+9	APROBADA	2026-02-25 17:37:46.059343	9	5	comentarios 1
+18	RECHAZADA	2026-02-25 17:46:29.526823	18	5	no quiero
+17	APROBADA	2026-02-25 18:05:08.827134	17	5	
 \.
 
 
@@ -764,6 +776,8 @@ COPY public.cierre (id_cierre, id_eval_entrega, id_usuario, fecha_cierre, observ
 7	9	5	2026-02-19	sss todo ok
 8	10	5	2026-02-19	ooooooooooooooooooooooooooooo
 9	11	5	2026-02-20	ytyutuyy
+10	13	5	2026-02-25	
+11	14	5	2026-02-25	
 \.
 
 
@@ -786,6 +800,9 @@ COPY public.compra (id_compra, id_aprobacion_presu, id_usuario, fecha_solicitud,
 13	22	5	2026-02-20	2026-02-28	528bdaf6-3ccc-4c77-8457-34299af65f22_CompraJardin Con Enanitos (2).pdf
 14	21	5	2026-02-20	2026-02-21	\N
 15	20	5	2026-02-20	2026-02-21	\N
+16	29	5	2026-02-25	2026-02-25	e14c0134-e9b3-4e49-9649-41721903cfa7_CANCIONERO MISA OMAR 30-10.pdf
+17	30	5	2026-02-25	2026-02-25	bcd41d6a-4705-4755-bdbf-c903f7a02e09_horarios 2025.pdf
+18	26	5	2026-02-25	2026-02-25	\N
 \.
 
 
@@ -808,6 +825,9 @@ COPY public.evaluacion_entrega (id_evaluacion_entrega, id_compra, fecha_entrega,
 10	13	2026-03-07	t	ññññññ
 11	14	2026-02-20	f	
 12	15	2026-02-20	t	eeeeeeeeeeeeeee
+13	16	2026-02-25	t	
+14	17	2026-02-25	t	yyyyyyyyy
+15	18	2026-02-25	t	
 \.
 
 
@@ -876,6 +896,10 @@ COPY public.presupuesto (id_presupuesto, id_proveedor, id_aprob_solicitud, id_us
 27	1	5	5	2026-02-20	2026-02-22	t	presu 2	\N
 28	2	5	5	2026-02-20	2026-02-25	f	presu 3	\N
 26	1	5	5	2026-02-20	2026-02-21	f		b3f7e4de-cd7e-4faf-b2f4-1e73b83e7bbe_ConstanciaDeCUIL.pdf
+29	2	22	5	2026-02-25	2026-02-25	t		d4e75891-a6d7-484a-82f4-48a9b639116e_presupuesto mural.pdf
+30	1	17	5	2026-02-25	2026-02-25	t		0d46dfdb-ba82-457f-b785-a9c7c31bca78_cancionero 20 años.pdf
+31	2	21	5	2026-02-25	2026-02-26	t		\N
+32	2	9	5	2026-02-25	2026-02-28	t		\N
 \.
 
 
@@ -948,27 +972,30 @@ COPY public.sector (id_sector, nombre, activo) FROM stdin;
 -- Data for Name: solicitud; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.solicitud (id_solicitud, cantidad, fecha, fecha_admisible, id_nivel_prioridad, id_producto, id_usuario, cerrado) FROM stdin;
-4	5	2025-12-30 10:33:42.214514	2026-01-06 10:33:42.214514	1	2	1	f
-6	5	2026-01-16 21:47:23.713781	2026-01-23 21:47:23.713781	1	1	5	f
-7	5	2026-01-17 10:32:28.899037	2026-01-24 10:32:28.899037	1	1	10	t
-9	1	2026-02-01 21:51:56.209692	2026-03-03 21:51:56.209692	2	2	10	f
-10	10	2026-02-01 21:55:00.856261	2026-03-13 21:55:00.856261	3	2	10	f
-11	14444	2026-02-01 21:59:28.869618	2026-03-13 21:59:28.869618	3	2	10	f
-12	5	2026-02-02 21:49:50.117042	2026-03-04 21:49:50.117042	2	2	14	f
-15	1	2026-02-02 22:02:35.641416	2026-03-14 22:02:35.641416	3	2	14	f
-8	5	2026-02-01 15:30:33.085875	2026-02-08 15:30:33.085875	1	1	10	t
-17	100235	2026-02-10 19:47:45.859473	2026-03-12 19:47:45.859473	2	1	14	f
-18	6	2026-02-12 17:07:24.764591	2026-03-14 17:07:24.764591	2	1	14	f
-19	1	2026-02-12 21:32:48.20131	2026-03-24 21:32:48.20131	3	2	10	f
-2	5	2025-12-22 13:16:41.090087	2026-01-31 13:16:41.090087	3	1	1	t
-5	44444444	2026-01-14 15:50:40.583905	2026-01-21 15:50:40.583905	1	1	5	f
-16	100	2026-02-07 17:44:24.007537	2026-03-19 17:44:24.007537	3	1	14	t
-1	1	2025-12-21 22:11:25.367486	2026-01-20 22:11:25.367486	1	2	3	t
-14	1	2026-02-02 21:53:29.847895	2026-03-14 21:53:29.847895	3	2	14	t
-3	5	2025-12-30 10:11:25.939709	2026-02-08 10:11:25.939709	3	1	1	t
-20	8	2026-02-20 11:19:32.246248	2026-02-27 11:19:32.246248	1	5	5	f
-13	1	2026-02-02 21:52:05.014354	2026-03-04 21:52:05.014354	2	2	14	t
+COPY public.solicitud (id_solicitud, cantidad, fecha, fecha_admisible, id_nivel_prioridad, id_producto, id_usuario, cerrado, comentarios) FROM stdin;
+4	5	2025-12-30 10:33:42.214514	2026-01-06 10:33:42.214514	1	2	1	f	\N
+6	5	2026-01-16 21:47:23.713781	2026-01-23 21:47:23.713781	1	1	5	f	\N
+7	5	2026-01-17 10:32:28.899037	2026-01-24 10:32:28.899037	1	1	10	t	\N
+9	1	2026-02-01 21:51:56.209692	2026-03-03 21:51:56.209692	2	2	10	f	\N
+10	10	2026-02-01 21:55:00.856261	2026-03-13 21:55:00.856261	3	2	10	f	\N
+11	14444	2026-02-01 21:59:28.869618	2026-03-13 21:59:28.869618	3	2	10	f	\N
+12	5	2026-02-02 21:49:50.117042	2026-03-04 21:49:50.117042	2	2	14	f	\N
+15	1	2026-02-02 22:02:35.641416	2026-03-14 22:02:35.641416	3	2	14	f	\N
+8	5	2026-02-01 15:30:33.085875	2026-02-08 15:30:33.085875	1	1	10	t	\N
+18	6	2026-02-12 17:07:24.764591	2026-03-14 17:07:24.764591	2	1	14	f	\N
+19	1	2026-02-12 21:32:48.20131	2026-03-24 21:32:48.20131	3	2	10	f	\N
+2	5	2025-12-22 13:16:41.090087	2026-01-31 13:16:41.090087	3	1	1	t	\N
+5	44444444	2026-01-14 15:50:40.583905	2026-01-21 15:50:40.583905	1	1	5	f	\N
+16	100	2026-02-07 17:44:24.007537	2026-03-19 17:44:24.007537	3	1	14	t	\N
+1	1	2025-12-21 22:11:25.367486	2026-01-20 22:11:25.367486	1	2	3	t	\N
+14	1	2026-02-02 21:53:29.847895	2026-03-14 21:53:29.847895	3	2	14	t	\N
+3	5	2025-12-30 10:11:25.939709	2026-02-08 10:11:25.939709	3	1	1	t	\N
+20	8	2026-02-20 11:19:32.246248	2026-02-27 11:19:32.246248	1	5	5	f	\N
+13	1	2026-02-02 21:52:05.014354	2026-03-04 21:52:05.014354	2	2	14	t	\N
+21	5	2026-02-25 16:46:45.646969	2026-03-04 16:46:45.646969	1	1	5	f	\N
+22	5	2026-02-25 16:51:41.355468	2026-03-04 16:51:41.355468	1	1	5	t	holaaaa
+23	4	2026-02-25 17:23:06.520057	2026-04-06 17:23:06.520057	3	2	18	f	que sean azules
+17	100235	2026-02-10 19:47:45.859473	2026-03-12 19:47:45.859473	2	1	14	t	\N
 \.
 
 
@@ -996,6 +1023,7 @@ COPY public.usuario (id_usuario, activo, password, username, id_sector) FROM std
 1	f	$2a$10$HLL0MGfFaSMF.ThPAXFF2.kHYntYqlpE4pQQPbAR55wblh0oRcyJm	Juan125	1
 16	f	$2a$10$SBUCsNRdP.w2V8T5twa01.YrWUNGQNhT2g8NIr/P40Z2gbsHilsRe	pepe	1
 17	f	$2a$10$JRkdshvTBN9ctf1.v56ukuMvZImRdSVf7t2Kd3cmPMawxZez0OOAG	guadalupe	1
+18	t	$2a$10$KkOesDD9fxS64ySHnvmFpO5/6SWj79bp/ajNrkAmJyaIAHvcJ.iwG	empleado1	1
 \.
 
 
@@ -1005,7 +1033,7 @@ COPY public.usuario (id_usuario, activo, password, username, id_sector) FROM std
 -- Name: aprobacion_presupuesto_id_aprobacion_presu_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.aprobacion_presupuesto_id_aprobacion_presu_seq', 28, true);
+SELECT pg_catalog.setval('public.aprobacion_presupuesto_id_aprobacion_presu_seq', 32, true);
 
 
 --
@@ -1014,7 +1042,7 @@ SELECT pg_catalog.setval('public.aprobacion_presupuesto_id_aprobacion_presu_seq'
 -- Name: aprobacion_solicitud_id_aprob_solicitud_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.aprobacion_solicitud_id_aprob_solicitud_seq', 20, true);
+SELECT pg_catalog.setval('public.aprobacion_solicitud_id_aprob_solicitud_seq', 23, true);
 
 
 --
@@ -1023,7 +1051,7 @@ SELECT pg_catalog.setval('public.aprobacion_solicitud_id_aprob_solicitud_seq', 2
 -- Name: cierre_id_cierre_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.cierre_id_cierre_seq', 9, true);
+SELECT pg_catalog.setval('public.cierre_id_cierre_seq', 11, true);
 
 
 --
@@ -1032,7 +1060,7 @@ SELECT pg_catalog.setval('public.cierre_id_cierre_seq', 9, true);
 -- Name: compra_id_compra_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.compra_id_compra_seq', 15, true);
+SELECT pg_catalog.setval('public.compra_id_compra_seq', 18, true);
 
 
 --
@@ -1041,7 +1069,7 @@ SELECT pg_catalog.setval('public.compra_id_compra_seq', 15, true);
 -- Name: evaluacion_entrega_id_evaluacion_entrega_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.evaluacion_entrega_id_evaluacion_entrega_seq', 12, true);
+SELECT pg_catalog.setval('public.evaluacion_entrega_id_evaluacion_entrega_seq', 15, true);
 
 
 --
@@ -1068,7 +1096,7 @@ SELECT pg_catalog.setval('public.nivel_prioridad_id_nivel_prioridad_seq', 5, tru
 -- Name: presupuesto_id_presupuesto_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.presupuesto_id_presupuesto_seq', 28, true);
+SELECT pg_catalog.setval('public.presupuesto_id_presupuesto_seq', 32, true);
 
 
 --
@@ -1113,7 +1141,7 @@ SELECT pg_catalog.setval('public.sector_id_sector_seq', 5, true);
 -- Name: solicitud_id_solicitud_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.solicitud_id_solicitud_seq', 20, true);
+SELECT pg_catalog.setval('public.solicitud_id_solicitud_seq', 23, true);
 
 
 --
@@ -1122,7 +1150,7 @@ SELECT pg_catalog.setval('public.solicitud_id_solicitud_seq', 20, true);
 -- Name: usuario_id_usuario_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.usuario_id_usuario_seq', 17, true);
+SELECT pg_catalog.setval('public.usuario_id_usuario_seq', 18, true);
 
 
 --
@@ -1465,11 +1493,11 @@ ALTER TABLE ONLY public.presupuesto
     ADD CONSTRAINT presupuesto_id_usuario_fkey FOREIGN KEY (id_usuario) REFERENCES public.usuario(id_usuario);
 
 
--- Completed on 2026-02-20 17:06:09
+-- Completed on 2026-02-26 15:19:14
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 1D05cEQKCFqwcX31DME1PnLo7rNejPXG6BAdAWGoNgOBQssDuvp5ccH5Vv9sZng
+\unrestrict PfZdMmDxLWYjeKAQ2J7zCLXXwRvltqakBKpxRF7xXydHMoYblzlN7ZmPU5nOveG
 
