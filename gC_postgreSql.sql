@@ -688,234 +688,19 @@ ALTER TABLE ONLY public.proveedor ALTER COLUMN id_proveedor SET DEFAULT nextval(
 ALTER TABLE ONLY public.reclamo ALTER COLUMN id_reclamo SET DEFAULT nextval('public.reclamo_id_reclamo_seq'::regclass);
 
 
---
--- TOC entry 5180 (class 0 OID 16625)
--- Dependencies: 236
--- Data for Name: aprobacion_presupuesto; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.aprobacion_presupuesto (id_aprobacion_presu, id_presupuesto, id_usuario, fecha, estado) FROM stdin;
-2	2	2	2026-01-17 10:42:06.236546	APROBADA
-11	11	5	2026-02-03 12:49:54.177964	APROBADA
-10	10	5	2026-02-03 12:49:54.194497	RECHAZADA
-6	6	5	2026-02-07 16:46:13.211204	APROBADA
-1	1	5	2026-02-07 16:46:13.283032	RECHAZADA
-7	7	5	2026-02-07 16:46:13.285045	RECHAZADA
-8	8	5	2026-02-07 16:46:13.286028	RECHAZADA
-9	9	5	2026-02-07 17:39:58.738975	APROBADA
-12	12	5	2026-02-07 17:48:18.954195	APROBADA
-20	20	5	2026-02-19 11:52:11.987275	APROBADA
-16	16	5	2026-02-19 11:52:12.00751	RECHAZADA
-19	19	5	2026-02-19 12:01:56.88743	APROBADA
-15	15	5	2026-02-19 12:01:56.921444	RECHAZADA
-18	18	5	2026-02-19 12:01:56.921444	RECHAZADA
-17	17	5	2026-02-19 12:01:56.92244	RECHAZADA
-22	22	5	2026-02-19 16:25:20.617725	APROBADA
-23	23	5	2026-02-19 16:25:20.654114	RECHAZADA
-24	24	5	2026-02-19 16:25:20.655111	RECHAZADA
-21	21	5	2026-02-20 11:21:16.459873	APROBADA
-13	13	5	2026-02-20 11:21:16.491872	RECHAZADA
-14	14	5	2026-02-20 11:21:16.492862	RECHAZADA
-25	25	5	2026-02-20 14:18:54.765848	APROBADA
-26	26	5	2026-02-20 14:45:29.985128	APROBADA
-27	27	5	2026-02-20 14:45:30.001129	RECHAZADA
-28	28	5	2026-02-20 14:45:30.002124	RECHAZADA
-29	29	5	2026-02-25 17:29:31.503318	APROBADA
-30	30	5	2026-02-25 18:05:36.997313	APROBADA
-31	31	\N	\N	PENDIENTE
-32	32	\N	\N	PENDIENTE
-\.
-
-
---
--- TOC entry 5174 (class 0 OID 16551)
--- Dependencies: 230
--- Data for Name: aprobacion_solicitud; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.aprobacion_solicitud (id_aprob_solicitud, estado, fecha, id_solicitud, id_usuario, comentarios) FROM stdin;
-2	APROBADA	2025-12-22 15:21:33.539067	2	5	\N
-1	APROBADA	2025-12-30 15:01:25.548925	1	5	\N
-6	APROBADA	2026-01-16 21:48:26.328414	6	5	\N
-7	APROBADA	2026-01-20 22:02:51.315412	7	5	\N
-11	PENDIENTE	2026-02-01 21:59:28.872628	11	10	\N
-12	PENDIENTE	2026-02-02 21:49:50.175956	12	14	\N
-15	PENDIENTE	2026-02-02 22:02:35.647431	15	14	\N
-8	APROBADA	2026-02-03 12:44:52.346866	8	5	\N
-16	APROBADA	2026-02-07 17:46:41.215222	16	5	\N
-13	APROBADA	2026-02-07 20:47:29.110658	13	5	\N
-14	APROBADA	2026-02-07 20:47:59.234361	14	5	\N
-3	APROBADA	2026-02-19 11:12:24.18669	3	5	\N
-10	RECHAZADA	2026-02-19 11:12:40.255714	10	5	\N
-4	RECHAZADA	2026-02-19 11:22:05.168948	4	5	\N
-20	APROBADA	2026-02-20 11:20:00.036203	20	5	\N
-5	APROBADA	2026-02-20 14:42:18.289696	5	5	\N
-22	APROBADA	2026-02-25 16:53:05.004914	22	5	gshdgajsdgjhgsdjgasdj
-23	APROBADA	2026-02-25 17:32:58.573634	23	5	\N
-21	APROBADA	2026-02-25 17:34:51.244515	21	5	gshdgajsdgjhgsdjgasdj
-19	RECHAZADA	2026-02-25 17:36:31.701005	19	5	\N
-9	APROBADA	2026-02-25 17:37:46.059343	9	5	comentarios 1
-18	RECHAZADA	2026-02-25 17:46:29.526823	18	5	no quiero
-17	APROBADA	2026-02-25 18:05:08.827134	17	5	
-\.
-
-
---
--- TOC entry 5190 (class 0 OID 25020)
--- Dependencies: 246
--- Data for Name: cierre; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.cierre (id_cierre, id_eval_entrega, id_usuario, fecha_cierre, observaciones) FROM stdin;
-1	1	5	2026-01-16	\N
-2	2	5	2026-01-17	\N
-3	3	5	2026-02-03	\N
-4	4	5	2026-02-18	\N
-5	6	5	2026-02-19	
-6	8	5	2026-02-19	ya la cerre y tiene reclamo
-7	9	5	2026-02-19	sss todo ok
-8	10	5	2026-02-19	ooooooooooooooooooooooooooooo
-9	11	5	2026-02-20	ytyutuyy
-10	13	5	2026-02-25	
-11	14	5	2026-02-25	
-\.
-
-
---
--- TOC entry 5182 (class 0 OID 16709)
--- Dependencies: 238
--- Data for Name: compra; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.compra (id_compra, id_aprobacion_presu, id_usuario, fecha_solicitud, fecha_recepcion, factura_pdf_path) FROM stdin;
-1	1	5	2025-12-22	2025-12-23	\N
-5	2	2	2025-12-22	2025-12-23	factura1.pdf
-6	11	5	2026-02-03	2026-02-03	6b24b771-9202-4b6a-b166-c81b44b6c106_CompraJardin Con Enanitos (2).pdf
-9	12	5	2026-02-03	2026-02-06	f0b73a93-2bf9-40b5-8e7f-ca07b1e63b93_Compracancionero 20 años.pdf
-8	9	5	2026-02-03	2026-02-06	2888d2f5-ef49-4702-b053-3f22430c8772_CompraOjitos Rojos.pdf
-7	6	14	2026-02-08	2026-02-14	fb2297ed-ae88-43a5-8c3f-1acba472284f_CompraOjitos Rojos.pdf
-10	13	5	2026-02-03	2026-02-06	6d5cd18e-c870-48b1-b779-ebe9db5a78a2_CompraOjitos Rojos.pdf
-11	15	14	2026-02-07	2026-02-13	b5d91e5d-f7e0-4976-8e86-b0013ceca61f_CompraOjitos Rojos.pdf
-12	19	5	2026-02-19	2026-02-20	0f10bbb1-0562-4c8e-9180-690fc0c043f6_CompraConstanciaDeCUIL.pdf
-13	22	5	2026-02-20	2026-02-28	528bdaf6-3ccc-4c77-8457-34299af65f22_CompraJardin Con Enanitos (2).pdf
-14	21	5	2026-02-20	2026-02-21	\N
-15	20	5	2026-02-20	2026-02-21	\N
-16	29	5	2026-02-25	2026-02-25	e14c0134-e9b3-4e49-9649-41721903cfa7_CANCIONERO MISA OMAR 30-10.pdf
-17	30	5	2026-02-25	2026-02-25	bcd41d6a-4705-4755-bdbf-c903f7a02e09_horarios 2025.pdf
-18	26	5	2026-02-25	2026-02-25	\N
-\.
-
-
---
--- TOC entry 5186 (class 0 OID 24952)
--- Dependencies: 242
--- Data for Name: evaluacion_entrega; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.evaluacion_entrega (id_evaluacion_entrega, id_compra, fecha_entrega, cumple_condiciones, observaciones) FROM stdin;
-1	1	2026-01-15	t	Mercadería recibida en tiempo y forma, empaque intacto.
-2	5	2026-01-15	t	Mercadería recibida en tiempo y forma, empaque intacto.
-3	6	2026-03-15	f	Mercadería recibida en tiempo y forma, empaque intacto.
-4	7	2026-02-08	t	\N
-6	9	2026-02-18	t	
-7	10	2026-02-18	f	
-5	11	2026-02-14	f	
-8	8	2026-02-18	f	tiene reclamo
-9	12	2026-02-21	t	todo ok
-10	13	2026-03-07	t	ññññññ
-11	14	2026-02-20	f	
-12	15	2026-02-20	t	eeeeeeeeeeeeeee
-13	16	2026-02-25	t	
-14	17	2026-02-25	t	yyyyyyyyy
-15	18	2026-02-25	t	
-\.
-
-
---
--- TOC entry 5184 (class 0 OID 24904)
--- Dependencies: 240
--- Data for Name: evaluacion_proveedor; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.evaluacion_proveedor (id_evaluacion_proveedor, id_proveedor, id_usuario, servicioproducto, periodoevaluado, fecha, calidadproducto, cumplimientoplazos, atencioncliente, respuestareclamos, precioservicio, gestionadministrativa, resultado, nivelaprobacion, proveedorsgc, aprobado, comentarios, firma_responsable) FROM stdin;
-4	2	5	Tortas	2025	2026-02-08 01:15:00.994559	bueno	muybueno	regular	bueno	bueno	muybueno	79.17	70.00	t	t	Proveedor confiable, aunque la atención al cliente en reclamos menores es lenta.	luis - GERENCIA
-2	2	1	Tortas	2025	2026-02-09 20:30:05.319372	malo	malo	malo	malo	malo	malo	25.00	70.00	\N	f		user2 - CALIDAD
-3	2	1	Tortas	2025	2026-02-09 20:36:29.352445	malo	malo	malo	malo	malo	malo	25.00	70.00	\N	f		user2 - CALIDAD
-1	1	1	Suministro de papelería técnica	2026	2026-02-12 21:51:33.156253	malo	malo	malo	regular	malo	malo	29.17	70.00	t	f	Proveedor confiable, aunque la atención al cliente en reclamos menores es lenta.	user2 - CALIDAD
-5	2	1	Tortas	2025	2026-02-18 19:14:29.444708	regular	bueno	bueno	muybueno	muybueno	bueno	79.17	70.00	t	t	Proveedor confiable, aunque la atención al cliente en reclamos menores es lenta.	user2 - CALIDAD
-\.
-
-
---
--- TOC entry 5168 (class 0 OID 16515)
--- Dependencies: 224
--- Data for Name: nivel_prioridad; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
 COPY public.nivel_prioridad (id_nivel_prioridad, categoria, dias, activo) FROM stdin;
 1	Urgencia inmediata	7	t
 2	Urgencia media	30	t
 3	Urgencia baja	40	t
-4	cat 1	5	f
-5	jjjj	28	f
 \.
 
-
---
--- TOC entry 5178 (class 0 OID 16594)
--- Dependencies: 234
--- Data for Name: presupuesto; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.presupuesto (id_presupuesto, id_proveedor, id_aprob_solicitud, id_usuario, fecha_solicitud, fecha_recepcion, cotizacion_satisfactoria, observaciones, archivo_pdf_path) FROM stdin;
-2	2	7	2	2025-12-22	2025-12-23	t	111	presupuesto_prov_1_sol_2.pdf
-3	1	7	2	2025-12-22	2025-12-23	t	111	presupuesto_prov_1_sol_2.pdf
-4	1	7	2	2025-12-22	2025-12-23	t	111	presupuesto_prov_1_sol_2.pdf
-5	1	7	2	2025-12-22	2025-12-23	t	111	presupuesto_prov_1_sol_2.pdf
-8	1	2	14	2026-02-03	\N	t		04daf88d-c1ac-4627-b490-e888bbc4bd4e_Ojitos Rojos.pdf
-9	2	1	14	2026-02-04	2026-02-02	t		e7d9a265-029c-4d73-8196-c078d31d95bd_Jardin Con Enanitos (2).pdf
-10	1	8	14	2026-02-03	2026-02-20	t		13ab6b0a-ad54-41ba-96e3-ed785d93ac7c_Ojitos Rojos.pdf
-11	2	8	14	2026-01-31	2026-02-12	f	no me atendieron bien	6367039d-7951-4201-99a3-054c26439669_Jardin Con Enanitos (2).pdf
-1	2	2	5	2025-12-22	2025-12-23	t	111	e1531c30-b803-439b-a11a-15c48b156a9b_cancionero 20 años.pdf
-12	2	16	14	2026-02-07	2026-02-21	t		73412ba3-76bc-4d34-ac4c-c2612322abd9_Ojitos Rojos.pdf
-13	1	13	14	2026-02-08	2026-02-14	t		\N
-15	2	14	14	2026-02-07	2026-02-07	t		\N
-6	1	2	14	2026-02-03	2026-02-05	t		
-7	1	2	14	2026-02-06	2026-02-05	f		
-17	1	14	14	2026-02-12	2026-02-21	t		5cedc4c6-fe22-48d8-8690-a37e91d42ee6_SANTOSSSS.pdf
-18	2	14	14	2026-02-12	2026-02-25	f		\N
-19	1	14	14	2026-02-12	2026-02-26	f		\N
-16	1	6	14	2026-02-09	2026-02-11	f		f2af97c4-f6fb-4210-94f1-4ed7ef9e04f3_Ojitos Rojos.pdf
-20	1	6	14	2026-02-13	2026-02-14	f		\N
-14	2	13	14	2026-02-07	2026-02-13	t		\N
-21	1	13	14	2026-02-13	2026-02-13	f		\N
-23	2	3	5	2026-02-19	2026-02-21	f		c14b4eb5-0b06-47a4-9e04-d5c1d2265e13_Ojitos Rojos.pdf
-24	1	3	5	2026-02-19	2026-02-27	t		\N
-22	1	3	5	2026-02-19	2026-02-25	f		929a11df-1521-4f89-b1d0-fbc909f63b14_ConstanciaDeCUIL.pdf
-25	2	20	5	2026-02-20	2026-02-20	t		\N
-27	1	5	5	2026-02-20	2026-02-22	t	presu 2	\N
-28	2	5	5	2026-02-20	2026-02-25	f	presu 3	\N
-26	1	5	5	2026-02-20	2026-02-21	f		b3f7e4de-cd7e-4faf-b2f4-1e73b83e7bbe_ConstanciaDeCUIL.pdf
-29	2	22	5	2026-02-25	2026-02-25	t		d4e75891-a6d7-484a-82f4-48a9b639116e_presupuesto mural.pdf
-30	1	17	5	2026-02-25	2026-02-25	t		0d46dfdb-ba82-457f-b785-a9c7c31bca78_cancionero 20 años.pdf
-31	2	21	5	2026-02-25	2026-02-26	t		\N
-32	2	9	5	2026-02-25	2026-02-28	t		\N
-\.
-
-
---
--- TOC entry 5170 (class 0 OID 16522)
--- Dependencies: 226
--- Data for Name: producto; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
 COPY public.producto (id_producto, nombre, activo) FROM stdin;
 2	Lapiceras	t
 1	Hojas A3	t
-3	Calibrador	f
-4	Calibrador	f
-5	Calibrador	t
-6	Lampara led	f
+3	Calibrador	t
+
 \.
 
 
@@ -928,82 +713,17 @@ COPY public.producto (id_producto, nombre, activo) FROM stdin;
 COPY public.proveedor (id_proveedor, nombre_empresa, nombre_contacto, mail, direccion, telefono, activo) FROM stdin;
 1	Librería Central	Juan Pérez	ventas@central.com	Av. Siempreviva 742	1144556677	t
 2	Espiritu Dulcero	Juan Pérez	ventas@central.com	Av. Siempreviva 742	1144556677	t
-3	UTN	pepe	pepe@gmail.com	av. flores 41254	1	f
 \.
 
 
---
--- TOC entry 5188 (class 0 OID 24982)
--- Dependencies: 244
--- Data for Name: reclamo; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.reclamo (id_reclamo, id_evaluacion_entrega, fecha_reclamo, respuesta_proveedor, es_recurrente, producto_rechazado, entrega_nueva, satisfecho_nueva_entrega, detalle_reclamo, activo) FROM stdin;
-1	1	2026-01-15	\N	f	f	f	\N	\N	t
-2	2	2026-01-15	\N	f	f	f	\N	no anda	t
-3	3	2026-02-03	\N	f	f	f	\N	no anda	t
-4	4	2026-02-07	\N	t	f	f	\N	ffffff	t
-6	6	2026-02-18	PENDIENTE	t	f	f	\N	wwww	t
-7	7	2026-02-18	POSITIVA	f	t	f	\N	tttt	t
-8	8	2026-02-18	NEGATIVA	t	f	f	\N	wwww	t
-5	5	2026-02-18	NEGATIVA	f	f	t	t	wwww	t
-10	11	2026-02-20	POSITIVA	f	f	f	\N	jhsdkjfhkjdshjds	t
-\.
-
-
---
--- TOC entry 5164 (class 0 OID 16487)
--- Dependencies: 220
--- Data for Name: sector; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
 COPY public.sector (id_sector, nombre, activo) FROM stdin;
 2	CALIDAD	t
 3	GERENCIA	t
-4	prueba	f
-5	kk	f
 1	ADMINISTRACION	t
 \.
 
 
---
--- TOC entry 5172 (class 0 OID 16529)
--- Dependencies: 228
--- Data for Name: solicitud; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.solicitud (id_solicitud, cantidad, fecha, fecha_admisible, id_nivel_prioridad, id_producto, id_usuario, cerrado, comentarios) FROM stdin;
-4	5	2025-12-30 10:33:42.214514	2026-01-06 10:33:42.214514	1	2	1	f	\N
-6	5	2026-01-16 21:47:23.713781	2026-01-23 21:47:23.713781	1	1	5	f	\N
-7	5	2026-01-17 10:32:28.899037	2026-01-24 10:32:28.899037	1	1	10	t	\N
-9	1	2026-02-01 21:51:56.209692	2026-03-03 21:51:56.209692	2	2	10	f	\N
-10	10	2026-02-01 21:55:00.856261	2026-03-13 21:55:00.856261	3	2	10	f	\N
-11	14444	2026-02-01 21:59:28.869618	2026-03-13 21:59:28.869618	3	2	10	f	\N
-12	5	2026-02-02 21:49:50.117042	2026-03-04 21:49:50.117042	2	2	14	f	\N
-15	1	2026-02-02 22:02:35.641416	2026-03-14 22:02:35.641416	3	2	14	f	\N
-8	5	2026-02-01 15:30:33.085875	2026-02-08 15:30:33.085875	1	1	10	t	\N
-18	6	2026-02-12 17:07:24.764591	2026-03-14 17:07:24.764591	2	1	14	f	\N
-19	1	2026-02-12 21:32:48.20131	2026-03-24 21:32:48.20131	3	2	10	f	\N
-2	5	2025-12-22 13:16:41.090087	2026-01-31 13:16:41.090087	3	1	1	t	\N
-5	44444444	2026-01-14 15:50:40.583905	2026-01-21 15:50:40.583905	1	1	5	f	\N
-16	100	2026-02-07 17:44:24.007537	2026-03-19 17:44:24.007537	3	1	14	t	\N
-1	1	2025-12-21 22:11:25.367486	2026-01-20 22:11:25.367486	1	2	3	t	\N
-14	1	2026-02-02 21:53:29.847895	2026-03-14 21:53:29.847895	3	2	14	t	\N
-3	5	2025-12-30 10:11:25.939709	2026-02-08 10:11:25.939709	3	1	1	t	\N
-20	8	2026-02-20 11:19:32.246248	2026-02-27 11:19:32.246248	1	5	5	f	\N
-13	1	2026-02-02 21:52:05.014354	2026-03-04 21:52:05.014354	2	2	14	t	\N
-21	5	2026-02-25 16:46:45.646969	2026-03-04 16:46:45.646969	1	1	5	f	\N
-22	5	2026-02-25 16:51:41.355468	2026-03-04 16:51:41.355468	1	1	5	t	holaaaa
-23	4	2026-02-25 17:23:06.520057	2026-04-06 17:23:06.520057	3	2	18	f	que sean azules
-17	100235	2026-02-10 19:47:45.859473	2026-03-12 19:47:45.859473	2	1	14	t	\N
-\.
-
-
---
--- TOC entry 5166 (class 0 OID 16500)
--- Dependencies: 222
--- Data for Name: usuario; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
 COPY public.usuario (id_usuario, activo, password, username, id_sector) FROM stdin;
 6	f	$2a$10$sw1ln.lJq7XcARguKMLxYu7pS9FZyM01.apjQOohnXs7/64cQS4a.	Juan123	2
