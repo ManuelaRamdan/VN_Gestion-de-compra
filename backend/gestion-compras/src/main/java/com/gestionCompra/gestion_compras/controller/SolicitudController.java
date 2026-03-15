@@ -80,7 +80,14 @@ public class SolicitudController {
             solicitud.setProducto(producto);
             solicitud.setCantidad(request.cantidad());
             solicitud.setNivelPrioridad(nivel);
-            solicitud.setFecha(LocalDateTime.now());
+            // --- LÓGICA DE FECHA Y VALIDACIÓN ---
+            LocalDateTime fechaIngresada = request.fecha() != null ? request.fecha() : LocalDateTime.now();
+            
+            if (fechaIngresada.isAfter(LocalDateTime.now())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "La fecha de la solicitud no puede ser mayor a la fecha actual."));
+            }
+            
+            solicitud.setFecha(fechaIngresada);
             solicitud.setFechaAdmisible(solicitud.getFecha().plusDays(nivel.getDias()));
             solicitud.setComentarios(request.comentarios());
 

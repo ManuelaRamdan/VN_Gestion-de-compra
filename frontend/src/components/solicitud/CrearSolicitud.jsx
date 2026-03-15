@@ -9,15 +9,18 @@ export default function CrearSolicitud() {
     const navigate = useNavigate();
     const { user } = useAuth();
 
+
     // Estados para datos del formulario
     const [formData, setFormData] = useState({
         idProducto: "",
         cantidad: 1,
         idNivelPrioridad: "",
-        fechaAdmisible: "",
-        comentarios: ""
+        comentarios: "",
+        fecha: "" // <-- NUEVO CAMPO
     });
 
+    // Calcular la fecha/hora actual en formato local (YYYY-MM-DDTHH:mm) para el atributo 'max'
+    const maxDateLocal = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     // Estados para listas y UI
     const [productos, setProductos] = useState([]);
     const [prioridades, setPrioridades] = useState([]);
@@ -66,7 +69,8 @@ export default function CrearSolicitud() {
                 idProducto: parseInt(formData.idProducto),
                 idNivelPrioridad: parseInt(formData.idNivelPrioridad),
                 idUsuario: user.idUsuario,
-                comentarios: formData.comentarios
+                comentarios: formData.comentarios,
+                fecha: formData.fecha ? `${formData.fecha}:00` : null
             };
 
             await crearSolicitud(payload);
@@ -137,6 +141,20 @@ export default function CrearSolicitud() {
                             <label className="block text-sm font-semibold text-slate-700 mb-2">
                                 Buscar Producto del Catálogo
                             </label>
+
+                            {/* Fecha de Solicitud */}
+                            <div className="mb-6 w-full">
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Fecha de Solicitud</label>
+                                <input
+                                    type="datetime-local"
+                                    name="fecha"
+                                    value={formData.fecha}
+                                    onChange={handleChange}
+                                    max={maxDateLocal} // Bloquea fechas futuras visualmente
+                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                                />
+                                <p className="text-xs text-gray-400 mt-1">Si la dejas vacía, se usará la fecha y hora actual.</p>
+                            </div>
                             <div className="relative">
                                 <Package className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <select

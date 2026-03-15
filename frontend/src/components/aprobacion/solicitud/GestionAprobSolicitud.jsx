@@ -19,12 +19,24 @@ export default function GestionAprobSolicitud({ aprobacion, soloLectura, onClose
     const [productos, setProductos] = useState([]);
     const [prioridades, setPrioridades] = useState([]);
 
-    // 1. ESTADO: Datos de la solicitud (Incluye los comentarios originales)
+
+
+    const formatForInput = (dateString) => {
+        if (!dateString) return "";
+        const d = new Date(dateString);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 16);
+    };
+
+    const maxDateLocal = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
+    // 1. ESTADO: Datos de la solicitud
     const [formData, setFormData] = useState({
         cantidad: soli?.cantidad || 0,
         idProducto: soli?.producto?.idProducto || "",
         idNivelPrioridad: soli?.nivelPrioridad?.idNivelPrioridad || "",
-        comentariosSolicitud: soli?.comentarios || "" // <-- Agregado
+        comentariosSolicitud: soli?.comentarios || "",
+        fecha: formatForInput(soli?.fecha) // <-- NUEVO CAMPO
     });
 
     // 2. ESTADO: Comentarios de la decisión del Gerente
@@ -52,26 +64,25 @@ export default function GestionAprobSolicitud({ aprobacion, soloLectura, onClose
         try {
             setLoading(true);
             setError('');
-            setSuccess('');
             
-            // Agregamos los comentarios al payload de actualización
+            // SOLUCIÓN 1: Mapear las claves exactamente como las espera el Backend en el Map
             const payload = {
                 cantidad: parseInt(formData.cantidad),
-                idProducto: parseInt(formData.idProducto),
-                idNivelPrioridad: parseInt(formData.idNivelPrioridad),
-                comentarios: formData.comentariosSolicitud // <-- Agregado
+                id_producto: parseInt(formData.idProducto),       // <-- Clave con guión bajo
+                id_nivel_prioridad: parseInt(formData.idNivelPrioridad), // <-- Clave con guión bajo
+                comentarios: formData.comentariosSolicitud,
+                fecha: formData.fecha ? `${formData.fecha}:00` : null
             };
 
             await modificarSolicitud(soli.idSolicitud, payload);
             
-            setSuccess("Datos de la solicitud actualizados correctamente.");
-            setTimeout(() => setSuccess(""), 3500); 
+            // SOLUCIÓN 2: Llamar a onSuccess cierra el modal y dispara cargarDatos() en el padre
+            onSuccess("Datos de la solicitud actualizados correctamente."); 
             
         } catch (err) {
             setError(err.response?.data?.error || "Error al modificar la solicitud.");
-        } finally {
-            setLoading(false);
-        }
+            setLoading(false); // Solo apagamos el loading si hay error, si hay éxito se desmonta
+        } 
     };
 
     const handleDecidir = async (decision) => {
@@ -144,6 +155,21 @@ export default function GestionAprobSolicitud({ aprobacion, soloLectura, onClose
                         )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            {/* NUEVO CAMPO DE FECHA */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Fecha Emisión</label>
+                                <input 
+                                    type="datetime-local" 
+                                    disabled={isLocked || loading || cargandoListas}
+                                    value={formData.fecha}
+                                    max={maxDateLocal}
+                                    onChange={(e) => setFormData({...formData, fecha: e.target.value})}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                                />
+                            </div>
+
+                            
                             <div className="md:col-span-2">
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Producto</label>
                                 <div className="relative">
