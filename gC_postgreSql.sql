@@ -696,24 +696,11 @@ COPY public.nivel_prioridad (id_nivel_prioridad, categoria, dias, activo) FROM s
 \.
 
 
-COPY public.producto (id_producto, nombre, activo) FROM stdin;
-2	Lapiceras	t
-1	Hojas A3	t
-3	Calibrador	t
-\.
-
-
 --
 -- TOC entry 5176 (class 0 OID 16583)
 -- Dependencies: 232
 -- Data for Name: proveedor; Type: TABLE DATA; Schema: public; Owner: postgres
 --
-
-COPY public.proveedor (id_proveedor, nombre_empresa, nombre_contacto, mail, direccion, telefono, activo) FROM stdin;
-1	Librería Central	Juan Pérez	ventas@central.com	Av. Siempreviva 742	1144556677	t
-2	Espiritu Dulcero	Juan Pérez	ventas@central.com	Av. Siempreviva 742	1144556677	t
-\.
-
 
 
 COPY public.sector (id_sector, nombre, activo) FROM stdin;
@@ -725,24 +712,7 @@ COPY public.sector (id_sector, nombre, activo) FROM stdin;
 
 
 COPY public.usuario (id_usuario, activo, password, username, id_sector) FROM stdin;
-6	f	$2a$10$sw1ln.lJq7XcARguKMLxYu7pS9FZyM01.apjQOohnXs7/64cQS4a.	Juan123	2
-10	t	$2a$10$GAsUJQhSHSyFliQRvnK2YOFeiA0ixxLmc2ecWKJE/sUhze2k38Z6q	admin	1
-14	t	$2a$10$1/JZ/F/F6i7Dh2R36mQ/N.l7vUJolID/0UYlvUD5SmrRT7M.5AJ8q	user2	2
-9	f	$2a$10$MQCd6yzt5LEGAbndMP/Q0.m1rrQwLHeb9AmsXvCk4vYF2uFrSAvKS	manu	2
-11	f	$2a$10$mCfTCL/cLdIwtqAT8xli1ODYyx77jq4wG6gek.ZlotHzc8iEM6whq	calidad	2
-12	f	$2a$10$ZlXtu934ieMEFouu9EA41uae1YRkbLpULzZyryOeA82iE2p1AvQ5e	manu	2
-8	f	$2a$10$a1aJlQWZzKgcwLot5IFdW.hUZNVJzkmRhz1IH6x473d.RH7X1dVB2	manu	2
-2	f	$2a$10$SzaJmGpFh4C1xOxWSd6P4u8IFliywxHBVIAzxBT2lU1bjyOALwZly	pepe123	2
-3	f	$2a$10$wke2GGXTO2J9g7..C//T9.FxmdiSkkLEH8sAZOFJiHLYoqXdGSQ9e	gerencia	3
-7	f	$2a$10$hJ4jfM8p9ZsqMs67Z6sYoecoidHo5j3zn1TLZUbCxHA.gPFR6rFhq	juan	2
-13	f	$2a$10$XaiX/Fh7MqVOjztVLS22dOCsjReHSqR/kVayJHA9tQVq/TkFgCQFG	gualy	2
-4	f	$2a$10$CQQ9l.aRxvFcAf9N3NUwr.ERhMNNX5uw0LnQYS1ZBoHXyMkvWHWJK	pepe	1
 5	t	$2a$10$kSJeX6SdWJ20xpZ.mYSUlu0DalZjyLplqMjpc16ng/MRScTYvwnWy	luis	3
-15	f	$2a$10$OXLiS371mdyR/81/x3YajuKFLaKYdoH954AefkwekyoLrzsPWq99K	matias	1
-1	f	$2a$10$HLL0MGfFaSMF.ThPAXFF2.kHYntYqlpE4pQQPbAR55wblh0oRcyJm	Juan125	1
-16	f	$2a$10$SBUCsNRdP.w2V8T5twa01.YrWUNGQNhT2g8NIr/P40Z2gbsHilsRe	pepe	1
-17	f	$2a$10$JRkdshvTBN9ctf1.v56ukuMvZImRdSVf7t2Kd3cmPMawxZez0OOAG	guadalupe	1
-18	t	$2a$10$KkOesDD9fxS64ySHnvmFpO5/6SWj79bp/ajNrkAmJyaIAHvcJ.iwG	empleado1	1
 \.
 
 
