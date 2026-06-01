@@ -30,7 +30,6 @@ api.interceptors.response.use(
         const status = error?.response?.status;
         const manualLogout = localStorage.getItem("MANUAL_LOGOUT");
 
-        // 🚫 Si el error viene del login → NO redirigir
         if (error.config?.url?.includes("login")) {
             return Promise.reject(error);
         }

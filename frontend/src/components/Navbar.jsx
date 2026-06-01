@@ -20,6 +20,14 @@ export default function Navbar() {
         { name: 'Usuarios', path: '/usuarios', allowedRoles: ['GERENCIA'] },
         { name: 'Solicitudes', path: '/solicitudes', allowedRoles: ['ADMINISTRACION', 'CALIDAD', 'GERENCIA'] },
         { name: 'Presupuestos', path: '/presupuestos', allowedRoles: ['CALIDAD', 'GERENCIA'] },
+        {
+            name: 'Aprobaciones',
+            allowedRoles: ['GERENCIA'],
+            subLinks: [
+                { name: 'Aprob. Solicitud', path: '/aprobSolicitud', allowedRoles: ['GERENCIA'] },
+                { name: 'Aprob. Presupuesto', path: '/aprobPresupuesto', allowedRoles: ['GERENCIA'] }
+            ]
+        },
         { name: 'Compras', path: '/compras', allowedRoles: ['CALIDAD', 'GERENCIA'] },
         {
             name: 'Evaluaciones',
@@ -27,14 +35,6 @@ export default function Navbar() {
             subLinks: [
                 { name: 'Eval. Entrega', path: '/evalEntrega', allowedRoles: ['CALIDAD', 'GERENCIA'] },
                 { name: 'Eval. Proveedor', path: '/evalProveedor', allowedRoles: ['CALIDAD', 'GERENCIA'] }
-            ]
-        },
-        {
-            name: 'Aprobaciones',
-            allowedRoles: ['GERENCIA'],
-            subLinks: [
-                { name: 'Aprob. Solicitud', path: '/aprobSolicitud', allowedRoles: ['GERENCIA'] },
-                { name: 'Aprob. Presupuesto', path: '/aprobPresupuesto', allowedRoles: ['GERENCIA'] }
             ]
         },
         { name: 'Cierre', path: '/cierre', allowedRoles: ['GERENCIA'] },
