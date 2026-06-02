@@ -2,6 +2,8 @@ package com.gestionCompra.gestion_compras.domain.entidades;
 
 import com.gestionCompra.gestion_compras.util.EntidadBase;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "sector")
@@ -47,5 +49,22 @@ public class Sector implements EntidadBase {
 
     public void setIdSector(Integer idSector) {
         this.idSector = idSector;
+    }
+
+    @OneToMany(mappedBy = "sector", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SectorPermiso> permisos = new ArrayList<>();
+
+    public List<SectorPermiso> getPermisos() {
+        return permisos;
+    }
+
+    public void setPermisos(List<SectorPermiso> permisos) {
+        this.permisos = permisos;
+    }
+
+    public List<String> getNombresPermisos() {
+        return permisos.stream()
+                .map(SectorPermiso::getGrupoRuta)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

@@ -5,7 +5,7 @@ export const misSolicitudes = async (page = 0, size=10) => {
 };
 
 export const crearSolicitud = async (solicitudData) => {
-    return api.post("api/solicitudes/crear", solicitudData);
+    return api.post("/api/solicitudes/crear", solicitudData);
 
 };
 

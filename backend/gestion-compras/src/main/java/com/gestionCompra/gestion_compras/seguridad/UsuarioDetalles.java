@@ -33,19 +33,23 @@ public class UsuarioDetalles implements UserDetails, Serializable {
     private final String username;
     private final String password;
     private final String sector;
+    private final List<String> permisos;
+
     private final boolean estado;
-       private final Integer id;
-
-
+    private final Integer id;
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
-    public UsuarioDetalles(String username, String password, String sector, boolean estado, Integer id) {
+// Nuevo constructor
+    public UsuarioDetalles(String username, String password, String sector,
+            boolean estado, Integer id, List<String> permisos) {
         this.username = username;
         this.password = password;
         this.sector = sector;
         this.estado = estado;
         this.id = id;
+        this.permisos = permisos;
     }
+
 
     public String getSector() {
         return sector;
@@ -54,14 +58,7 @@ public class UsuarioDetalles implements UserDetails, Serializable {
     public Integer getId() {
         return id;
     }
-    
-    
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Usamos el sector directamente porque en DB es "GERENCIA"
-        return List.of(new SimpleGrantedAuthority(this.sector));
-    }
 
     @Override
     public String getPassword() {
@@ -97,4 +94,14 @@ public class UsuarioDetalles implements UserDetails, Serializable {
     public String toString() {
         return "UsuarioDetalles{username='" + username + "', sector='" + sector + "'}";
     }
+    
+    
+    // Cambiar getAuthorities
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return permisos.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
 }

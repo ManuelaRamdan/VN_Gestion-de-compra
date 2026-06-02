@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '../../../components/Layout';
 import TablaSector from '../../../components/sector/TablaSector';
-import { listarSectoresPaginados, darDeBajaSector, modificarSector, crearSector } from '../../../services/sectorService';
+import { listarSectoresPaginados, darDeBajaSector, modificarSector, crearSector, obtenerPermisosDisponibles  } from '../../../services/sectorService';
 // Agregamos AlertTriangle para el modal de confirmación
 import { Plus, Briefcase, AlertCircle, Check, X, AlertTriangle } from 'lucide-react';
 
@@ -19,13 +19,75 @@ export default function SectorPage() {
     const [success, setSuccess] = useState("");
 
     // Modal unificado (Crear / Editar)
-    const [showModal, setShowModal] = useState(false); 
+    const [showModal, setShowModal] = useState(false);
     const [modalError, setModalError] = useState("");
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({ nombre: "" });
 
     // NUEVO: Estado para el modal de confirmación de baja
     const [sectorToDeactivate, setSectorToDeactivate] = useState(null);
+
+    // Nuevos estados (agregar junto a los existentes)
+    const [permisosDisponibles, setPermisosDisponibles] = useState([]);
+    const [permisosSeleccionados, setPermisosSeleccionados] = useState([]);
+
+    // Cargar permisos disponibles al montar
+    useEffect(() => {
+        obtenerPermisosDisponibles()
+            .then(res => setPermisosDisponibles(res.data))
+            .catch(() => { });
+    }, []);
+
+    // Modificar handleEditClick para cargar permisos actuales del sector
+    const handleEditClick = (sector) => {
+        setEditingId(sector.idSector);
+        setFormData({ nombre: sector.nombre });
+        setPermisosSeleccionados(sector.permisos?.map(p => p.grupoRuta) || []);
+        setModalError("");
+        setShowModal(true);
+    };
+
+    // Modificar handleNuevoClick
+    const handleNuevoClick = () => {
+        setEditingId(null);
+        setFormData({ nombre: "" });
+        setPermisosSeleccionados([]);
+        setModalError("");
+        setShowModal(true);
+    };
+
+    // Toggle de checkbox
+    const togglePermiso = (nombre) => {
+        setPermisosSeleccionados(prev =>
+            prev.includes(nombre)
+                ? prev.filter(p => p !== nombre)
+                : [...prev, nombre]
+        );
+    };
+
+    // Modificar handleGuardar para incluir permisos
+    const handleGuardar = async (e) => {
+        e.preventDefault();
+        setModalError("");
+        const payload = {
+            nombre: formData.nombre,
+            permisos: permisosSeleccionados
+        };
+        try {
+            if (editingId) {
+                await modificarSector(editingId, payload);
+                setSuccess("Sector actualizado correctamente.");
+            } else {
+                await crearSector(payload);
+                setSuccess("Sector registrado correctamente.");
+            }
+            setShowModal(false);
+            cargarSectores(0, false);
+            setTimeout(() => setSuccess(""), 3500);
+        } catch (err) {
+            setModalError(err.response?.data?.message || err.response?.data?.error || "Error al guardar el sector.");
+        }
+    };
 
     const cargarSectores = async (pageToLoad = 0, append = false) => {
         try {
@@ -66,7 +128,7 @@ export default function SectorPage() {
     // 2. Ejecutar la baja si el usuario confirma
     const confirmDeactivate = async () => {
         if (!sectorToDeactivate) return;
-        
+
         try {
             await darDeBajaSector(sectorToDeactivate);
             setSuccess("Sector dado de baja exitosamente.");
@@ -79,41 +141,7 @@ export default function SectorPage() {
         }
     };
 
-    // --- ACCIONES PARA ABRIR EL MODAL DE CREAR/EDITAR ---
-    const handleNuevoClick = () => {
-        setEditingId(null); 
-        setFormData({ nombre: "" }); 
-        setModalError("");
-        setShowModal(true);
-    };
 
-    const handleEditClick = (sector) => {
-        setEditingId(sector.idSector); 
-        setFormData({ nombre: sector.nombre }); 
-        setModalError("");
-        setShowModal(true);
-    };
-
-    // --- GUARDADO UNIFICADO ---
-    const handleGuardar = async (e) => {
-        e.preventDefault();
-        setModalError("");
-        try {
-            if (editingId) {
-                await modificarSector(editingId, formData);
-                setSuccess("Sector actualizado correctamente.");
-            } else {
-                await crearSector(formData);
-                setSuccess("Sector registrado correctamente.");
-            }
-            
-            setShowModal(false);
-            cargarSectores(0, false); 
-            setTimeout(() => setSuccess(""), 3500);
-        } catch (err) {
-            setModalError(err.response?.data?.message || err.response?.data?.error || "Error al guardar el sector.");
-        }
-    };
 
     return (
         <Layout>
@@ -123,7 +151,7 @@ export default function SectorPage() {
                     <p className="text-sm text-gray-500">Administre los departamentos y áreas de la empresa.</p>
                 </div>
                 <button
-                    onClick={handleNuevoClick} 
+                    onClick={handleNuevoClick}
                     className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
                 >
                     <Plus size={18} /> Nuevo Sector
@@ -187,6 +215,29 @@ export default function SectorPage() {
                                     value={formData.nombre}
                                     onChange={e => setFormData({ nombre: e.target.value })}
                                 />
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                                        Permisos del Sector
+                                    </label>
+                                    <div className="border border-slate-200 rounded-lg p-3 max-h-52 overflow-y-auto space-y-2">
+                                        {permisosDisponibles.map(p => (
+                                            <label key={p.nombre} className="flex items-start gap-2 cursor-pointer group">
+                                                <input
+                                                    type="checkbox"
+                                                    className="mt-0.5 accent-emerald-600"
+                                                    checked={permisosSeleccionados.includes(p.nombre)}
+                                                    onChange={() => togglePermiso(p.nombre)}
+                                                />
+                                                <span className="text-sm text-slate-700 group-hover:text-emerald-700 transition-colors">
+                                                    {p.descripcion}
+                                                </span>
+                                            </label>
+                                        ))}
+                                        {permisosDisponibles.length === 0 && (
+                                            <p className="text-xs text-gray-400 text-center py-2">Cargando permisos...</p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="flex gap-3 pt-4">
@@ -208,14 +259,14 @@ export default function SectorPage() {
                         <h3 className="font-bold text-lg text-slate-800 mb-2">¿Dar de baja sector?</h3>
                         <p className="text-sm text-gray-500 mb-6">Esta acción cambiará el estado del sector a inactivo. El sistema mantendrá su historial.</p>
                         <div className="flex gap-3">
-                            <button 
-                                onClick={() => setSectorToDeactivate(null)} 
+                            <button
+                                onClick={() => setSectorToDeactivate(null)}
                                 className="flex-1 py-2.5 border border-slate-300 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-all"
                             >
                                 Cancelar
                             </button>
-                            <button 
-                                onClick={confirmDeactivate} 
+                            <button
+                                onClick={confirmDeactivate}
                                 className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 shadow-md transition-all"
                             >
                                 Sí, dar de baja

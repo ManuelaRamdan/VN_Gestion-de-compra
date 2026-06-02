@@ -28,7 +28,13 @@ export default function ProtectRoute({ children, allowedRole }) {
     const rolesPermitidos = Array.isArray(allowedRole) ? allowedRole : [allowedRole];
 
     // 4. Verificar si el rol del usuario está en la lista permitida
-    const tienePermiso = rolesPermitidos.some(role => role.toUpperCase() === currentRole);
+    const tienePermiso = rolesPermitidos.some(role => {
+        // Compatibilidad con sectores clásicos por nombre
+        if (currentRole === role.toUpperCase()) return true;
+        // Verificación por permisos dinámicos
+        const permisos = user?.permisos || [];
+        return permisos.some(p => p === role);
+    });
 
     if (!tienePermiso) {
         // Si no tiene permiso, lo mandamos al login (o podrías hacer una página de "Sin Permiso")
