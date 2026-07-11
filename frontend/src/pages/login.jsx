@@ -32,19 +32,21 @@ function Login() {
 
     try {
       const response = await loginRequest(username, password);
-      const { token, rol, username: usernameResponse } = response.data;
+      const { token, rol, permisos, username: usernameResponse } = response.data;
 
-      login(token, { username: usernameResponse, rol });
+      login(token, { username: usernameResponse, rol, permisos });
+
       if (rol === 'GERENCIA') {
-        navigate('/aprobSolicitud'); // Gerencia aterriza aquí primero
+        navigate('/aprobSolicitud');
+      } else if (permisos?.includes('PERM_SOLICITUDES_ADMIN') || permisos?.includes('PERM_APROBACIONES_VER')) {
+        navigate('/solicitudes');
       } else {
-        navigate('/solicitudes'); // Calidad y Admin aterrizan aquí
+        // Landing genérica para sectores nuevos sin ruta "natural" todavía asignada
+        navigate('/solicitudes');
       }
     } catch (error) {
       setErrorMessage("Credenciales incorrectas");
       localStorage.removeItem("SESSION_EXPIRED");
-
-      
     } finally {
       setLoading(false);
     }

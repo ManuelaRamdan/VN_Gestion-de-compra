@@ -34,7 +34,7 @@ api.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        if ((status === 401 || status === 403) && !manualLogout) {
+        if (status === 401  && !manualLogout) {
             localStorage.setItem("SESSION_EXPIRED", "true");
             window.location.replace("/");
         }

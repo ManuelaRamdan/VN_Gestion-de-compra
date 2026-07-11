@@ -3,8 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/login';
 import ProtectRoute from "./ProtectRoute";
 
-// --- IMPORTACIONES DE PÁGINAS UNIFICADAS ---
-import SolicitudesWrapper from "../pages/common/SolicitudesWrapper"; // El distribuidor inteligente
+import SolicitudesWrapper from "../pages/common/SolicitudesWrapper";
 import PresupuestosPage from "../pages/common/presupuesto/PresupuestosPage";
 import CompraPage from "../pages/common/compra/ComprasPage";
 import EvalEntregasPage from "../pages/common/evalEntrega/EvalEntregasPage";
@@ -21,33 +20,25 @@ import ProveedorPage from "../pages/common/proveedor/ProveedorPage";
 import ProductoPage from "../pages/common/producto/ProductoPage";
 import NivelPrioridadPage from "../pages/common/nivelPrioridad/PrioridadPage";
 
-// (Opcional) Importa otros componentes si tienes rutas específicas para proveedores, etc.
-// import ProveedoresPage from "../pages/common/ProveedoresPage"; 
-
 function AppRouter() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* 1. Login y Redirección Raíz */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/" element={<Login />} />
 
-                {/* 2. RUTA UNIFICADA: SOLICITUDES */}
-                {/* Admin verá su panel, Calidad/Gerencia verán la lista de aprobación */}
                 <Route
                     path="/solicitudes"
                     element={
-                        <ProtectRoute allowedRole={['ADMINISTRACION', 'CALIDAD', 'GERENCIA']}>
+                        <ProtectRoute allowedPermission={['PERM_SOLICITUDES_ADMIN', 'PERM_APROBACIONES_VER', 'PERM_SOLICITUDES_VER']}>
                             <SolicitudesWrapper />
                         </ProtectRoute>
                     }
                 />
-
-                {/* 3. SUB-RUTA: CREAR (Exclusiva Admin) */}
                 <Route
                     path="/solicitudes/nueva"
                     element={
-                        <ProtectRoute allowedRole={['ADMINISTRACION', 'CALIDAD', 'GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_SOLICITUDES_CREAR">
                             <CrearSolicitud />
                         </ProtectRoute>
                     }
@@ -55,17 +46,15 @@ function AppRouter() {
                 <Route
                     path="/usuario/nuevo"
                     element={
-                        <ProtectRoute allowedRole={['GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_USUARIOS_ADMIN">
                             <CrearUsuario />
                         </ProtectRoute>
                     }
                 />
-
-                {/* 4. RUTA UNIFICADA: PRESUPUESTOS */}
                 <Route
                     path="/presupuestos"
                     element={
-                        <ProtectRoute allowedRole={['CALIDAD', 'GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_PRESUPUESTOS">
                             <PresupuestosPage />
                         </ProtectRoute>
                     }
@@ -73,16 +62,15 @@ function AppRouter() {
                 <Route
                     path="/compras"
                     element={
-                        <ProtectRoute allowedRole={['CALIDAD', 'GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_COMPRAS">
                             <CompraPage />
                         </ProtectRoute>
                     }
                 />
-
                 <Route
                     path="/evalEntrega"
                     element={
-                        <ProtectRoute allowedRole={['CALIDAD', 'GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_EVAL_ENTREGA">
                             <EvalEntregasPage />
                         </ProtectRoute>
                     }
@@ -90,16 +78,15 @@ function AppRouter() {
                 <Route
                     path="/evalProveedor"
                     element={
-                        <ProtectRoute allowedRole={['CALIDAD', 'GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_EVAL_PROVEEDOR">
                             <EvalProveedorPage />
                         </ProtectRoute>
                     }
                 />
-
                 <Route
                     path="/aprobSolicitud"
                     element={
-                        <ProtectRoute allowedRole={['GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_APROBACIONES_VER">
                             <AprobSoliPage />
                         </ProtectRoute>
                     }
@@ -107,7 +94,7 @@ function AppRouter() {
                 <Route
                     path="/aprobPresupuesto"
                     element={
-                        <ProtectRoute allowedRole={['GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_APROBACIONES_VER">
                             <AprobPresuPage />
                         </ProtectRoute>
                     }
@@ -115,7 +102,7 @@ function AppRouter() {
                 <Route
                     path="/cierre"
                     element={
-                        <ProtectRoute allowedRole={['GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_CIERRES">
                             <CierrePage />
                         </ProtectRoute>
                     }
@@ -123,7 +110,7 @@ function AppRouter() {
                 <Route
                     path="/documentacion"
                     element={
-                        <ProtectRoute allowedRole={['GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_DOCUMENTACION">
                             <DocPage />
                         </ProtectRoute>
                     }
@@ -131,7 +118,7 @@ function AppRouter() {
                 <Route
                     path="/usuarios"
                     element={
-                        <ProtectRoute allowedRole={['GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_USUARIOS_ADMIN">
                             <UsuarioPage />
                         </ProtectRoute>
                     }
@@ -139,7 +126,7 @@ function AppRouter() {
                 <Route
                     path="/sector"
                     element={
-                        <ProtectRoute allowedRole={['GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_USUARIOS_ADMIN">
                             <SectorPage />
                         </ProtectRoute>
                     }
@@ -147,7 +134,7 @@ function AppRouter() {
                 <Route
                     path="/proveedor"
                     element={
-                        <ProtectRoute allowedRole={['GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_PROVEEDORES_ADMIN">
                             <ProveedorPage />
                         </ProtectRoute>
                     }
@@ -155,7 +142,7 @@ function AppRouter() {
                 <Route
                     path="/producto"
                     element={
-                        <ProtectRoute allowedRole={['GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_PRODUCTOS_ADMIN">
                             <ProductoPage />
                         </ProtectRoute>
                     }
@@ -163,12 +150,11 @@ function AppRouter() {
                 <Route
                     path="/nivelPrioridad"
                     element={
-                        <ProtectRoute allowedRole={['GERENCIA']}>
+                        <ProtectRoute allowedPermission="PERM_PRIORIDADES_ADMIN">
                             <NivelPrioridadPage />
                         </ProtectRoute>
                     }
                 />
-
             </Routes>
         </BrowserRouter>
     );
