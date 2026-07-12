@@ -8,51 +8,46 @@ export default function Navbar() {
     const location = useLocation();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const getRoleName = (u) => {
-        if (!u) return "";
-        if (u.rol && typeof u.rol === 'string') return u.rol.toUpperCase();
-        return "";
-    };
-
-    const userRole = getRoleName(user);
+    const permisos = user?.permisos || [];
+    const tienePermiso = (requeridos = []) => requeridos.some(p => permisos.includes(p));
 
     const NAV_LINKS = [
-        { name: 'Usuarios', path: '/usuarios', allowedRoles: ['GERENCIA'] },
-        { name: 'Solicitudes', path: '/solicitudes', allowedRoles: ['ADMINISTRACION', 'CALIDAD', 'GERENCIA'] },
-        { name: 'Presupuestos', path: '/presupuestos', allowedRoles: ['CALIDAD', 'GERENCIA'] },
+        { name: 'Usuarios', path: '/usuarios', allowedPermissions: ['PERM_USUARIOS_ADMIN'] },
+        { name: 'Solicitudes', path: '/solicitudes', allowedPermissions: ['PERM_SOLICITUDES_ADMIN', 'PERM_APROBACIONES_VER', 'PERM_SOLICITUDES_VER'] },
+        { name: 'Presupuestos', path: '/presupuestos', allowedPermissions: ['PERM_PRESUPUESTOS'] },
         {
             name: 'Aprobaciones',
-            allowedRoles: ['GERENCIA'],
+            allowedPermissions: ['PERM_APROBACIONES_VER'],
             subLinks: [
-                { name: 'Aprob. Solicitud', path: '/aprobSolicitud', allowedRoles: ['GERENCIA'] },
-                { name: 'Aprob. Presupuesto', path: '/aprobPresupuesto', allowedRoles: ['GERENCIA'] }
+                { name: 'Aprob. Solicitud', path: '/aprobSolicitud', allowedPermissions: ['PERM_APROBACIONES_VER'] },
+                { name: 'Aprob. Presupuesto', path: '/aprobPresupuesto', allowedPermissions: ['PERM_APROBACIONES_VER'] }
             ]
         },
-        { name: 'Compras', path: '/compras', allowedRoles: ['CALIDAD', 'GERENCIA'] },
+        { name: 'Compras', path: '/compras', allowedPermissions: ['PERM_COMPRAS'] },
         {
             name: 'Evaluaciones',
-            allowedRoles: ['CALIDAD', 'GERENCIA'],
+            allowedPermissions: ['PERM_EVAL_ENTREGA', 'PERM_EVAL_PROVEEDOR'],
             subLinks: [
-                { name: 'Eval. Entrega', path: '/evalEntrega', allowedRoles: ['CALIDAD', 'GERENCIA'] },
-                { name: 'Eval. Proveedor', path: '/evalProveedor', allowedRoles: ['CALIDAD', 'GERENCIA'] }
+                { name: 'Eval. Entrega', path: '/evalEntrega', allowedPermissions: ['PERM_EVAL_ENTREGA'] },
+                { name: 'Eval. Proveedor', path: '/evalProveedor', allowedPermissions: ['PERM_EVAL_PROVEEDOR'] }
             ]
         },
-        { name: 'Cierre', path: '/cierre', allowedRoles: ['GERENCIA'] },
-        { name: 'Documentación', path: '/documentacion', allowedRoles: ['GERENCIA'] },
+        { name: 'Cierre', path: '/cierre', allowedPermissions: ['PERM_CIERRES'] },
+        { name: 'Documentación', path: '/documentacion', allowedPermissions: ['PERM_DOCUMENTACION'] },
         {
             name: 'Otros',
-            allowedRoles: ['GERENCIA'],
+            allowedPermissions: ['PERM_USUARIOS_ADMIN', 'PERM_PROVEEDORES_ADMIN', 'PERM_PRODUCTOS_ADMIN', 'PERM_PRIORIDADES_ADMIN'],
             subLinks: [
-                { name: 'Sector', path: '/sector', allowedRoles: ['GERENCIA'] },
-                { name: 'Proveedor', path: '/proveedor', allowedRoles: ['GERENCIA'] },
-                { name: 'Producto', path: '/producto', allowedRoles: ['GERENCIA'] },
-                { name: 'Nivel Prioridad', path: '/nivelPrioridad', allowedRoles: ['GERENCIA'] },
+                { name: 'Sector', path: '/sector', allowedPermissions: ['PERM_USUARIOS_ADMIN'] },
+                { name: 'Proveedor', path: '/proveedor', allowedPermissions: ['PERM_PROVEEDORES_ADMIN'] },
+                { name: 'Producto', path: '/producto', allowedPermissions: ['PERM_PRODUCTOS_ADMIN'] },
+                { name: 'Nivel Prioridad', path: '/nivelPrioridad', allowedPermissions: ['PERM_PRIORIDADES_ADMIN'] },
             ]
         }
     ];
 
     const visibleLinks = NAV_LINKS.filter(link =>
-        link.allowedRoles.includes(userRole)
+        tienePermiso(link.allowedPermissions)
     );
 
     return (
@@ -98,7 +93,7 @@ export default function Navbar() {
                                         <div className="absolute left-0 top-full mt-1 w-52 bg-white border border-slate-200 shadow-xl rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all flex flex-col py-2 z-50">
 
                                             {link.subLinks.map((subLink) => {
-                                                if (!subLink.allowedRoles.includes(userRole)) return null;
+                                                if (!tienePermiso(subLink.allowedPermissions)) return null;
 
                                                 return (
                                                     <Link
@@ -182,7 +177,7 @@ export default function Navbar() {
                                         </div>
 
                                         {link.subLinks.map((subLink) => {
-                                            if (!subLink.allowedRoles.includes(userRole)) return null;
+                                            if (!tienePermiso(subLink.allowedPermissions)) return null;
 
                                             return (
                                                 <Link

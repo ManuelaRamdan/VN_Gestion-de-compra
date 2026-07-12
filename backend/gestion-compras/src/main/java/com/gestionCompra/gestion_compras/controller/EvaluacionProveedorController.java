@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -50,9 +51,9 @@ public class EvaluacionProveedorController {
 
     @Autowired
     private ProveedorRepo proveedorRepo;
-    
+
     @Autowired
-    private PdfGeneratorService pdfService; 
+    private PdfGeneratorService pdfService;
 
     @PostMapping("/")
     public ResponseEntity<?> crearEvaluacion(@RequestBody Map<String, Object> request, Authentication authentication) {
@@ -157,16 +158,50 @@ public class EvaluacionProveedorController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-    
+
     @GetMapping("/descargar/{idEval}")
-public ResponseEntity<byte[]> descargarPdf(@PathVariable Integer idEval) throws Exception {
-    byte[] pdfBytes = pdfService.generarEvaluacionProveedorPdf(idEval);
+    public ResponseEntity<byte[]> descargarPdf(@PathVariable Integer idEval) throws Exception {
+        byte[] pdfBytes = pdfService.generarEvaluacionProveedorPdf(idEval);
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_PDF);
-    headers.setContentDispositionFormData("attachment", "evaluacion_proveedor_" + idEval + ".pdf");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "evaluacion_proveedor_" + idEval + ".pdf");
 
-    return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
-}
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/existe/{idProveedor}")
+    public ResponseEntity<?> existeEvaluacion(@PathVariable Integer idProveedor) {
+        boolean tiene = evalProveedorService.tieneEvaluaciones(idProveedor);
+        return ResponseEntity.ok(Map.of("tieneEvaluaciones", tiene));
+    }
+
+    // Descarga un ZIP con el PDF de cada evaluación de un período.
+    // El período se define indicando "anio" (usa periodoEvaluado) O el
+    // rango "desde"/"hasta" (usa la fecha de carga de la evaluación).
+    @GetMapping("/descargar-periodo")
+    public ResponseEntity<?> descargarPorPeriodo(
+            @RequestParam(required = false) Integer anio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        try {
+            byte[] zipBytes = pdfService.generarZipEvaluacionesPorPeriodo(anio, desde, hasta);
+
+            String filename = anio != null
+                    ? "evaluaciones_proveedores_" + anio + ".zip"
+                    : "evaluaciones_proveedores_" + desde + "_a_" + hasta + ".zip";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/zip"));
+            headers.setContentDispositionFormData("attachment", filename);
+
+            return new ResponseEntity<>(zipBytes, headers, HttpStatus.OK);
+
+        } catch (com.gestionCompra.gestion_compras.dto.ManejoErrores e) {
+            return ResponseEntity.status(e.getStatus()).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error inesperado: " + e.getMessage()));
+        }
+    }
 
 }

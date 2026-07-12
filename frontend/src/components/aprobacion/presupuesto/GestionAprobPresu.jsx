@@ -107,10 +107,12 @@ export default function GestionAprobPresu({ grupoSeleccionado, soloLectura, onCl
                                             <Calendar size={16} className="text-gray-400 shrink-0"/> 
                                             <span className="text-xs">Recibido: <b className="text-slate-700">{formatDateLocal(p.fechaRecepcion)}</b></span>
                                         </div>
-                                        <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-md border border-slate-100">
-                                            <CheckCircle size={16} className={`shrink-0 ${p.cotizacionSatisfactoria ? "text-emerald-500" : "text-gray-400"}`}/> 
-                                            <span className="text-xs">Validación de Compras: <b className={p.cotizacionSatisfactoria ? 'text-emerald-700' : 'text-slate-700'}>{p.cotizacionSatisfactoria ? "Satisfactoria" : "Normal"}</b></span>
-                                        </div>
+                                        {soloLectura && (
+                                            <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-md border border-slate-100">
+                                                <CheckCircle size={16} className={`shrink-0 ${p.cotizacionSatisfactoria ? "text-emerald-500" : "text-gray-400"}`}/> 
+                                                <span className="text-xs">Resultado de evaluación: <b className={p.cotizacionSatisfactoria ? 'text-emerald-700' : 'text-slate-700'}>{p.cotizacionSatisfactoria ? "Satisfactoria" : "No satisfactoria"}</b></span>
+                                            </div>
+                                        )}
 
                                         {p.observaciones && (
                                             <div className="mt-2 text-xs italic text-slate-500 bg-yellow-50/50 p-2 border-l-2 border-yellow-300">

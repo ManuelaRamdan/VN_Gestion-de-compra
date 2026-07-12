@@ -35,9 +35,8 @@ public class ProveedorController {
     }
 
     @GetMapping("/listar")
-    public ResponseEntity<Paginacion<Proveedor>> listarTodo(@RequestParam(defaultValue = "0") 
-            int page, @RequestParam(defaultValue = "10") int size) {
-         Pageable pageable = PageRequest.of(
+    public ResponseEntity<Paginacion<Proveedor>> listarTodo(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(
                 page,
                 size,
                 Sort.by(Sort.Direction.DESC, "idProveedor")
@@ -64,5 +63,10 @@ public class ProveedorController {
     public ResponseEntity<?> darDeBaja(@PathVariable Integer id_proveedor) {
         proveedorService.bajaLogica(id_proveedor);
         return ResponseEntity.ok(Map.of("message", "Proveedor desactivado (Baja lógica)"));
+    }
+
+    @GetMapping("/todos")
+    public ResponseEntity<List<Proveedor>> listarTodosSinPaginar() {
+        return ResponseEntity.ok(proveedorService.listarTodosActivos());
     }
 }

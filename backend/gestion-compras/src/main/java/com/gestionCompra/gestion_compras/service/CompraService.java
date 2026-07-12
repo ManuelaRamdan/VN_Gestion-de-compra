@@ -10,6 +10,7 @@ import com.gestionCompra.gestion_compras.repository.UsuarioRepo;
 import com.gestionCompra.gestion_compras.util.ABMGenerico;
 import com.gestionCompra.gestion_compras.util.ABMLogicoGenerico;
 import jakarta.annotation.PostConstruct;
+import java.io.File;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class CompraService extends ABMGenerico<Compra, Integer> {
 
     @Autowired
     private UsuarioRepo usuarioRepo;
-    
+
     @Value("${pdf.storage.path}")
     private String storagePath;
 
@@ -144,7 +145,6 @@ public class CompraService extends ABMGenerico<Compra, Integer> {
             compra.setFacturaPdfPath((String) campos.get("factura_pdf_path"));
         }
 
-
         LocalDate fSol = compra.getFechaSolicitud();
         LocalDate fRec = compra.getFechaRecepcion();
 
@@ -195,22 +195,23 @@ public class CompraService extends ABMGenerico<Compra, Integer> {
         return new Paginacion<>(page);
     }
 
-    public String guardarArchivo(MultipartFile file) {
+    public String guardarArchivo(MultipartFile archivo) {
         try {
-            if (file.isEmpty()) {
-                return null; 
+            if (archivo.isEmpty()) {
+                return null;
             }
 
-            // Crear directorio si no existe (usando el rootLocation dinámico)
-            Files.createDirectories(rootLocation);
+            String nombreOriginal = archivo.getOriginalFilename();
 
-            // Generar nombre único
-            String filename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            // Generamos el UUID único
+            String prefijoUnico = UUID.randomUUID().toString();
+            String nombreArchivoUnico = prefijoUnico + "_" + nombreOriginal;
 
-            // Guardar en disco
-            Files.copy(file.getInputStream(), this.rootLocation.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+            File destino = new File(storagePath, nombreArchivoUnico);
+            archivo.transferTo(destino);
 
-            return filename; 
+            return nombreArchivoUnico;
+
         } catch (IOException e) {
             throw new RuntimeException("Error al guardar el archivo: " + e.getMessage());
         }

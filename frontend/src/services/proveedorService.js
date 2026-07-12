@@ -15,3 +15,7 @@ export const modificarProveedor = async (idProveedor, data) => {
 export const darDeBajaProveedor = async (idProveedor) => {
     return await api.patch(`/api/proveedores/${idProveedor}`);
 };
+
+export const listarProveedoresTodos = async () => {
+    return await api.get(`/api/proveedores/todos`);
+};

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Plus, FileText, Calendar, CheckCircle, UploadCloud, Pencil, X, Trash2, AlertCircle, Check, Lock, MessageSquare } from 'lucide-react';
-import { listarPresupuestosPorAprobacion, listarProveedores, guardarPresupuesto, actualizarPresupuesto, obtenerUrlPdf } from '../../services/presupuestoService';
+import { listarPresupuestosPorAprobacion, guardarPresupuesto, actualizarPresupuesto, obtenerUrlPdf } from '../../services/presupuestoService';
+import { listarProveedoresTodos } from '../../services/proveedorService';
 import Loading from '../Loading';
 
 export default function GestionPresupuestos({ aprobacion, onBack }) {
@@ -25,9 +26,8 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
         idProveedor: "",
         fechaSolicitud: new Date().toISOString().split('T')[0],
         fechaRecepcion: "",
-        observaciones: "",
-        cotizacionSatisfactoria: false
-    };
+        observaciones: ""
+        };
 
     const [formData, setFormData] = useState(initialForm);
 
@@ -40,7 +40,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
             const idAprob = aprobacion.id || aprobacion.idAprobSolicitud;
             const [resPresupuestos, resProveedores] = await Promise.all([
                 listarPresupuestosPorAprobacion(idAprob),
-                listarProveedores()
+                listarProveedoresTodos()
             ]);
 
             setPresupuestos(resPresupuestos.data?.contenido || resPresupuestos.data || []);
@@ -111,9 +111,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
             fechaSolicitud: presupuesto.fechaSolicitud || "",
             fechaRecepcion: presupuesto.fechaRecepcion || "",
             archivoPdfPath: presupuesto.archivoPdfPath || "",
-            observaciones: presupuesto.observaciones || "",
-            cotizacionSatisfactoria: presupuesto.cotizacionSatisfactoria || false
-        });
+            observaciones: presupuesto.observaciones || ""        });
         limpiarMensajes();
         setShowModal(true);
     };
@@ -128,8 +126,6 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
             dataToSend.append("fechaSolicitud", formData.fechaSolicitud);
             dataToSend.append("fechaRecepcion", formData.fechaRecepcion);
             dataToSend.append("observaciones", formData.observaciones);
-            dataToSend.append("cotizacionSatisfactoria", formData.cotizacionSatisfactoria);
-
             if (file) {
                 dataToSend.append("file", file);
             }
@@ -412,11 +408,6 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Observaciones</label>
                                 <textarea className="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none resize-none h-20" value={formData.observaciones} onChange={e => setFormData({ ...formData, observaciones: e.target.value })} disabled={hayDecisionTomada}></textarea>
-                            </div>
-
-                            <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                                <input type="checkbox" id="satisfactorio" className="w-5 h-5 accent-emerald-600 cursor-pointer" checked={formData.cotizacionSatisfactoria} onChange={e => setFormData({ ...formData, cotizacionSatisfactoria: e.target.checked })} disabled={hayDecisionTomada} />
-                                <label htmlFor="satisfactorio" className="text-sm font-medium text-emerald-900 cursor-pointer select-none">Cotización Satisfactoria</label>
                             </div>
 
                             <div className="flex gap-3 pt-2">

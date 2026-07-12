@@ -25,7 +25,7 @@ export const modificarEvaluacionProveedor = (id, data) =>
     api.put(`/api/evalProveedor/${id}`, data);
 
 
-export const listarProveedores = async (page = 0, size=10) => {
+export const listarProveedores = async (page = 0, size = 10) => {
     return api.get(`/api/proveedores/listar?page=${page}&size=${size}`);
 };
 
@@ -41,4 +41,31 @@ export const descargarEvaluacionPdf = async (idEval) => {
     document.body.appendChild(link);
     link.click();
     link.remove();
+};
+
+export const tieneEvaluacionesProveedor = (idProveedor) =>
+    api.get(`/api/evalProveedor/existe/${idProveedor}`);
+
+
+export const descargarEvaluacionesPorPeriodo = async ({ anio, desde, hasta } = {}) => {
+    const params = anio ? { anio } : { desde, hasta };
+
+    const response = await api.get(`/api/evalProveedor/descargar-periodo`, {
+        params,
+        responseType: 'blob'
+    });
+
+    const nombreArchivo = anio
+        ? `evaluaciones_proveedores_${anio}.zip`
+        : `evaluaciones_proveedores_${desde}_a_${hasta}.zip`;
+
+    const blob = new Blob([response.data], { type: 'application/zip' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', nombreArchivo);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
 };

@@ -2,6 +2,11 @@ package com.gestionCompra.gestion_compras.domain.entidades;
 
 import com.gestionCompra.gestion_compras.util.EntidadBase;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "sector")
@@ -47,5 +52,47 @@ public class Sector implements EntidadBase {
 
     public void setIdSector(Integer idSector) {
         this.idSector = idSector;
+    }
+
+    @OneToMany(mappedBy = "sector", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SectorPermiso> permisos = new ArrayList<>();
+
+    public List<SectorPermiso> getPermisos() {
+        return permisos;
+    }
+
+    public void setPermisos(List<SectorPermiso> permisos) {
+        this.permisos = permisos;
+    }
+
+    /**
+     * Devuelve los permisos efectivos del sector, ya expandidos:
+     * todo permiso "_ADMIN" implica automáticamente el "_VER" del mismo recurso,
+     * aunque no se haya asignado explícitamente al crear/editar el sector.
+     * Esto evita tener que dar de alta ambos permisos a mano cada vez que
+     * se crea un sector nuevo o se le asigna un permiso de administración.
+     */
+    public List<String> getNombresPermisos() {
+        List<String> base = permisos.stream()
+                .map(SectorPermiso::getGrupoRuta)
+                .collect(Collectors.toList());
+
+        return expandirPermisos(base);
+    }
+
+    private static final String SUFIJO_ADMIN = "_ADMIN";
+    private static final String SUFIJO_VER = "_VER";
+
+    private List<String> expandirPermisos(List<String> base) {
+        Set<String> efectivos = new LinkedHashSet<>(base);
+
+        for (String permiso : base) {
+            if (permiso != null && permiso.endsWith(SUFIJO_ADMIN)) {
+                String recurso = permiso.substring(0, permiso.length() - SUFIJO_ADMIN.length());
+                efectivos.add(recurso + SUFIJO_VER);
+            }
+        }
+
+        return new ArrayList<>(efectivos);
     }
 }

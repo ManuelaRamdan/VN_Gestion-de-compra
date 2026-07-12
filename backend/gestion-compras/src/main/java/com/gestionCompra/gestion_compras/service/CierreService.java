@@ -11,8 +11,11 @@ import com.gestionCompra.gestion_compras.domain.entidades.Solicitud;
 import com.gestionCompra.gestion_compras.domain.entidades.Usuario;
 import com.gestionCompra.gestion_compras.dto.ManejoErrores;
 import com.gestionCompra.gestion_compras.repository.CierreRepo;
+import com.gestionCompra.gestion_compras.repository.EvalProveedorRepo;
 import com.gestionCompra.gestion_compras.repository.EvaluacionEntregaRepo;
 import com.gestionCompra.gestion_compras.repository.UsuarioRepo;
+import com.gestionCompra.gestion_compras.domain.entidades.Proveedor;
+import com.gestionCompra.gestion_compras.repository.SolicitudRepo;
 import com.gestionCompra.gestion_compras.util.ABMGenerico;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -38,14 +41,45 @@ public class CierreService extends ABMGenerico<Cierre, Integer> {
     @Autowired
     private UsuarioRepo usuarioRepo;
 
+    @Autowired
+    private EvalProveedorRepo evalProveedorRepo;
+    
+    @Autowired
+    private SolicitudRepo solicitudRepo;
+
     @Transactional
     public Cierre crearCierre(Integer idEval, Cierre cierre) {
         // 1. Verificar Evaluación y unicidad (1:1)
+        
+        
         EvaluacionEntrega eval = evaluacionRepo.findById(idEval)
                 .orElseThrow(() -> new ManejoErrores(HttpStatus.NOT_FOUND, "Evaluación no encontrada."));
 
         if (cierreRepo.existsByEvaluacionEntrega_IdEvaluacionEntrega(idEval)) {
             throw new ManejoErrores(HttpStatus.CONFLICT, "Esta evaluación ya tiene un cierre registrado.");
+        }
+
+        // 2. Regla de negocio: no se puede cerrar la compra si el proveedor
+        // todavía no tiene ninguna Evaluación de Proveedor registrada.
+        Proveedor proveedor;
+        try {
+            proveedor = eval.getCompra()
+                    .getAprobacionPresupuesto()
+                    .getPresupuesto()
+                    .getProveedor();
+        } catch (NullPointerException e) {
+            throw new ManejoErrores(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo determinar el proveedor asociado a esta compra.");
+        }
+
+        if (proveedor == null || proveedor.getIdProveedor() == null) {
+            throw new ManejoErrores(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo determinar el proveedor asociado a esta compra.");
+        }
+
+        boolean tieneEvaluacion = evalProveedorRepo.existsByProveedor_IdProveedor(proveedor.getIdProveedor());
+        if (!tieneEvaluacion) {
+            throw new ManejoErrores(HttpStatus.CONFLICT,
+                    "No se puede cerrar la compra: el proveedor '" + proveedor.getNombreEmpresa()
+                    + "' todavía no tiene una Evaluación de Proveedor registrada.");
         }
 
         try {
@@ -57,7 +91,7 @@ public class CierreService extends ABMGenerico<Cierre, Integer> {
 
             solicitud.setCerrado(true);
             // Necesitarás inyectar SolicitudRepo en este servicio
-            // solicitudRepo.save(solicitud); 
+            solicitudRepo.save(solicitud); 
         } catch (NullPointerException e) {
             throw new ManejoErrores(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo encontrar la solicitud raíz para cerrar.");
         }
@@ -90,7 +124,7 @@ public class CierreService extends ABMGenerico<Cierre, Integer> {
             existente.setObservaciones(cierreActualizado.getObservaciones());
         }
 
-        existente.setFechaCierre(LocalDate.now());
+        //existente.setFechaCierre(LocalDate.now());
 
         return cierreRepo.save(existente);
     }

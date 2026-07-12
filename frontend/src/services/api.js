@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8081"
-    //baseURL: "http://localhost:8081"
+    //baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8081"
+    baseURL: "http://localhost:8081"
 });
 
 /*
@@ -34,7 +34,7 @@ api.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        if ((status === 401 || status === 403) && !manualLogout) {
+        if (status === 401  && !manualLogout) {
             localStorage.setItem("SESSION_EXPIRED", "true");
             window.location.replace("/");
         }

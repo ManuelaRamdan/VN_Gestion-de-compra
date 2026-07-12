@@ -61,6 +61,10 @@ public class UsuarioController {
         response.put("token", jwt);
         response.put("username", userDetails.getUsername());
         response.put("rol", userDetails.getSector());
+        response.put("permisos", userDetails.getAuthorities()
+                .stream()
+                .map(a -> a.getAuthority())
+                .collect(java.util.stream.Collectors.toList()));
 
         return ResponseEntity.ok(response);
     }
@@ -68,7 +72,7 @@ public class UsuarioController {
     @PostMapping("/registrar")
     public ResponseEntity<?> registrar(@RequestBody RegistroRequest request) {
         Usuario creado = usuarioService.registrarNuevoUsuario(request);
-       
+
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "message", "Usuario registrado exitosamente",
                 "username", creado.getUsername()
@@ -82,21 +86,21 @@ public class UsuarioController {
 
         try {
             // Spring Data JPA usa PageRequest para manejar el LIMIT y OFFSET de SQL
-             Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "idUsuario")
-        );
+            Pageable pageable = PageRequest.of(
+                    page,
+                    size,
+                    Sort.by(Sort.Direction.DESC, "idUsuario")
+            );
             // El repo devuelve un objeto Page con contenido y metadatos de paginación
             Page<Usuario> usuariosPage = usuarioService.listarUsuariosActivos(pageable);
 
             return ResponseEntity.ok(new Paginacion<>(usuariosPage));
         } catch (Exception e) {
             throw new ManejoErrores(HttpStatus.INTERNAL_SERVER_ERROR, "Error al listar usuarios: " + e.getMessage());
-           
+
         }
     }
-    
+
     @GetMapping("/{id_usuario}")
     public ResponseEntity<?> listarByIdUsuario(
             @PathVariable Integer id_usuario) {
@@ -107,7 +111,7 @@ public class UsuarioController {
             return ResponseEntity.ok(usuarioBuscado);
         } catch (Exception e) {
             throw new ManejoErrores(HttpStatus.INTERNAL_SERVER_ERROR, "Usuario no encontrado");
-           
+
         }
     }
 

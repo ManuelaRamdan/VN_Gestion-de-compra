@@ -29,3 +29,26 @@ export const descargarExpedientePdf = async (idCierre, idSolicitud) => {
         throw error;
     }
 };
+
+export const descargarExpedientesPorPeriodo = async ({ anio, desde, hasta } = {}) => {
+    const params = anio ? { anio } : { desde, hasta };
+
+    const response = await api.get(`/api/documentacion/descargar-periodo`, {
+        params,
+        responseType: 'blob'
+    });
+
+    const nombreArchivo = anio
+        ? `expedientes_compras_${anio}.zip`
+        : `expedientes_compras_${desde}_a_${hasta}.zip`;
+
+    const blob = new Blob([response.data], { type: 'application/zip' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', nombreArchivo);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+};

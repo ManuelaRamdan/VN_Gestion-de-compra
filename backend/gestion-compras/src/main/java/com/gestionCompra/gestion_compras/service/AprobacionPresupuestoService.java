@@ -3,10 +3,12 @@ package com.gestionCompra.gestion_compras.service;
 import com.gestionCompra.gestion_compras.domain.entidades.AprobacionPresupuesto;
 import com.gestionCompra.gestion_compras.domain.entidades.AprobacionSolicitud;
 import com.gestionCompra.gestion_compras.domain.entidades.EvaluacionEntrega;
+import com.gestionCompra.gestion_compras.domain.entidades.Presupuesto;
 import com.gestionCompra.gestion_compras.domain.entidades.Usuario;
 import com.gestionCompra.gestion_compras.dto.ManejoErrores;
 import com.gestionCompra.gestion_compras.dto.Paginacion;
 import com.gestionCompra.gestion_compras.repository.AprobacionPresuRepo;
+import com.gestionCompra.gestion_compras.repository.PresupuestoRepo;
 import com.gestionCompra.gestion_compras.util.ABMGenerico;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,24 +24,28 @@ import org.springframework.http.HttpStatus;
 public class AprobacionPresupuestoService extends ABMGenerico<AprobacionPresupuesto, Integer> {
 
     private final AprobacionPresuRepo aprobacionRepo;
+    private final PresupuestoRepo presupuestoRepo;
 
-    public AprobacionPresupuestoService(AprobacionPresuRepo aprobacionRepo) {
+    public AprobacionPresupuestoService(AprobacionPresuRepo aprobacionRepo, PresupuestoRepo presupuestoRepo) {
         this.aprobacionRepo = aprobacionRepo;
+        this.presupuestoRepo = presupuestoRepo;
     }
 
     @Transactional
     public AprobacionPresupuesto procesarDecision(Integer idPresupuesto, String nuevoEstado, Usuario gerente) {
-        // 1. Obtener la aprobación actual
         AprobacionPresupuesto aprobacion = aprobacionRepo.findByPresupuesto_IdPresupuesto(idPresupuesto)
                 .orElseThrow(() -> new RuntimeException("No existe registro para el presupuesto: " + idPresupuesto));
 
-        // 2. Actualizar el presupuesto actual
         String estadoUpper = nuevoEstado.toUpperCase();
         aprobacion.setEstado(estadoUpper);
         aprobacion.setFecha(LocalDateTime.now());
         aprobacion.setUsuario(gerente);
 
-        // 3. Lógica de rechazo en cadena
+        // NUEVO: la decisión de gerencia define si la cotización fue satisfactoria
+        Presupuesto presupuesto = aprobacion.getPresupuesto();
+        presupuesto.setCotizacionSatisfactoria("APROBADA".equals(estadoUpper));
+        presupuestoRepo.save(presupuesto);
+
         if ("APROBADA".equals(estadoUpper)) {
             rechazarOtrosPresupuestos(idPresupuesto, aprobacion.getPresupuesto().getAprobacionSolicitud().getSolicitud().getIdSolicitud(), gerente);
         }
@@ -48,7 +54,6 @@ public class AprobacionPresupuestoService extends ABMGenerico<AprobacionPresupue
     }
 
     private void rechazarOtrosPresupuestos(Integer idPresupuestoActual, Integer idSolicitud, Usuario gerente) {
-        // Buscamos todas las aprobaciones de la misma solicitud, excluyendo la actual
         List<AprobacionPresupuesto> otrasAprobaciones = aprobacionRepo
                 .findByPresupuesto_AprobacionSolicitud_Solicitud_IdSolicitudAndPresupuesto_IdPresupuestoNot(idSolicitud, idPresupuestoActual);
 
@@ -56,8 +61,12 @@ public class AprobacionPresupuestoService extends ABMGenerico<AprobacionPresupue
             otra.setEstado("RECHAZADA");
             otra.setFecha(LocalDateTime.now());
             otra.setUsuario(gerente);
-
             aprobacionRepo.save(otra);
+
+            // NUEVO: consistencia — los rechazados en cadena también quedan como no satisfactorios
+            Presupuesto p = otra.getPresupuesto();
+            p.setCotizacionSatisfactoria(false);
+            presupuestoRepo.save(p);
         }
     }
 

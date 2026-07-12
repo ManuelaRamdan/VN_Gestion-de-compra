@@ -53,15 +53,16 @@ public class UsuarioService extends ABMLogicoGenerico<Usuario, Integer> implemen
                 u.getPassword(),
                 u.getSector().getNombre(),
                 u.getActivo(),
-                u.getIdUsuario()
+                u.getIdUsuario(),
+                u.getSector().getNombresPermisos() // ← esto es lo único que se agrega
         ))
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 
     @Transactional
     public Usuario registrarNuevoUsuario(RegistroRequest datos) {
-        
-            String nombreLimpio = datos.username().trim();
+
+        String nombreLimpio = datos.username().trim();
 
         if (usuarioRepository.findByUsernameIgnoreCaseAndActivoTrue(nombreLimpio).isPresent()) {
             throw new ManejoErrores(
@@ -87,7 +88,7 @@ public class UsuarioService extends ABMLogicoGenerico<Usuario, Integer> implemen
         Usuario usuario = findById(id);
 
         if (datos.username() != null) {
-            
+
             String nombreLimpio = datos.username().trim();
             usuarioRepository.findByUsernameIgnoreCaseAndActivoTrue(nombreLimpio)
                     .ifPresent(u -> {
@@ -95,7 +96,7 @@ public class UsuarioService extends ABMLogicoGenerico<Usuario, Integer> implemen
                             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de usuario ya está en uso");
                         }
                     });
-           usuario.setUsername(nombreLimpio);
+            usuario.setUsername(nombreLimpio);
         }
 
         if (datos.password() != null && !datos.password().isBlank()) {
