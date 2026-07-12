@@ -97,6 +97,8 @@ public class EvaluacionProveedorService extends ABMGenerico<EvaluacionProveedor,
         eval.setAprobado(eval.getResultado().compareTo(minimo) >= 0);
     }
     
-    
+    public boolean tieneEvaluaciones(Integer idProveedor) {
+    return evalProveedorRepo.existsByProveedor_IdProveedor(idProveedor);
+}
    
 }

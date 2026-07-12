@@ -20,6 +20,6 @@ import org.springframework.stereotype.Repository;
 public interface EvalProveedorRepo extends JpaRepository<EvaluacionProveedor, Integer> {
 
     public Page<EvaluacionProveedor> findByProveedor_NombreEmpresaContainingIgnoreCaseOrderByIdEvalProveedorDesc(String nombre, Pageable paginable);
-
+    boolean existsByProveedor_IdProveedor(Integer idProveedor);
     
 }

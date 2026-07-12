@@ -42,3 +42,6 @@ export const descargarEvaluacionPdf = async (idEval) => {
     link.click();
     link.remove();
 };
+
+export const tieneEvaluacionesProveedor = (idProveedor) =>
+    api.get(`/api/evalProveedor/existe/${idProveedor}`);

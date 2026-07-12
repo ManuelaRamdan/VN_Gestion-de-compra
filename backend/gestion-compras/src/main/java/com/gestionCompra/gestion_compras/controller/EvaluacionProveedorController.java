@@ -50,9 +50,9 @@ public class EvaluacionProveedorController {
 
     @Autowired
     private ProveedorRepo proveedorRepo;
-    
+
     @Autowired
-    private PdfGeneratorService pdfService; 
+    private PdfGeneratorService pdfService;
 
     @PostMapping("/")
     public ResponseEntity<?> crearEvaluacion(@RequestBody Map<String, Object> request, Authentication authentication) {
@@ -157,16 +157,22 @@ public class EvaluacionProveedorController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-    
+
     @GetMapping("/descargar/{idEval}")
-public ResponseEntity<byte[]> descargarPdf(@PathVariable Integer idEval) throws Exception {
-    byte[] pdfBytes = pdfService.generarEvaluacionProveedorPdf(idEval);
+    public ResponseEntity<byte[]> descargarPdf(@PathVariable Integer idEval) throws Exception {
+        byte[] pdfBytes = pdfService.generarEvaluacionProveedorPdf(idEval);
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_PDF);
-    headers.setContentDispositionFormData("attachment", "evaluacion_proveedor_" + idEval + ".pdf");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "evaluacion_proveedor_" + idEval + ".pdf");
 
-    return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
-}
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/existe/{idProveedor}")
+    public ResponseEntity<?> existeEvaluacion(@PathVariable Integer idProveedor) {
+        boolean tiene = evalProveedorService.tieneEvaluaciones(idProveedor);
+        return ResponseEntity.ok(Map.of("tieneEvaluaciones", tiene));
+    }
 
 }

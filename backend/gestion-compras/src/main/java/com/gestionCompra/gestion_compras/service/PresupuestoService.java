@@ -49,7 +49,7 @@ public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
 
     @Autowired
     private UsuarioService UsuarioService;
-    
+
     @Value("${pdf.storage.path}")
     private String storagePath;
 
@@ -130,8 +130,8 @@ public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
 
         // Si NO es PENDIENTE (es decir, es APROBADA o RECHAZADA), prohibimos la edición.
         if (!"PENDIENTE".equalsIgnoreCase(aprobacion.getEstado())) {
-            throw new ManejoErrores(HttpStatus.BAD_REQUEST, 
-                "BLOQUEO: No se puede editar este presupuesto porque ya fue evaluado por la gerencia. Estado actual: " + aprobacion.getEstado());
+            throw new ManejoErrores(HttpStatus.BAD_REQUEST,
+                    "BLOQUEO: No se puede editar este presupuesto porque ya fue evaluado por la gerencia. Estado actual: " + aprobacion.getEstado());
         }
 
         if (camposActualizar.containsKey("id_proveedor")) {
@@ -160,9 +160,8 @@ public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
 
         if (camposActualizar.containsKey("fecha_solicitud")) {
             Object valor = camposActualizar.get("fecha_solicitud");
-            if (valor instanceof String) {
-                // Convierte el texto "yyyy-MM-dd" a un objeto LocalDate
-                presupuesto.setFechaSolicitud(LocalDate.parse((String) valor));
+            if (valor instanceof String str) {
+                presupuesto.setFechaSolicitud(str.isBlank() ? null : LocalDate.parse(str));
             } else {
                 presupuesto.setFechaSolicitud((LocalDate) valor);
             }
@@ -170,8 +169,8 @@ public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
 
         if (camposActualizar.containsKey("fecha_recepcion")) {
             Object valor = camposActualizar.get("fecha_recepcion");
-            if (valor instanceof String) {
-                presupuesto.setFechaRecepcion(LocalDate.parse((String) valor));
+            if (valor instanceof String str) {
+                presupuesto.setFechaRecepcion(str.isBlank() ? null : LocalDate.parse(str));
             } else {
                 presupuesto.setFechaRecepcion((LocalDate) valor);
             }
@@ -182,8 +181,6 @@ public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
 
         LocalDate fSolicitud = presupuesto.getFechaSolicitud();
         LocalDate fRecepcion = presupuesto.getFechaRecepcion();
-        
-        
 
         if (fSolicitud != null && fRecepcion != null) {
             if (fSolicitud.isAfter(fRecepcion)) {
@@ -209,7 +206,7 @@ public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
     public String guardarArchivo(MultipartFile file) {
         try {
             if (file.isEmpty()) {
-                return null; 
+                return null;
             }
 
             // Crear directorio si no existe (usando el rootLocation dinámico)
@@ -221,16 +218,15 @@ public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
             // Guardar en disco
             Files.copy(file.getInputStream(), this.rootLocation.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
 
-            return filename; 
+            return filename;
         } catch (IOException e) {
             throw new RuntimeException("Error al guardar el archivo: " + e.getMessage());
         }
     }
 
     public long countByAprobacionSolicitud_Id(Integer idSoli) {
-        
+
         return presupuestoRepo.countByAprobacionSolicitud_Id(idSoli);
     }
 
-    
 }

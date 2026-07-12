@@ -3,8 +3,9 @@ import Layout from '../Layout';
 import Loading from '../Loading';
 import TablaProveedor from '../proveedor/TablaProveedor';
 import GestionEvalProveedor from './GestionEvalProveedor';
-import { listarProveedores } from '../../services/evalProveedorService';
+import { listarProveedores, buscarPorProveedor } from '../../services/evalProveedorService';
 import { FileText } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 export default function EvalProveedor() {
     const [loading, setLoading] = useState(true);
@@ -28,8 +29,16 @@ export default function EvalProveedor() {
     };
 
 
+    const location = useLocation();
+
     useEffect(() => {
-        cargarDatos();
+        const preseleccionado = location.state?.proveedorPreseleccionado;
+        if (preseleccionado) {
+            seleccionarProveedor(preseleccionado);
+            window.history.replaceState({}, document.title); // limpia el state para que no se repita en un refresh
+        } else {
+            cargarDatos();
+        }
     }, []);
 
     const cargarDatos = async () => {
@@ -69,7 +78,7 @@ export default function EvalProveedor() {
                     Seleccione un proveedor para registrar la evaluación.
                 </p>
             </div>
-    
+
             {proveedorSeleccionado ? (
                 <GestionEvalProveedor
                     proveedor={proveedorSeleccionado}
@@ -89,7 +98,7 @@ export default function EvalProveedor() {
             ) : proveedores.length > 0 ? (
                 <TablaProveedor
                     proveedores={proveedores}
-                    onSelect={seleccionarProveedor} 
+                    onSelect={seleccionarProveedor}
                 />
             ) : (
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-20 flex flex-col items-center justify-center text-center">
