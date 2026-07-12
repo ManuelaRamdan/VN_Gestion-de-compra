@@ -5,7 +5,7 @@ import TablaProveedor from '../proveedor/TablaProveedor';
 import GestionEvalProveedor from './GestionEvalProveedor';
 import { listarProveedores, buscarPorProveedor } from '../../services/evalProveedorService';
 import { FileText } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function EvalProveedor() {
     const [loading, setLoading] = useState(true);
@@ -13,6 +13,14 @@ export default function EvalProveedor() {
     const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
     const [evaluacionExistente, setEvaluacionExistente] = useState(null);
 
+    // Info para volver al lugar de origen (ej: un Cierre) cuando se llegó
+    // acá desde otra pantalla con un proveedor preseleccionado.
+    const [returnTo, setReturnTo] = useState(null);
+
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    console.log('STATE RECIBIDO EN EVALPROVEEDOR:', location.state);
 
     const seleccionarProveedor = async (prov) => {
         setProveedorSeleccionado(prov);
@@ -28,11 +36,12 @@ export default function EvalProveedor() {
         }
     };
 
-
-    const location = useLocation();
-
     useEffect(() => {
         const preseleccionado = location.state?.proveedorPreseleccionado;
+        const returnToState = location.state?.returnTo;
+
+        if (returnToState) setReturnTo(returnToState);
+
         if (preseleccionado) {
             seleccionarProveedor(preseleccionado);
             window.history.replaceState({}, document.title); // limpia el state para que no se repita en un refresh
@@ -54,17 +63,17 @@ export default function EvalProveedor() {
         }
     };
 
-    if (proveedorSeleccionado) {
-        return (
-            <GestionEvalProveedor
-                proveedor={proveedorSeleccionado}
-                onBack={() => {
-                    setProveedorSeleccionado(null);
-                    cargarDatos();
-                }}
-            />
-        );
-    }
+    // Vuelve al cierre de origen si vinimos desde ahí; si no, vuelve a la
+    // lista de proveedores de esta misma pantalla.
+    const handleBack = () => {
+        if (returnTo?.pathname) {
+            navigate(returnTo.pathname, { state: returnTo.state });
+            return;
+        }
+        setProveedorSeleccionado(null);
+        setEvaluacionExistente(null);
+        cargarDatos();
+    };
 
     if (loading) return <Loading fullScreen />;
 
@@ -82,19 +91,19 @@ export default function EvalProveedor() {
             {proveedorSeleccionado ? (
                 <GestionEvalProveedor
                     proveedor={proveedorSeleccionado}
-                    evaluacionExistente={evaluacionExistente} // <--- aquí llega correctamente
-                    onBack={() => {
-                        setProveedorSeleccionado(null);
-                        setEvaluacionExistente(null);
-                        cargarDatos();
-                    }}
+                    evaluacionExistente={evaluacionExistente}
+                    onBack={handleBack}
                     onSaved={() => {
-                        cargarDatos();
-                        setEvaluacionExistente(null);
+                        // Si venimos de un cierre, después de guardar la evaluación
+                        // volvemos directo a ese cierre en vez de quedarnos acá.
+                        if (returnTo?.pathname) {
+                            navigate(returnTo.pathname, { state: returnTo.state });
+                        } else {
+                            cargarDatos();
+                            setEvaluacionExistente(null);
+                        }
                     }}
                 />
-            ) : loading ? (
-                <Loading fullScreen />
             ) : proveedores.length > 0 ? (
                 <TablaProveedor
                     proveedores={proveedores}

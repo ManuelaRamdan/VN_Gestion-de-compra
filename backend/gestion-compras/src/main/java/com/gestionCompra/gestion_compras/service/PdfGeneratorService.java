@@ -12,8 +12,11 @@ import org.springframework.core.io.ResourceLoader;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 
@@ -455,6 +458,50 @@ public class PdfGeneratorService {
         EvaluacionProveedor eval = evalProveedorRepo.findById(idEval)
                 .orElseThrow(() -> new ManejoErrores(HttpStatus.NOT_FOUND, "Evaluación no encontrada"));
 
+        return generarEvaluacionProveedorPdfBytes(eval);
+    }
+
+    /**
+     * Genera un ZIP con el PDF de cada Evaluación de Proveedor de un período.
+     * El período se define por año (periodoEvaluado) o por rango de fechas
+     * (fecha de carga de la evaluación) — se debe indicar uno de los dos.
+     */
+    public byte[] generarZipEvaluacionesPorPeriodo(Integer anio, LocalDate desde, LocalDate hasta) throws Exception {
+        List<EvaluacionProveedor> evaluaciones;
+
+        if (anio != null) {
+            evaluaciones = evalProveedorRepo.findByPeriodoEvaluado(anio);
+        } else if (desde != null && hasta != null) {
+            evaluaciones = evalProveedorRepo.findByFechaBetween(desde.atStartOfDay(), hasta.atTime(23, 59, 59));
+        } else {
+            throw new ManejoErrores(HttpStatus.BAD_REQUEST, "Debe indicar 'anio' o el rango 'desde' / 'hasta'.");
+        }
+
+        if (evaluaciones.isEmpty()) {
+            throw new ManejoErrores(HttpStatus.NOT_FOUND, "No se encontraron evaluaciones para el período indicado.");
+        }
+
+        try (ByteArrayOutputStream zipBuffer = new ByteArrayOutputStream(); ZipOutputStream zos = new ZipOutputStream(zipBuffer)) {
+
+            for (EvaluacionProveedor eval : evaluaciones) {
+                byte[] pdfBytes = generarEvaluacionProveedorPdfBytes(eval);
+
+                String nombreProveedor = eval.getProveedor() != null && eval.getProveedor().getNombreEmpresa() != null
+                        ? eval.getProveedor().getNombreEmpresa().replaceAll("[^a-zA-Z0-9]+", "_")
+                        : "proveedor";
+                String nombreArchivo = "evaluacion_" + eval.getIdEvalProveedor() + "_" + nombreProveedor + ".pdf";
+
+                zos.putNextEntry(new ZipEntry(nombreArchivo));
+                zos.write(pdfBytes);
+                zos.closeEntry();
+            }
+
+            zos.finish();
+            return zipBuffer.toByteArray();
+        }
+    }
+
+    private byte[] generarEvaluacionProveedorPdfBytes(EvaluacionProveedor eval) throws Exception {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Document document = new Document(PageSize.A4);
             PdfWriter.getInstance(document, out);
@@ -536,7 +583,8 @@ public class PdfGeneratorService {
             resTable.addCell(createCell("Resultado Final", whiteLabelFont, COL_SECONDARY));
 
             resTable.addCell(createAlignCenterCell(eval.getNivelaprobacion().toString() + "%", normalFont));
-            resTable.addCell(createAlignCenterCell(eval.getProveedorSgc() ? "SI" : "NO", boldFont));
+            // Código corregido para evitar el NullPointerException en el unboxing
+            resTable.addCell(createAlignCenterCell(Boolean.TRUE.equals(eval.getProveedorSgc()) ? "SI" : "NO", boldFont));
 
             String statusText = eval.getAprobado() ? "APROBADO" : "NO APROBADO";
             PdfPCell resultCell = createAlignCenterCell(statusText + " (" + eval.getResultado() + "%)", titleFont);

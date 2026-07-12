@@ -1,11 +1,11 @@
 // src/components/cierre/GestionCierre.jsx
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Plus, Pencil, X, Calendar, CheckCircle, AlertCircle, Check, Archive, Lock, AlertTriangle, FileText } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, X, Calendar, CheckCircle, AlertCircle, Check, Archive, Lock, AlertTriangle, FileText, ExternalLink } from "lucide-react";
 import { crearCierre, modificarCierre, buscarCierrePorEvaluacion } from "../../services/cierreService";
 import { getReclamoPorEvaluacion } from "../../services/evalEntregaService"; // IMPORTAMOS EL SERVICIO DE RECLAMOS
 import { tieneEvaluacionesProveedor } from "../../services/evalProveedorService";
 import Loading from "../Loading";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function GestionCierre({ evaluacion, onBack }) {
     const [cierre, setCierre] = useState(null);
@@ -28,10 +28,22 @@ export default function GestionCierre({ evaluacion, onBack }) {
     }, [evaluacion]);
 
     const navigate = useNavigate();
+    const location = useLocation();
     const proveedor = evaluacion.compra?.aprobacionPresupuesto?.presupuesto?.proveedor;
 
+    // Navega a la pantalla de Evaluación de Proveedor con el proveedor ya
+    // seleccionado, y le pasa la info necesaria para volver exactamente a
+    // este cierre (misma ruta + la evaluación de entrega actual) al terminar.
     const irAEvaluarProveedor = () => {
-        navigate('/evalProveedor', { state: { proveedorPreseleccionado: proveedor } });
+        navigate('/evalProveedor', {
+            state: {
+                proveedorPreseleccionado: proveedor,
+                returnTo: {
+                    pathname: location.pathname,
+                    state: { evaluacionPreseleccionada: evaluacion }
+                }
+            }
+        });
     };
 
     const cargarDatos = async () => {
@@ -50,7 +62,10 @@ export default function GestionCierre({ evaluacion, onBack }) {
                         const resEval = await tieneEvaluacionesProveedor(idProveedor);
                         setProveedorSinEvaluar(!resEval.data?.tieneEvaluaciones);
                     } catch {
-                        setProveedorSinEvaluar(false); // si falla el chequeo, no bloqueamos ni asustamos de más
+                        // El bloqueo es obligatorio: si no podemos confirmar que el proveedor
+                        // tiene evaluación, bloqueamos por precaución (fail-safe) en vez de dejar pasar el cierre.
+                        setProveedorSinEvaluar(true);
+                        setError("No se pudo verificar si el proveedor tiene evaluaciones registradas. Reintenta o contacta a soporte.");
                     }
                 }
             } catch (err) {
@@ -83,6 +98,13 @@ export default function GestionCierre({ evaluacion, onBack }) {
     const handleGuardar = async (e) => {
         e.preventDefault();
         setModalError("");
+
+        // Guardia defensiva: nunca crear un cierre nuevo si el proveedor no tiene evaluación.
+        // (La edición de un cierre ya existente sí se permite.)
+        if (!editingId && proveedorSinEvaluar) {
+            setModalError("No se puede generar el cierre: el proveedor todavía no tiene una Evaluación de Proveedor registrada.");
+            return;
+        }
 
         try {
             if (editingId) {
@@ -171,9 +193,21 @@ export default function GestionCierre({ evaluacion, onBack }) {
 
                         <div>
                             <p className="text-xs text-gray-500 font-bold mb-1">Proveedor</p>
-                            <p className="text-slate-800 font-medium">
-                                {evaluacion.compra?.aprobacionPresupuesto?.presupuesto?.proveedor?.nombreEmpresa}
-                            </p>
+                            <div className="flex items-center justify-between gap-2">
+                                <p className="text-slate-800 font-medium">
+                                    {proveedor?.nombreEmpresa}
+                                </p>
+                                {!proveedorSinEvaluar && (
+                                    <button
+                                        type="button"
+                                        onClick={irAEvaluarProveedor}
+                                        className="shrink-0 text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:underline flex items-center gap-1"
+                                        title="Ver evaluación de este proveedor"
+                                    >
+                                        Ver evaluación <ExternalLink size={12} />
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         <div className="pt-3 border-t border-slate-200">
@@ -325,17 +359,34 @@ export default function GestionCierre({ evaluacion, onBack }) {
                                     </div>
                                 )}
 
-                                <button
-                                    onClick={() => {
-                                        setEditingId(null);
-                                        setFormData({ observaciones: "" });
-                                        setModalError("");
-                                        setShowModal(true);
-                                    }}
-                                    className="px-6 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold hover:bg-[#164a49] shadow-md transition-all flex items-center gap-2"
-                                >
-                                    <CheckCircle size={18} /> Procesar Cierre
-                                </button>
+                                {proveedorSinEvaluar ? (
+                                    <>
+                                        <div className="mb-4 bg-red-50 text-red-700 text-xs p-3 rounded border border-red-200 flex items-start gap-2 text-left">
+                                            <Lock size={16} className="shrink-0 mt-0.5" />
+                                            <span>
+                                                <b>Cierre bloqueado.</b> No podés cerrar esta compra hasta registrar la Evaluación de Proveedor de <b>{proveedor?.nombreEmpresa}</b>, ya que aún no tiene ninguna evaluación cargada.
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={irAEvaluarProveedor}
+                                            className="px-6 py-2.5 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700 shadow-md transition-all flex items-center gap-2"
+                                        >
+                                            <AlertTriangle size={18} /> Evaluar proveedor para continuar
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button
+                                        onClick={() => {
+                                            setEditingId(null);
+                                            setFormData({ observaciones: "" });
+                                            setModalError("");
+                                            setShowModal(true);
+                                        }}
+                                        className="px-6 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold hover:bg-[#164a49] shadow-md transition-all flex items-center gap-2"
+                                    >
+                                        <CheckCircle size={18} /> Procesar Cierre
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}

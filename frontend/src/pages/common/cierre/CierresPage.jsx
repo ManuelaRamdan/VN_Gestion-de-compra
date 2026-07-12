@@ -1,11 +1,25 @@
 // src/pages/CierresPage.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import SeleccionEvaluacion from '../../../components/cierre/SeleccionEvaluacion';
 import GestionCierre from '../../../components/cierre/GestionCierre';
 
 export default function CierresPage() {
-    const [evaluacionSeleccionada, setEvaluacionSeleccionada] = useState(null);
+    const location = useLocation();
+
+    // Si volvemos desde "Evaluar proveedor" (originado en un cierre), acá
+    // llega la evaluación de entrega que estábamos gestionando, para
+    // reabrir ese mismo cierre en vez de mostrar la lista.
+    const [evaluacionSeleccionada, setEvaluacionSeleccionada] = useState(
+        location.state?.evaluacionPreseleccionada || null
+    );
+
+    useEffect(() => {
+        if (location.state?.evaluacionPreseleccionada) {
+            window.history.replaceState({}, document.title); // evita que se repita en un refresh
+        }
+    }, []);
 
     return (
         <Layout>

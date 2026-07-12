@@ -31,6 +31,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import jakarta.annotation.PostConstruct;
+import java.io.File;
 
 @Service
 public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
@@ -203,22 +204,21 @@ public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
         return new Paginacion<>(page);
     }
 
-    public String guardarArchivo(MultipartFile file) {
+    public String guardarArchivo(MultipartFile archivo) {
         try {
-            if (file.isEmpty()) {
+            if (archivo.isEmpty()) {
                 return null;
             }
 
-            // Crear directorio si no existe (usando el rootLocation dinámico)
-            Files.createDirectories(rootLocation);
+            String nombreOriginal = archivo.getOriginalFilename();
 
-            // Generar nombre único
-            String filename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            String prefijoUnico = UUID.randomUUID().toString();
+            String nombreArchivoUnico = prefijoUnico + "_" + nombreOriginal;
 
-            // Guardar en disco
-            Files.copy(file.getInputStream(), this.rootLocation.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+            File destino = new File(storagePath, nombreArchivoUnico);
+            archivo.transferTo(destino);
 
-            return filename;
+            return nombreArchivoUnico;
         } catch (IOException e) {
             throw new RuntimeException("Error al guardar el archivo: " + e.getMessage());
         }
