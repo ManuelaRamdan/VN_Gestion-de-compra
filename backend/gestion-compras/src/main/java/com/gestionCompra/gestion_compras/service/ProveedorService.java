@@ -5,8 +5,10 @@ import com.gestionCompra.gestion_compras.dto.ManejoErrores;
 import com.gestionCompra.gestion_compras.dto.Paginacion;
 import com.gestionCompra.gestion_compras.repository.ProveedorRepo;
 import com.gestionCompra.gestion_compras.util.ABMLogicoGenerico;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,14 +29,14 @@ public class ProveedorService extends ABMLogicoGenerico<Proveedor, Integer> {
     protected String getEntityName() {
         return "Proveedor";
     }
-    
+
     @Override
     public Proveedor findById(Integer id) {
         return proveedorRepo.findByIdAndActivoTrue(id)
                 .orElseThrow(() -> new ManejoErrores(
-                    HttpStatus.NOT_FOUND, 
-                    "Proveedor no encontrado o se encuentra inactivo"
-                ));
+                HttpStatus.NOT_FOUND,
+                "Proveedor no encontrado o se encuentra inactivo"
+        ));
     }
 
     @Override
@@ -45,24 +47,24 @@ public class ProveedorService extends ABMLogicoGenerico<Proveedor, Integer> {
     @Override
     @Transactional
     public void bajaLogica(Integer id) {
-        Proveedor proveedor = this.findById(id); 
+        Proveedor proveedor = this.findById(id);
         proveedor.setActivo(false);
         proveedorRepo.save(proveedor);
     }
-    
-   @Transactional
+
+    @Transactional
     public Proveedor crearProveedor(Proveedor nuevoProveedor) {
         // 1. Limpiamos y validamos el nombre de la empresa
         String nombreLimpio = nuevoProveedor.getNombreEmpresa().trim();
-        nuevoProveedor.setNombreEmpresa(nombreLimpio); 
+        nuevoProveedor.setNombreEmpresa(nombreLimpio);
 
         if (proveedorRepo.findByNombreEmpresaIgnoreCaseAndActivoTrue(nombreLimpio).isPresent()) {
             throw new ManejoErrores(
-                    HttpStatus.BAD_REQUEST, 
+                    HttpStatus.BAD_REQUEST,
                     "El nombre de la empresa proveedora ya se encuentra registrado"
             );
         }
-        
+
         // 2. Validamos el resto de los campos
         validarCamposAdicionales(nuevoProveedor);
 
@@ -77,12 +79,12 @@ public class ProveedorService extends ABMLogicoGenerico<Proveedor, Integer> {
         // 1. Validar y actualizar el nombre de la empresa
         if (datosNuevos.getNombreEmpresa() != null && !datosNuevos.getNombreEmpresa().isBlank()) {
             String nombreLimpio = datosNuevos.getNombreEmpresa().trim();
-            
+
             proveedorRepo.findByNombreEmpresaIgnoreCaseAndActivoTrue(nombreLimpio)
                     .ifPresent(p -> {
                         if (!p.getIdProveedor().equals(id)) {
                             throw new ManejoErrores(
-                                    HttpStatus.BAD_REQUEST, 
+                                    HttpStatus.BAD_REQUEST,
                                     "El nombre de la empresa proveedora ya se encuentra registrado por otro proveedor"
                             );
                         }
@@ -106,7 +108,7 @@ public class ProveedorService extends ABMLogicoGenerico<Proveedor, Integer> {
 
         // 3. Validamos que la entidad resultante cumpla las reglas antes de guardar
         validarCamposAdicionales(proveedorExistente);
-        
+
         return proveedorRepo.save(proveedorExistente);
     }
 
@@ -137,5 +139,9 @@ public class ProveedorService extends ABMLogicoGenerico<Proveedor, Integer> {
                 throw new ManejoErrores(HttpStatus.BAD_REQUEST, "El número de teléfono debe tener exactamente 10 dígitos.");
             }
         }
+    }
+
+    public List<Proveedor> listarTodosActivos() {
+        return proveedorRepo.findByActivoTrue(Sort.by(Sort.Direction.ASC, "nombreEmpresa"));
     }
 }

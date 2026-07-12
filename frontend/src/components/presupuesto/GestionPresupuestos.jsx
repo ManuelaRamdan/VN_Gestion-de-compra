@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Plus, FileText, Calendar, CheckCircle, UploadCloud, Pencil, X, Trash2, AlertCircle, Check, Lock, MessageSquare } from 'lucide-react';
-import { listarPresupuestosPorAprobacion, listarProveedores, guardarPresupuesto, actualizarPresupuesto, obtenerUrlPdf } from '../../services/presupuestoService';
+import { listarPresupuestosPorAprobacion, listarProveedoresTodos, guardarPresupuesto, actualizarPresupuesto, obtenerUrlPdf } from '../../services/presupuestoService';
 import Loading from '../Loading';
 
 export default function GestionPresupuestos({ aprobacion, onBack }) {
@@ -40,7 +40,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
             const idAprob = aprobacion.id || aprobacion.idAprobSolicitud;
             const [resPresupuestos, resProveedores] = await Promise.all([
                 listarPresupuestosPorAprobacion(idAprob),
-                listarProveedores()
+                listarProveedoresTodos()
             ]);
 
             setPresupuestos(resPresupuestos.data?.contenido || resPresupuestos.data || []);
