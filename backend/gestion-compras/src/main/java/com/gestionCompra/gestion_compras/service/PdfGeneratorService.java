@@ -342,6 +342,26 @@ public class PdfGeneratorService {
                 fusionarPdfExterno(document, writer, compra.getFacturaPdfPath(), destino, titulo);
             }
 
+            // --- C. ADJUNTAR PDF DE LA EVALUACIÓN DEL PROVEEDOR (NUEVO) ---
+            if (compra != null && compra.getAprobacionPresupuesto() != null) {
+                Proveedor proveedorAdjudicado = compra.getAprobacionPresupuesto().getPresupuesto().getProveedor();
+
+                if (proveedorAdjudicado != null) {
+                    // 1. Buscamos la evaluación más reciente de este proveedor
+                    EvaluacionProveedor evalProv = evalProveedorRepo.findTopByProveedor_IdProveedorOrderByFechaDesc(proveedorAdjudicado.getIdProveedor());
+
+                    if (evalProv != null) {
+                        String destinoEval = "EVAL_PROV_" + evalProv.getIdEvalProveedor();
+
+                        // 2. Generamos el PDF de la evaluación en memoria (bytes)
+                        byte[] evalBytes = generarEvaluacionProveedorPdfBytes(evalProv);
+
+                        // 3. Lo fusionamos al final del expediente usando nuestro nuevo helper
+                        fusionarPdfDesdeBytes(document, writer, evalBytes, destinoEval);
+                    }
+                }
+            }
+
             document.close();
             return out.toByteArray();
         }
@@ -710,6 +730,71 @@ public class PdfGeneratorService {
         cell.setPadding(6);
         cell.setBorderColor(Color.WHITE);
         return cell;
+    }
+
+    // --- HELPER 2: FUSIONAR PDF DESDE BYTES (MEMORIA) ---
+    private void fusionarPdfDesdeBytes(Document document, PdfWriter writer, byte[] pdfBytes, String destinationName) {
+        try {
+            PdfReader reader = new PdfReader(pdfBytes);
+            int n = reader.getNumberOfPages();
+
+            for (int i = 1; i <= n; i++) {
+                Rectangle pageSize = reader.getPageSizeWithRotation(i);
+                document.setPageSize(pageSize);
+                document.newPage();
+
+                if (i == 1 && destinationName != null) {
+                    PdfContentByte cb = writer.getDirectContent();
+                    cb.localDestination(destinationName, new PdfDestination(PdfDestination.FIT));
+                }
+
+                PdfImportedPage page = writer.getImportedPage(reader, i);
+                Image image = Image.getInstance(page);
+                image.setAbsolutePosition(0, 0);
+                document.add(image);
+            }
+            reader.close();
+            // Restauramos el tamaño de hoja principal
+            document.setPageSize(PageSize.A4.rotate());
+
+        } catch (Exception e) {
+            System.err.println("Error fusionando PDF de evaluación de proveedor: " + e.getMessage());
+        }
+    }
+    
+    // --- NUEVO: ZIP DE EXPEDIENTES POR PERÍODO ---
+    public byte[] generarZipExpedientesPorPeriodo(Integer anio, LocalDate desde, LocalDate hasta) throws Exception {
+        List<Cierre> cierres;
+
+        if (anio != null) {
+            // Calculamos el primer y último día del año
+            LocalDate inicioAnio = LocalDate.of(anio, 1, 1);
+            LocalDate finAnio = LocalDate.of(anio, 12, 31);
+            cierres = cierreRepo.findByFechaCierreBetween(inicioAnio, finAnio);
+        } else if (desde != null && hasta != null) {
+            cierres = cierreRepo.findByFechaCierreBetween(desde, hasta);
+        } else {
+            throw new ManejoErrores(HttpStatus.BAD_REQUEST, "Debe indicar 'anio' o el rango 'desde' / 'hasta'.");
+        }
+
+        if (cierres.isEmpty()) {
+            throw new ManejoErrores(HttpStatus.NOT_FOUND, "No se encontraron expedientes cerrados para el período indicado.");
+        }
+
+        try (ByteArrayOutputStream zipBuffer = new ByteArrayOutputStream(); ZipOutputStream zos = new ZipOutputStream(zipBuffer)) {
+            for (Cierre cierre : cierres) {
+                // Reutilizamos el método que ya tenés creado para generar el expediente completo
+                byte[] pdfBytes = generarExpedienteCompleto(cierre.getIdCierre());
+                
+                String nombreArchivo = "expediente_" + cierre.getIdCierre() + ".pdf";
+                
+                zos.putNextEntry(new ZipEntry(nombreArchivo));
+                zos.write(pdfBytes);
+                zos.closeEntry();
+            }
+            zos.finish();
+            return zipBuffer.toByteArray();
+        }
     }
 
 }

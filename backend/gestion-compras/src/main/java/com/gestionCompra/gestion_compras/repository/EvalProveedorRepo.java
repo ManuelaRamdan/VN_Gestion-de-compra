@@ -27,5 +27,6 @@ public interface EvalProveedorRepo extends JpaRepository<EvaluacionProveedor, In
     // --- Para el descargable de evaluaciones por período ---
     List<EvaluacionProveedor> findByPeriodoEvaluado(Integer periodoEvaluado);
     List<EvaluacionProveedor> findByFechaBetween(LocalDateTime desde, LocalDateTime hasta);
-
+// Obtiene la evaluación más reciente de un proveedor específico
+    EvaluacionProveedor findTopByProveedor_IdProveedorOrderByFechaDesc(Integer idProveedor);
 }
