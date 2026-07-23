@@ -150,7 +150,7 @@ function AppRouter() {
                 <Route
                     path="/nivelPrioridad"
                     element={
-                        <ProtectRoute allowedPermission="PERM_PRIORIDADES_ADMIN">
+                        <ProtectRoute allowedPermission={['PERM_PRIORIDADES_ADMIN', 'PERM_PRIORIDADES_VER']}>
                             <NivelPrioridadPage />
                         </ProtectRoute>
                     }

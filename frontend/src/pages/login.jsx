@@ -6,6 +6,7 @@ import "../styles/styles.css";
 import "../styles/loging.css";
 import Loading from "../components/Loading";
 import { FaUser, FaLock } from "react-icons/fa";
+import { getRutaLanding } from "../utils/rutaLanding";
 
 
 function Login() {
@@ -36,13 +37,14 @@ function Login() {
 
       login(token, { username: usernameResponse, rol, permisos });
 
-      if (rol === 'GERENCIA') {
-        navigate('/aprobSolicitud');
-      } else if (permisos?.includes('PERM_SOLICITUDES_ADMIN') || permisos?.includes('PERM_APROBACIONES_VER')) {
-        navigate('/solicitudes');
+      const rutaDestino = getRutaLanding(rol, permisos);
+
+      if (rutaDestino) {
+        navigate(rutaDestino);
       } else {
-        // Landing genérica para sectores nuevos sin ruta "natural" todavía asignada
-        navigate('/solicitudes');
+        // Usuario autenticado pero sin ningún permiso reconocido:
+        // no lo mandamos a una ruta que lo va a rebotar.
+        setErrorMessage("Tu usuario no tiene permisos asignados. Contactá a un administrador.");
       }
     } catch (error) {
       setErrorMessage("Credenciales incorrectas");

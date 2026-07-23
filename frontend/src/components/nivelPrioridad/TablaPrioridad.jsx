@@ -7,7 +7,8 @@ export default function TablaPrioridad({
     onDeactivate,
     onLoadMore,
     hasMore,
-    isLoadingMore
+    isLoadingMore,
+    canEdit = true
 }) {
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -54,7 +55,7 @@ export default function TablaPrioridad({
                             <th className="px-6 py-4">CATEGORÍA</th>
                             <th className="px-6 py-4">DÍAS LÍMITE</th>
                             <th className="px-6 py-4">ESTADO</th>
-                            <th className="px-6 py-4 text-right">ACCIONES</th>
+                            {canEdit && <th className="px-6 py-4 text-right">ACCIONES</th>}
                         </tr>
                     </thead>
 
@@ -75,23 +76,25 @@ export default function TablaPrioridad({
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {getEstadoBadge(p.activo)}
                                 </td>
-                                <td className="px-6 py-4 text-right space-x-3 whitespace-nowrap">
-                                    <button
-                                        onClick={() => onEdit(p)}
-                                        className="inline-flex items-center gap-1 text-blue-600 font-bold text-xs hover:underline cursor-pointer"
-                                    >
-                                        <Pencil size={14} /> Editar
-                                    </button>
-
-                                    {p.activo && (
+                                {canEdit && (
+                                    <td className="px-6 py-4 text-right space-x-3 whitespace-nowrap">
                                         <button
-                                            onClick={() => onDeactivate(p.idNivelPrioridad)}
-                                            className="inline-flex items-center gap-1 text-red-600 font-bold text-xs hover:underline cursor-pointer"
+                                            onClick={() => onEdit(p)}
+                                            className="inline-flex items-center gap-1 text-blue-600 font-bold text-xs hover:underline cursor-pointer"
                                         >
-                                            <Trash2 size={14} /> Baja
+                                            <Pencil size={14} /> Editar
                                         </button>
-                                    )}
-                                </td>
+
+                                        {p.activo && (
+                                            <button
+                                                onClick={() => onDeactivate(p.idNivelPrioridad)}
+                                                className="inline-flex items-center gap-1 text-red-600 font-bold text-xs hover:underline cursor-pointer"
+                                            >
+                                                <Trash2 size={14} /> Baja
+                                            </button>
+                                        )}
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

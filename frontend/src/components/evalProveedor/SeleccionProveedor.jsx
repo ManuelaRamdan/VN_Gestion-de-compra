@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { listarProveedores } from '../../services/evalProveedorService';
-import { FileText, ChevronRight, Search, ChevronDown } from 'lucide-react'; // Agregamos ChevronDown
+import { listarProveedores, verificarAlertaEventual } from '../../services/evalProveedorService'; // Importamos el servicio de alerta
+import { FileText, ChevronRight, Search, ChevronDown, AlertCircle } from 'lucide-react'; // Agregamos AlertCircle
 import Loading from '../Loading';
 
 export default function SeleccionProveedor({ onSelect }) {
@@ -25,16 +25,28 @@ export default function SeleccionProveedor({ onSelect }) {
                 setIsLoadingMore(true);
             }
 
-            // Llamamos al servicio con la página
+            // 1. Llamamos al servicio con la página
             const res = await listarProveedores(pageToLoad);
             const data = res.data;
-            const contenido = data?.contenido || data || [];
+            const contenidoOriginal = data?.contenido || data || [];
+
+            // 2. Por cada proveedor en esta página, verificamos si requiere alerta
+            const contenidoConAlerta = await Promise.all(
+                contenidoOriginal.map(async (prov) => {
+                    try {
+                        const resAlerta = await verificarAlertaEventual(prov.idProveedor);
+                        return { ...prov, requiereAlerta: resAlerta.data.requiereAlerta };
+                    } catch (error) {
+                        return { ...prov, requiereAlerta: false };
+                    }
+                })
+            );
 
             if (pageToLoad === 0) {
-                setProveedores(contenido);
+                setProveedores(contenidoConAlerta);
             } else {
                 // Concatenamos si es "Cargar más"
-                setProveedores(prev => [...prev, ...contenido]);
+                setProveedores(prev => [...prev, ...contenidoConAlerta]);
             }
 
             // Validamos si es la última página
@@ -42,7 +54,7 @@ export default function SeleccionProveedor({ onSelect }) {
                 setHasMore(!data.ultima);
             } else {
                 // Fallback por si el backend devuelve array directo
-                setHasMore(contenido.length > 0);
+                setHasMore(contenidoOriginal.length > 0);
             }
 
         } catch (error) {
@@ -138,8 +150,15 @@ export default function SeleccionProveedor({ onSelect }) {
                                     </td>
 
                                     <td className="px-6 py-4">
-                                        <div className="font-bold text-slate-800">
+                                        <div className="font-bold text-slate-800 flex items-center gap-2">
                                             {prov.nombreEmpresa}
+                                            {/* --- BADGE DE ALERTA --- */}
+                                            {prov.requiereAlerta && (
+                                                <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase border border-amber-200" title="Proveedor eventual con gestión reciente sin evaluar">
+                                                    <AlertCircle size={10} />
+                                                    Requiere Evaluación
+                                                </span>
+                                            )}
                                         </div>
                                     </td>
 

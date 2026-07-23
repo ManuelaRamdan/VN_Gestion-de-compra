@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-// CORRECCIÓN: Agregado icono FileText para el PDF
-import { ArrowLeft, Plus, Pencil, X, Check, AlertCircle, CheckCircle, FileText } from "lucide-react";
+// CORRECCIÓN: Agregado icono AlertTriangle para la advertencia
+import { ArrowLeft, Plus, Pencil, X, Check, AlertCircle, CheckCircle, FileText, AlertTriangle } from "lucide-react";
 import {
     crearEvaluacion,
     modificarEvaluacionProveedor,
     buscarPorProveedor,
-    descargarEvaluacionPdf // CORRECCIÓN: Importar función de descarga
+    descargarEvaluacionPdf, 
+    verificarAlertaEventual 
 } from "../../services/evalProveedorService";
 import Loading from "../Loading";
 
@@ -14,7 +15,10 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [evaluacion, setEvaluacion] = useState(null);
-
+    
+    // Estado para la alerta
+    const [esCompraEventual, setEsCompraEventual] = useState(false);
+    
     // Estados de Feedback
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -42,6 +46,14 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
     const cargar = async () => {
         try {
             setLoading(true);
+            try {
+                const resAlerta = await verificarAlertaEventual(proveedor.idProveedor);
+                setEsCompraEventual(resAlerta.data.requiereAlerta);
+            } catch (err) {
+                console.error("Error verificando alerta", err);
+                setEsCompraEventual(false);
+            }
+
             const res = await buscarPorProveedor(proveedor.nombreEmpresa);
             const data = res.data?.contenido?.[0];
 
@@ -69,7 +81,6 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
         }
     };
 
-    // --- NUEVO: FUNCIÓN DE DESCARGA ---
     const handleDescargar = async () => {
         if (!evaluacion) return;
         try {
@@ -99,7 +110,7 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
                 ...formData,
                 periodoEvaluado: Number(formData.periodoEvaluado),
                 proveedor: { idProveedor: proveedor.idProveedor },
-                usuario: { idUsuario: 1 } 
+                usuario: { idUsuario: 1 }
             };
 
             if (editingId) {
@@ -112,7 +123,7 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
             }
 
             setShowModal(false);
-            await cargar(); 
+            await cargar();
             setSuccess(editingId ? "Evaluación actualizada correctamente" : "Evaluación registrada correctamente");
             onSaved?.();
             setTimeout(() => setSuccess(""), 3500);
@@ -152,13 +163,28 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
                 </div>
             )}
 
+            {/* --- ALERTA DE COMPRA EVENTUAL --- */}
+            {esCompraEventual && (
+                <div className="mb-6 bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-start gap-3 shadow-sm animate-in slide-in-from-top-2">
+                    <AlertTriangle className="shrink-0 mt-0.5 text-amber-600" size={24} />
+                    <div>
+                        <h4 className="text-sm font-bold text-amber-900 mb-1">
+                            Atención: Gestión Reciente con Proveedor Eventual
+                        </h4>
+                        <p className="text-sm text-amber-700 leading-relaxed">
+                            Existe una compra o cierre reciente con este proveedor no histórico. 
+                            <strong> Es necesario evaluar su desempeño</strong> para que el proceso de compra pueda continuar sin bloqueos.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* TARJETA */}
             {evaluacion ? (
                 <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm relative w-full max-w-md hover:shadow-md transition-shadow">
-                    
+
                     {/* BOTONES DE ACCIÓN */}
                     <div className="absolute top-4 right-4 flex gap-2">
-                        {/* NUEVO: BOTÓN DESCARGAR PDF */}
                         <button
                             onClick={handleDescargar}
                             className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
@@ -195,7 +221,7 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
                                 {evaluacion.aprobado ? "APROBADO" : "NO APROBADO"}
                             </span>
                         </div>
-                        
+
                         {evaluacion.comentarios && (
                             <div className="mt-4 pt-3 border-t border-slate-50">
                                 <span className="block text-xs font-bold text-gray-400 mb-1 uppercase">Comentarios</span>
@@ -311,11 +337,11 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
                                 >
                                     Cancelar
                                 </button>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="flex-1 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-medium hover:bg-[#164a49] shadow-md transition-all flex items-center justify-center gap-2"
                                 >
-                                    <Check size={18}/> Guardar Evaluación
+                                    <Check size={18} /> Guardar Evaluación
                                 </button>
                             </div>
                         </form>

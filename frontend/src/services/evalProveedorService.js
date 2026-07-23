@@ -69,3 +69,7 @@ export const descargarEvaluacionesPorPeriodo = async ({ anio, desde, hasta } = {
     link.remove();
     window.URL.revokeObjectURL(url);
 };
+
+export const verificarAlertaEventual = async (idProveedor) => {
+    return api.get(`/api/evalProveedor/alerta-eventual/${idProveedor}`);
+};

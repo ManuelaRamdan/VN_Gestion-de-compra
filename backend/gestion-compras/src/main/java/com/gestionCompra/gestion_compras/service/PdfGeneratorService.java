@@ -347,17 +347,62 @@ public class PdfGeneratorService {
                 Proveedor proveedorAdjudicado = compra.getAprobacionPresupuesto().getPresupuesto().getProveedor();
 
                 if (proveedorAdjudicado != null) {
-                    // 1. Buscamos la evaluación más reciente de este proveedor
-                    EvaluacionProveedor evalProv = evalProveedorRepo.findTopByProveedor_IdProveedorOrderByFechaDesc(proveedorAdjudicado.getIdProveedor());
+                    // 1. Buscamos la evaluación VIGENTE al momento del cierre del expediente:
+                    //    la más reciente cuya fecha sea anterior o igual a la fecha de cierre.
+                    //    (Antes se traía la última evaluación existente en toda la BD, sin
+                    //    importar si era posterior a esta compra, lo cual era incorrecto).
+                    EvaluacionProveedor evalProv = null;
+                    boolean esFallbackPosterior = false;
+
+                    if (cierre.getFechaCierre() != null) {
+                        // Usamos el final del día de cierre para incluir evaluaciones
+                        // cargadas ese mismo día.
+                        java.time.LocalDateTime fechaLimite = cierre.getFechaCierre().atTime(java.time.LocalTime.MAX);
+                        evalProv = evalProveedorRepo
+                                .findFirstByProveedor_IdProveedorAndFechaLessThanEqualOrderByFechaDesc(
+                                        proveedorAdjudicado.getIdProveedor(), fechaLimite);
+
+                        // 2. FALLBACK: si no hay ninguna evaluación vigente a esa fecha
+                        // (ej. la compra es más vieja que la primera evaluación cargada
+                        // al proveedor), buscamos la PRIMERA evaluación posterior, para
+                        // no dejar el expediente sin ningún dato de evaluación.
+                        if (evalProv == null) {
+                            evalProv = evalProveedorRepo
+                                    .findFirstByProveedor_IdProveedorAndFechaGreaterThanOrderByFechaAsc(
+                                            proveedorAdjudicado.getIdProveedor(), fechaLimite);
+                            esFallbackPosterior = (evalProv != null);
+                        }
+                    }
+
+                    document.add(new Paragraph("\n"));
+                    addSectionTitle(document, "9. EVALUACIÓN DEL PROVEEDOR", sectionFont);
 
                     if (evalProv != null) {
+                        if (esFallbackPosterior) {
+                            // Aclaramos que no existía evaluación vigente al momento del
+                            // cierre, y que se muestra la primera evaluación posterior.
+                            Paragraph nota = new Paragraph(
+                                    "Nota: el proveedor no contaba con evaluaciones registradas a la fecha de cierre de este expediente. "
+                                    + "Se muestra a continuación la primera evaluación realizada con posterioridad (Fecha: "
+                                    + evalProv.getFecha().format(formateo) + ").",
+                                    normalFont);
+                            document.add(nota);
+                        }
+
                         String destinoEval = "EVAL_PROV_" + evalProv.getIdEvalProveedor();
 
-                        // 2. Generamos el PDF de la evaluación en memoria (bytes)
+                        // 3. Generamos el PDF de la evaluación en memoria (bytes)
                         byte[] evalBytes = generarEvaluacionProveedorPdfBytes(evalProv);
 
-                        // 3. Lo fusionamos al final del expediente usando nuestro nuevo helper
+                        // 4. Lo fusionamos al final del expediente usando nuestro nuevo helper
                         fusionarPdfDesdeBytes(document, writer, evalBytes, destinoEval);
+                    } else {
+                        // El proveedor no tiene NINGUNA evaluación registrada (ni antes ni
+                        // después del cierre). Dejamos constancia en el expediente en vez
+                        // de omitir la sección silenciosamente.
+                        document.add(new Paragraph(
+                                "El proveedor no cuenta con evaluaciones registradas en el sistema.",
+                                boldValueFont));
                     }
                 }
             }

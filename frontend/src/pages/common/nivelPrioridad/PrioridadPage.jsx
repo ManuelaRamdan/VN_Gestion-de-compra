@@ -2,9 +2,16 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../../../components/Layout';
 import TablaPrioridad from '../../../components/nivelPrioridad/TablaPrioridad';
 import { listarPrioridadesPaginadas, darDeBajaPrioridad, modificarPrioridad, crearPrioridad } from '../../../services/prioridadService';
-import { Plus, Flag, AlertCircle, Check, X, AlertTriangle } from 'lucide-react'; 
+import { Plus, Flag, AlertCircle, Check, X, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function PrioridadPage() {
+    const { user } = useAuth();
+    const permisos = user?.permisos || [];
+    // Quien solo tenga PERM_PRIORIDADES_VER ve la tabla en modo lectura,
+    // sin poder crear, editar ni dar de baja niveles de prioridad.
+    const puedeAdministrar = permisos.includes('PERM_PRIORIDADES_ADMIN');
+
     const [prioridades, setPrioridades] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -126,8 +133,8 @@ export default function PrioridadPage() {
                     <p className="text-sm text-gray-500">Gestione las categorías y tiempos límite de las solicitudes.</p>
                 </div>
                 <button
-                    onClick={handleNuevoClick} 
-                    className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm whitespace-nowrap"
+                    onClick={handleNuevoClick}
+                    className={`bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm whitespace-nowrap ${!puedeAdministrar ? 'hidden' : ''}`}
                 >
                     <Plus size={18} /> Nueva Prioridad
                 </button>
@@ -155,6 +162,7 @@ export default function PrioridadPage() {
                     onLoadMore={handleLoadMore}
                     hasMore={hasMore}
                     isLoadingMore={isLoadingMore}
+                    canEdit={puedeAdministrar}
                 />
             ) : !loading && (
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-20 flex flex-col items-center justify-center text-center">

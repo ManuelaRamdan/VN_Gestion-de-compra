@@ -203,5 +203,15 @@ public class EvaluacionProveedorController {
             return ResponseEntity.badRequest().body(Map.of("error", "Error inesperado: " + e.getMessage()));
         }
     }
+    
+    @GetMapping("/alerta-eventual/{idProveedor}")
+    public ResponseEntity<?> requiereAlertaEventual(@PathVariable Integer idProveedor) {
+        try {
+            boolean requiereAlerta = evalProveedorService.requiereAlertaEventual(idProveedor);
+            return ResponseEntity.ok(Map.of("requiereAlerta", requiereAlerta));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 
 }
