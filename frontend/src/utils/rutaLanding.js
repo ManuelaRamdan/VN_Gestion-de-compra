@@ -1,29 +1,33 @@
 /**
- * Mapa de permiso → ruta de aterrizaje, en orden de prioridad.
- * Se recorre de arriba hacia abajo y se navega a la primera ruta
- * cuyo permiso el usuario efectivamente tenga.
+ * Mapa de recurso → ruta de aterrizaje. La clave es un prefijo (o el nombre
+ * completo, para permisos que no siguen el patrón _VER/_EDITAR/_BORRAR/_ADMIN).
+ * Se recorre en orden y se navega a la primera ruta cuyo prefijo matchee
+ * algún permiso que el usuario tenga.
  *
- * Para agregar un sector/permiso nuevo, solo hay que sumar una fila acá.
+ * Para un módulo nuevo con niveles granulares (_VER, _EDITAR, _BORRAR, _ADMIN),
+ * alcanza con una sola fila usando el prefijo común, ej: 'PERM_PRODUCTOS_'.
+ * Para permisos sueltos que no comparten prefijo con otros del mismo recurso
+ * (como Solicitudes, que tiene ADMIN/VER/CREAR yendo a rutas distintas),
+ * se listan explícitos y van ANTES de cualquier prefijo genérico que pudiera
+ * también matchearlos.
  */
-const RUTAS_POR_PERMISO = [
-    { permiso: 'PERM_SOLICITUDES_ADMIN',   ruta: '/solicitudes' },
-    { permiso: 'PERM_APROBACIONES_VER',    ruta: '/solicitudes' },
-    { permiso: 'PERM_SOLICITUDES_VER',     ruta: '/solicitudes' },
-    { permiso: 'PERM_PRIORIDADES_ADMIN',   ruta: '/nivelPrioridad' },
-    { permiso: 'PERM_PRIORIDADES_VER',     ruta: '/nivelPrioridad' },
-    { permiso: 'PERM_PRODUCTOS_ADMIN',     ruta: '/producto' },
-    { permiso: 'PERM_PRODUCTOS_VER',       ruta: '/producto' },
-    { permiso: 'PERM_PROVEEDORES_ADMIN',   ruta: '/proveedor' },
-    { permiso: 'PERM_PROVEEDORES_VER',     ruta: '/proveedor' },
-    { permiso: 'PERM_PRESUPUESTOS',        ruta: '/presupuestos' },
-    { permiso: 'PERM_COMPRAS',             ruta: '/compras' },
-    { permiso: 'PERM_EVAL_PROVEEDOR',      ruta: '/evalProveedor' },
-    { permiso: 'PERM_EVAL_ENTREGA',        ruta: '/evalEntrega' },
-    { permiso: 'PERM_RECLAMOS',            ruta: '/reclamos' },
-    { permiso: 'PERM_DOCUMENTACION',       ruta: '/documentacion' },
-    { permiso: 'PERM_CIERRES',             ruta: '/cierre' },
-    { permiso: 'PERM_USUARIOS_ADMIN',      ruta: '/usuarios' },
-    { permiso: 'PERM_UPLOADS',             ruta: '/uploads' },
+const RUTAS_POR_RECURSO = [
+    { prefijo: 'PERM_SOLICITUDES_ADMIN',  ruta: '/solicitudes' },
+    { prefijo: 'PERM_APROBACIONES_VER',   ruta: '/aprobSolicitud' },
+    { prefijo: 'PERM_SOLICITUDES_VER',    ruta: '/solicitudes' },
+    { prefijo: 'PERM_SOLICITUDES_CREAR',  ruta: '/solicitudes/nueva' },
+    { prefijo: 'PERM_PRIORIDADES_',       ruta: '/nivelPrioridad' },
+    { prefijo: 'PERM_PRODUCTOS_',         ruta: '/producto' },
+    { prefijo: 'PERM_PROVEEDORES_',       ruta: '/proveedor' },
+    { prefijo: 'PERM_PRESUPUESTOS',       ruta: '/presupuestos' },
+    { prefijo: 'PERM_COMPRAS',            ruta: '/compras' },
+    { prefijo: 'PERM_EVAL_PROVEEDOR',     ruta: '/evalProveedor' },
+    { prefijo: 'PERM_EVAL_ENTREGA',       ruta: '/evalEntrega' },
+    { prefijo: 'PERM_RECLAMOS',           ruta: '/reclamos' },
+    { prefijo: 'PERM_DOCUMENTACION',      ruta: '/documentacion' },
+    { prefijo: 'PERM_CIERRES',            ruta: '/cierre' },
+    { prefijo: 'PERM_USUARIOS_',          ruta: '/usuarios' },
+    { prefijo: 'PERM_UPLOADS',            ruta: '/uploads' },
 ];
 
 /**
@@ -36,6 +40,8 @@ export function getRutaLanding(rol, permisos = []) {
         return '/aprobSolicitud';
     }
 
-    const match = RUTAS_POR_PERMISO.find(({ permiso }) => permisos.includes(permiso));
+    const match = RUTAS_POR_RECURSO.find(({ prefijo }) =>
+        permisos.some(p => p.startsWith(prefijo))
+    );
     return match ? match.ruta : null;
 }

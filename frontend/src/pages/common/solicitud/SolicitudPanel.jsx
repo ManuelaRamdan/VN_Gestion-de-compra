@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
 import Loading from "../../../components/Loading";
-import { misSolicitudes } from "../../../services/solicitudService";
+import { misSolicitudes, listarTodasLasSolicitudes } from "../../../services/solicitudService";
 import Layout from "../../../components/Layout";
-import TablaSolicitud from "../../../components/solicitud/TablaSolicitud"; 
-import DetallesSolicitud from "../../../components/solicitud/DetallesSolicitud"; 
+import TablaSolicitud from "../../../components/solicitud/TablaSolicitud";
+import DetallesSolicitud from "../../../components/solicitud/DetallesSolicitud";
 import { FileText, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../../context/AuthContext";
 
 export default function SolicitudPanel() {
     const { user } = useAuth();
+    const permisos = user?.permisos || [];
+    const puedeCrear = permisos.includes('PERM_SOLICITUDES_CREAR');
+    const esAdmin = permisos.includes('PERM_SOLICITUDES_ADMIN');
+
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -33,12 +37,14 @@ export default function SolicitudPanel() {
                 setLoadingMore(true);
             }
 
-            const res = await misSolicitudes(pageToLoad);
+            const res = esAdmin
+                ? await listarTodasLasSolicitudes(pageToLoad)
+                : await misSolicitudes(pageToLoad);
             const data = res.data;
             const contenido = data.contenido || data || [];
 
             if (Array.isArray(contenido)) {
-                
+
                 // 1. ACTUALIZAR LA LISTA
                 if (pageToLoad === 0) {
                     setSolicitudes(contenido);
@@ -49,9 +55,9 @@ export default function SolicitudPanel() {
                 // 2. ACTUALIZAR ESTADÍSTICAS (Si vienen en el DTO)
                 if (data.totalElementos !== undefined) {
                     setStats({
-                        total: data.totalElementos,       
-                        pendientes: data.cantidadPendientes, 
-                        aprobadas: data.cantidadAprobadas    
+                        total: data.totalElementos,
+                        pendientes: data.cantidadPendientes,
+                        aprobadas: data.cantidadAprobadas
                     });
                 }
 
@@ -95,12 +101,14 @@ export default function SolicitudPanel() {
                     {/* Título de sección */}
                     <div className="mb-6">
                         <h1 className="text-xl font-bold text-slate-900">Solicitudes</h1>
-                        <button
-                            onClick={() => navigate('/solicitudes/nueva')}
-                            className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
-                        >
-                            <Plus size={18} /> Nueva Solicitud
-                        </button>
+                        {puedeCrear && (
+                            <button
+                                onClick={() => navigate('/solicitudes/nueva')}
+                                className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
+                            >
+                                <Plus size={18} /> Nueva Solicitud
+                            </button>
+                        )}
                     </div>
 
                     {/* --- TARJETAS DE ESTADÍSTICAS --- */}

@@ -101,15 +101,15 @@ public class SolicitudService extends ABMGenerico<Solicitud, Integer> {
             }
         }
 
-       if (camposActualizar.containsKey("id_nivel_prioridad")) {
+        if (camposActualizar.containsKey("id_nivel_prioridad")) {
             Object valor = camposActualizar.get("id_nivel_prioridad");
             if (valor != null) {
                 Integer idPrioridad = ((Number) valor).intValue();
-                
+
                 // Buscamos y asignamos el nuevo nivel de prioridad
                 var nuevoNivel = nivelPrioridadService.findById(idPrioridad);
                 solicitud.setNivelPrioridad(nuevoNivel);
-                
+
                 // Recalculamos la fecha admisible sumando los días del nuevo nivel a la fecha actual de la solicitud
                 if (solicitud.getFecha() != null && nuevoNivel.getDias() != null) {
                     solicitud.setFechaAdmisible(solicitud.getFecha().plusDays(nuevoNivel.getDias()));
@@ -141,7 +141,7 @@ public class SolicitudService extends ABMGenerico<Solicitud, Integer> {
                 solicitud.setComentarios((String) valor);
             }
         }
-        
+
         // Procesamos la Fecha
         if (camposActualizar.containsKey("fecha")) {
             Object valor = camposActualizar.get("fecha");
@@ -149,15 +149,15 @@ public class SolicitudService extends ABMGenerico<Solicitud, Integer> {
                 try {
                     // Se asume que del front llega un String en formato ISO (ej: "2026-03-15T10:30:00")
                     LocalDateTime nuevaFecha = LocalDateTime.parse(valor.toString());
-                    
+
                     if (nuevaFecha.isAfter(LocalDateTime.now())) {
                         throw new ManejoErrores(HttpStatus.BAD_REQUEST, "La fecha de la solicitud no puede ser mayor a la fecha actual.");
                     }
-                    
+
                     solicitud.setFecha(nuevaFecha);
                     // Si cambia la fecha, obligatoriamente debemos recalcular el límite admisible
                     solicitud.setFechaAdmisible(nuevaFecha.plusDays(solicitud.getNivelPrioridad().getDias()));
-                    
+
                 } catch (java.time.format.DateTimeParseException e) {
                     throw new ManejoErrores(HttpStatus.BAD_REQUEST, "El formato de la fecha es inválido. Use formato ISO 8601 (ej: YYYY-MM-DDTHH:mm:ss).");
                 }
@@ -176,6 +176,10 @@ public class SolicitudService extends ABMGenerico<Solicitud, Integer> {
 
     public long countByUsuarioIdAndAprobacionEstado(Integer idUsuario, String estado) {
         return solicitudRepository.countByUsuario_IdUsuarioAndAprobacion_EstadoAndCerradoFalse(idUsuario, estado);
+    }
+
+    public long countByAprobacionEstado(String estado) {
+        return solicitudRepository.countByAprobacion_EstadoAndCerradoFalse(estado);
     }
 
 }

@@ -2,10 +2,17 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../../../components/Layout';
 import TablaProducto from '../../../components/producto/TablaProducto';
 import { listarProductosPaginados, darDeBajaProducto, modificarProducto, crearProducto } from '../../../services/productoService';
-// Usamos Package para representar Productos
 import { Plus, Package, AlertCircle, Check, X, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function ProductoPage() {
+    const { user } = useAuth();
+    const permisos = user?.permisos || [];
+    const puedeEditar = permisos.includes('PERM_PRODUCTOS_EDITAR') || permisos.includes('PERM_PRODUCTOS_ADMIN');
+    const puedeBorrar = permisos.includes('PERM_PRODUCTOS_BORRAR') || permisos.includes('PERM_PRODUCTOS_ADMIN');
+    const puedeCrear = permisos.includes('PERM_PRODUCTOS_ADMIN');
+
+    // ... resto de los states igual
     const [productos, setProductos] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -19,7 +26,7 @@ export default function ProductoPage() {
     const [success, setSuccess] = useState("");
 
     // Modal unificado (Crear / Editar)
-    const [showModal, setShowModal] = useState(false); 
+    const [showModal, setShowModal] = useState(false);
     const [modalError, setModalError] = useState("");
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({ nombre: "" });
@@ -63,7 +70,7 @@ export default function ProductoPage() {
 
     const confirmDeactivate = async () => {
         if (!productoToDeactivate) return;
-        
+
         try {
             await darDeBajaProducto(productoToDeactivate);
             setSuccess("Producto dado de baja exitosamente.");
@@ -78,15 +85,15 @@ export default function ProductoPage() {
 
     // --- ACCIONES PARA ABRIR EL MODAL DE CREAR/EDITAR ---
     const handleNuevoClick = () => {
-        setEditingId(null); 
-        setFormData({ nombre: "" }); 
+        setEditingId(null);
+        setFormData({ nombre: "" });
         setModalError("");
         setShowModal(true);
     };
 
     const handleEditClick = (producto) => {
-        setEditingId(producto.idProducto); 
-        setFormData({ nombre: producto.nombre }); 
+        setEditingId(producto.idProducto);
+        setFormData({ nombre: producto.nombre });
         setModalError("");
         setShowModal(true);
     };
@@ -103,9 +110,9 @@ export default function ProductoPage() {
                 await crearProducto(formData);
                 setSuccess("Producto registrado correctamente.");
             }
-            
+
             setShowModal(false);
-            cargarProductos(0, false); 
+            cargarProductos(0, false);
             setTimeout(() => setSuccess(""), 3500);
         } catch (err) {
             setModalError(err.response?.data?.message || err.response?.data?.error || "Error al guardar el producto.");
@@ -119,12 +126,14 @@ export default function ProductoPage() {
                     <h1 className="text-xl font-bold text-slate-900">Gestión de Productos</h1>
                     <p className="text-sm text-gray-500">Administre el catálogo de insumos y productos.</p>
                 </div>
-                <button
-                    onClick={handleNuevoClick} 
-                    className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
-                >
-                    <Plus size={18} /> Nuevo Producto
-                </button>
+                {puedeCrear && (
+                    <button
+                        onClick={handleNuevoClick}
+                        className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
+                    >
+                        <Plus size={18} /> Nuevo Producto
+                    </button>
+                )}
             </div>
 
             {error && (
@@ -149,6 +158,8 @@ export default function ProductoPage() {
                     onLoadMore={handleLoadMore}
                     hasMore={hasMore}
                     isLoadingMore={isLoadingMore}
+                    canEdit={puedeEditar}
+                    canDelete={puedeBorrar}
                 />
             ) : !loading && (
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-20 flex flex-col items-center justify-center text-center">
@@ -205,14 +216,14 @@ export default function ProductoPage() {
                         <h3 className="font-bold text-lg text-slate-800 mb-2">¿Dar de baja producto?</h3>
                         <p className="text-sm text-gray-500 mb-6">Esta acción cambiará el estado del producto a inactivo. Ya no estará disponible para nuevas solicitudes.</p>
                         <div className="flex gap-3">
-                            <button 
-                                onClick={() => setProductoToDeactivate(null)} 
+                            <button
+                                onClick={() => setProductoToDeactivate(null)}
                                 className="flex-1 py-2.5 border border-slate-300 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-all"
                             >
                                 Cancelar
                             </button>
-                            <button 
-                                onClick={confirmDeactivate} 
+                            <button
+                                onClick={confirmDeactivate}
                                 className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 shadow-md transition-all"
                             >
                                 Sí, dar de baja

@@ -7,7 +7,9 @@ export default function TablaGestionProveedor({
     onDeactivate,
     onLoadMore,
     hasMore,
-    isLoadingMore
+    isLoadingMore,
+    canEdit = true,
+    canDelete = true
 }) {
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -58,7 +60,7 @@ export default function TablaGestionProveedor({
                             <th className="px-6 py-4">EMPRESA / CONTACTO</th>
                             <th className="px-6 py-4">CONTACTO (TEL/MAIL)</th>
                             <th className="px-6 py-4">ESTADO</th>
-                            <th className="px-6 py-4 text-right">ACCIONES</th>
+                            {(canEdit || canDelete) && <th className="px-6 py-4 text-right">ACCIONES</th>}
                         </tr>
                     </thead>
 
@@ -79,23 +81,27 @@ export default function TablaGestionProveedor({
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {getEstadoBadge(p.activo)}
                                 </td>
-                                <td className="px-6 py-4 text-right space-x-3 whitespace-nowrap">
-                                    <button
-                                        onClick={() => onEdit(p)}
-                                        className="inline-flex items-center gap-1 text-blue-600 font-bold text-xs hover:underline cursor-pointer"
-                                    >
-                                        <Pencil size={14} /> Editar
-                                    </button>
+                                {(canEdit || canDelete) && (
+                                    <td className="px-6 py-4 text-right space-x-3 whitespace-nowrap">
+                                        {canEdit && (
+                                            <button
+                                                onClick={() => onEdit(p)}
+                                                className="inline-flex items-center gap-1 text-blue-600 font-bold text-xs hover:underline cursor-pointer"
+                                            >
+                                                <Pencil size={14} /> Editar
+                                            </button>
+                                        )}
 
-                                    {p.activo && (
-                                        <button
-                                            onClick={() => onDeactivate(p.idProveedor)}
-                                            className="inline-flex items-center gap-1 text-red-600 font-bold text-xs hover:underline cursor-pointer"
-                                        >
-                                            <Trash2 size={14} /> Baja
-                                        </button>
-                                    )}
-                                </td>
+                                        {canDelete && p.activo && (
+                                            <button
+                                                onClick={() => onDeactivate(p.idProveedor)}
+                                                className="inline-flex items-center gap-1 text-red-600 font-bold text-xs hover:underline cursor-pointer"
+                                            >
+                                                <Trash2 size={14} /> Baja
+                                            </button>
+                                        )}
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

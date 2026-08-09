@@ -28,4 +28,6 @@ public interface SolicitudRepo extends JpaRepository<Solicitud, Integer> {
     
     Optional <Solicitud> findByIdSolicitudAndCerradoFalse(Integer id);
     long countByUsuario_IdUsuarioAndAprobacion_EstadoAndCerradoFalse(Integer usuarioId, String estado);
+    
+    long countByAprobacion_EstadoAndCerradoFalse(String estado);
 }

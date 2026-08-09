@@ -82,11 +82,11 @@ public class SolicitudController {
             solicitud.setNivelPrioridad(nivel);
             // --- LÓGICA DE FECHA Y VALIDACIÓN ---
             LocalDateTime fechaIngresada = request.fecha() != null ? request.fecha() : LocalDateTime.now();
-            
+
             if (fechaIngresada.isAfter(LocalDateTime.now())) {
                 return ResponseEntity.badRequest().body(Map.of("error", "La fecha de la solicitud no puede ser mayor a la fecha actual."));
             }
-            
+
             solicitud.setFecha(fechaIngresada);
             solicitud.setFechaAdmisible(solicitud.getFecha().plusDays(nivel.getDias()));
             solicitud.setComentarios(request.comentarios());
@@ -176,6 +176,27 @@ public class SolicitudController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping("/todas")
+    public ResponseEntity<SolicitudResumenDTO> listarTodasLasSolicitudes(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "fecha")
+        );
+
+        Paginacion<Solicitud> solicitudes = solicitudService.findAllAbiertas(pageable);
+
+        long pendientes = solicitudService.countByAprobacionEstado("PENDIENTE");
+        long aprobadas = solicitudService.countByAprobacionEstado("APROBADA");
+
+        SolicitudResumenDTO respuesta = new SolicitudResumenDTO(solicitudes, pendientes, aprobadas);
+
+        return ResponseEntity.ok(respuesta);
     }
 
 }

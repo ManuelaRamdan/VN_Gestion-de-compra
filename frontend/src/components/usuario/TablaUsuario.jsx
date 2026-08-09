@@ -7,7 +7,9 @@ export default function TablaUsuario({
     onDeactivate,
     onLoadMore,
     hasMore,
-    isLoadingMore
+    isLoadingMore,
+    canEdit = true,
+    canDelete = true
 }) {
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -59,7 +61,7 @@ export default function TablaUsuario({
                             <th className="px-6 py-4">USUARIO</th>
                             <th className="px-6 py-4">SECTOR</th>
                             <th className="px-6 py-4">ESTADO</th>
-                            <th className="px-6 py-4 text-right">ACCIONES</th>
+                            {(canEdit || canDelete) && <th className="px-6 py-4 text-right">ACCIONES</th>}
                         </tr>
                     </thead>
 
@@ -79,23 +81,27 @@ export default function TablaUsuario({
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {getEstadoBadge(u.activo)}
                                 </td>
-                                <td className="px-6 py-4 text-right space-x-3">
-                                    <button
-                                        onClick={() => onEdit(u)}
-                                        className="inline-flex items-center gap-1 text-blue-600 font-bold text-xs hover:underline cursor-pointer"
-                                    >
-                                        <Pencil size={14} /> Editar
-                                    </button>
+                                {(canEdit || canDelete) && (
+                                    <td className="px-6 py-4 text-right space-x-3">
+                                        {canEdit && (
+                                            <button
+                                                onClick={() => onEdit(u)}
+                                                className="inline-flex items-center gap-1 text-blue-600 font-bold text-xs hover:underline cursor-pointer"
+                                            >
+                                                <Pencil size={14} /> Editar
+                                            </button>
+                                        )}
 
-                                    {u.activo && (
-                                        <button
-                                            onClick={() => onDeactivate(u.idUsuario)}
-                                            className="inline-flex items-center gap-1 text-red-600 font-bold text-xs hover:underline cursor-pointer"
-                                        >
-                                            <Trash2 size={14} /> Baja
-                                        </button>
-                                    )}
-                                </td>
+                                        {canDelete && u.activo && (
+                                            <button
+                                                onClick={() => onDeactivate(u.idUsuario)}
+                                                className="inline-flex items-center gap-1 text-red-600 font-bold text-xs hover:underline cursor-pointer"
+                                            >
+                                                <Trash2 size={14} /> Baja
+                                            </button>
+                                        )}
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

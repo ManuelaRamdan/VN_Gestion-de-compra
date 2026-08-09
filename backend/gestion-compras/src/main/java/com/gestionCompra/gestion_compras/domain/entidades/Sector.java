@@ -66,11 +66,11 @@ public class Sector implements EntidadBase {
     }
 
     /**
-     * Devuelve los permisos efectivos del sector, ya expandidos:
-     * todo permiso "_ADMIN" implica automáticamente el "_VER" del mismo recurso,
-     * aunque no se haya asignado explícitamente al crear/editar el sector.
-     * Esto evita tener que dar de alta ambos permisos a mano cada vez que
-     * se crea un sector nuevo o se le asigna un permiso de administración.
+     * Devuelve los permisos efectivos del sector, ya expandidos: todo permiso
+     * "_ADMIN" implica automáticamente el "_VER" del mismo recurso, aunque no
+     * se haya asignado explícitamente al crear/editar el sector. Esto evita
+     * tener que dar de alta ambos permisos a mano cada vez que se crea un
+     * sector nuevo o se le asigna un permiso de administración.
      */
     public List<String> getNombresPermisos() {
         List<String> base = permisos.stream()
@@ -81,16 +81,37 @@ public class Sector implements EntidadBase {
     }
 
     private static final String SUFIJO_ADMIN = "_ADMIN";
+    private static final String SUFIJO_EDITAR = "_EDITAR";
+    private static final String SUFIJO_BORRAR = "_BORRAR";
     private static final String SUFIJO_VER = "_VER";
 
     private List<String> expandirPermisos(List<String> base) {
         Set<String> efectivos = new LinkedHashSet<>(base);
 
         for (String permiso : base) {
-            if (permiso != null && permiso.endsWith(SUFIJO_ADMIN)) {
+            if (permiso == null) {
+                continue;
+            }
+
+            if (permiso.endsWith(SUFIJO_ADMIN)) {
                 String recurso = permiso.substring(0, permiso.length() - SUFIJO_ADMIN.length());
                 efectivos.add(recurso + SUFIJO_VER);
+                efectivos.add(recurso + SUFIJO_EDITAR);
+                efectivos.add(recurso + SUFIJO_BORRAR);
+            } else if (permiso.endsWith(SUFIJO_EDITAR)) {
+                String recurso = permiso.substring(0, permiso.length() - SUFIJO_EDITAR.length());
+                efectivos.add(recurso + SUFIJO_VER);
+            } else if (permiso.endsWith(SUFIJO_BORRAR)) {
+                String recurso = permiso.substring(0, permiso.length() - SUFIJO_BORRAR.length());
+                efectivos.add(recurso + SUFIJO_VER);
             }
+        }
+
+        // Crear una solicitud requiere poder ver el catálogo de productos
+        // y las prioridades disponibles para completar el formulario.
+        if (efectivos.contains("PERM_SOLICITUDES_CREAR")) {
+            efectivos.add("PERM_PRODUCTOS_VER");
+            efectivos.add("PERM_PRIORIDADES_VER");
         }
 
         return new ArrayList<>(efectivos);

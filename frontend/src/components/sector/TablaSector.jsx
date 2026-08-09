@@ -7,7 +7,9 @@ export default function TablaSector({
     onDeactivate,
     onLoadMore,
     hasMore,
-    isLoadingMore
+    isLoadingMore,
+    canEdit = true,
+    canDelete = true
 }) {
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -53,7 +55,7 @@ export default function TablaSector({
                             <th className="px-6 py-4">ID</th>
                             <th className="px-6 py-4">NOMBRE DEL SECTOR</th>
                             <th className="px-6 py-4">ESTADO</th>
-                            <th className="px-6 py-4 text-right">ACCIONES</th>
+                            {(canEdit || canDelete) && <th className="px-6 py-4 text-right">ACCIONES</th>}
                         </tr>
                     </thead>
 
@@ -69,23 +71,27 @@ export default function TablaSector({
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {getEstadoBadge(s.activo)}
                                 </td>
-                                <td className="px-6 py-4 text-right space-x-3">
-                                    <button
-                                        onClick={() => onEdit(s)}
-                                        className="inline-flex items-center gap-1 text-blue-600 font-bold text-xs hover:underline cursor-pointer"
-                                    >
-                                        <Pencil size={14} /> Editar
-                                    </button>
+                                {(canEdit || canDelete) && (
+                                    <td className="px-6 py-4 text-right space-x-3">
+                                        {canEdit && (
+                                            <button
+                                                onClick={() => onEdit(s)}
+                                                className="inline-flex items-center gap-1 text-blue-600 font-bold text-xs hover:underline cursor-pointer"
+                                            >
+                                                <Pencil size={14} /> Editar
+                                            </button>
+                                        )}
 
-                                    {s.activo && (
-                                        <button
-                                            onClick={() => onDeactivate(s.idSector)}
-                                            className="inline-flex items-center gap-1 text-red-600 font-bold text-xs hover:underline cursor-pointer"
-                                        >
-                                            <Trash2 size={14} /> Baja
-                                        </button>
-                                    )}
-                                </td>
+                                        {canDelete && s.activo && (
+                                            <button
+                                                onClick={() => onDeactivate(s.idSector)}
+                                                className="inline-flex items-center gap-1 text-red-600 font-bold text-xs hover:underline cursor-pointer"
+                                            >
+                                                <Trash2 size={14} /> Baja
+                                            </button>
+                                        )}
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

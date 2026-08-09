@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '../../../components/Layout';
 import TablaSector from '../../../components/sector/TablaSector';
-import { listarSectoresPaginados, darDeBajaSector, modificarSector, crearSector, obtenerPermisosDisponibles  } from '../../../services/sectorService';
+import { listarSectoresPaginados, darDeBajaSector, modificarSector, crearSector, obtenerPermisosDisponibles } from '../../../services/sectorService';
 // Agregamos AlertTriangle para el modal de confirmación
 import { Plus, Briefcase, AlertCircle, Check, X, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function SectorPage() {
+    const { user } = useAuth();
+    const permisos = user?.permisos || [];
+    const puedeEditar = permisos.includes('PERM_SECTOR_EDITAR') || permisos.includes('PERM_SECTOR_ADMIN');
+    const puedeBorrar = permisos.includes('PERM_SECTOR_BORRAR') || permisos.includes('PERM_SECTOR_ADMIN');
+    const puedeCrear = permisos.includes('PERM_SECTOR_ADMIN');
     const [sectores, setSectores] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -150,12 +156,14 @@ export default function SectorPage() {
                     <h1 className="text-xl font-bold text-slate-900">Gestión de Sectores</h1>
                     <p className="text-sm text-gray-500">Administre los departamentos y áreas de la empresa.</p>
                 </div>
-                <button
-                    onClick={handleNuevoClick}
-                    className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
-                >
-                    <Plus size={18} /> Nuevo Sector
-                </button>
+                {puedeCrear && (
+                    <button
+                        onClick={handleNuevoClick}
+                        className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
+                    >
+                        <Plus size={18} /> Nuevo Sector
+                    </button>
+                )}
             </div>
 
             {error && (
@@ -176,10 +184,12 @@ export default function SectorPage() {
                 <TablaSector
                     sectores={sectores}
                     onEdit={handleEditClick}
-                    onDeactivate={handleDeactivateClick} // Pasamos la nueva función
+                    onDeactivate={handleDeactivateClick}
                     onLoadMore={handleLoadMore}
                     hasMore={hasMore}
                     isLoadingMore={isLoadingMore}
+                    canEdit={puedeEditar}
+                    canDelete={puedeBorrar}
                 />
             ) : !loading && (
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-20 flex flex-col items-center justify-center text-center">

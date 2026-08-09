@@ -6,8 +6,15 @@ import TablaUsuario from '../../../components/usuario/TablaUsuario';
 import { listarUsuarios, darDeBajaUsuario, modificarUsuario, listarSectores } from '../../../services/usuarioService';
 // Agregamos AlertTriangle para el modal de confirmación
 import { Plus, Users, AlertCircle, Check, X, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function UsuariosPanel() {
+    const { user } = useAuth();
+    const permisos = user?.permisos || [];
+    const puedeEditar = permisos.includes('PERM_USUARIOS_EDITAR') || permisos.includes('PERM_USUARIOS_ADMIN');
+    const puedeBorrar = permisos.includes('PERM_USUARIOS_BORRAR') || permisos.includes('PERM_USUARIOS_ADMIN');
+    const puedeCrear = permisos.includes('PERM_USUARIOS_ADMIN');
+
     const navigate = useNavigate();
     const [usuarios, setUsuarios] = useState([]);
     const [sectores, setSectores] = useState([]);
@@ -84,12 +91,12 @@ export default function UsuariosPanel() {
 
     const confirmDeactivate = async () => {
         if (!userToDeactivate) return;
-        
+
         try {
             await darDeBajaUsuario(userToDeactivate);
             setSuccess("Usuario dado de baja exitosamente.");
             // CORRECCIÓN: Usamos cargarUsuarios en lugar de cargarDatos
-            cargarUsuarios(0, false); 
+            cargarUsuarios(0, false);
             setUserToDeactivate(null); // Cerramos el modal
             setTimeout(() => setSuccess(""), 3500);
         } catch (err) {
@@ -119,7 +126,7 @@ export default function UsuariosPanel() {
             setShowEditModal(false);
             setSuccess("Usuario actualizado correctamente.");
             // CORRECCIÓN: Usamos cargarUsuarios en lugar de cargarDatos
-            cargarUsuarios(0, false); 
+            cargarUsuarios(0, false);
             setTimeout(() => setSuccess(""), 3500);
         } catch (err) {
             setModalError(err.response?.data?.error || "Error al actualizar el usuario.");
@@ -135,12 +142,14 @@ export default function UsuariosPanel() {
                     <h1 className="text-xl font-bold text-slate-900">Gestión de Usuarios</h1>
                     <p className="text-sm text-gray-500">Administre los accesos y roles del sistema.</p>
                 </div>
-                <button
-                    onClick={() => navigate('/usuario/nuevo')} // Verifiqué que la ruta sea correcta según tu frontend
-                    className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
-                >
-                    <Plus size={18} /> Nuevo Usuario
-                </button>
+                {puedeCrear && (
+                    <button
+                        onClick={() => navigate('/usuario/nuevo')}
+                        className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"
+                    >
+                        <Plus size={18} /> Nuevo Usuario
+                    </button>
+                )}
             </div>
 
             {/* --- MENSAJES FEEDBACK GLOBALES --- */}
@@ -163,10 +172,12 @@ export default function UsuariosPanel() {
                 <TablaUsuario
                     usuarios={usuarios}
                     onEdit={handleEditClick}
-                    onDeactivate={handleDeactivateClick} // Pasamos la función que abre el modal
+                    onDeactivate={handleDeactivateClick}
                     onLoadMore={handleLoadMore}
                     hasMore={hasMore}
                     isLoadingMore={isLoadingMore}
+                    canEdit={puedeEditar}
+                    canDelete={puedeBorrar}
                 />
             ) : !loading && (
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-20 flex flex-col items-center justify-center text-center">
@@ -248,14 +259,14 @@ export default function UsuariosPanel() {
                         <h3 className="font-bold text-lg text-slate-800 mb-2">¿Dar de baja usuario?</h3>
                         <p className="text-sm text-gray-500 mb-6">Esta acción desactivará la cuenta del usuario impidiendo su acceso al sistema.</p>
                         <div className="flex gap-3">
-                            <button 
-                                onClick={() => setUserToDeactivate(null)} 
+                            <button
+                                onClick={() => setUserToDeactivate(null)}
                                 className="flex-1 py-2.5 border border-slate-300 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-all"
                             >
                                 Cancelar
                             </button>
-                            <button 
-                                onClick={confirmDeactivate} 
+                            <button
+                                onClick={confirmDeactivate}
                                 className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 shadow-md transition-all"
                             >
                                 Sí, dar de baja

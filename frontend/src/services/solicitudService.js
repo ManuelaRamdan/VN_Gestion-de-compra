@@ -16,6 +16,10 @@ export const listarProductos = async () => {
 export const listarPrioridades = async () => {
     return api.get("/api/prioridades/listar");
 };
+
+export const listarTodasLasSolicitudes = async (page = 0, size = 10) => {
+    return api.get(`/api/solicitudes/todas?page=${page}&size=${size}`);
+};
 /*
 Formulario login (input usuario, input contraseña)
          │

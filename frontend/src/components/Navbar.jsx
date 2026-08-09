@@ -12,7 +12,7 @@ export default function Navbar() {
     const tienePermiso = (requeridos = []) => requeridos.some(p => permisos.includes(p));
 
     const NAV_LINKS = [
-        { name: 'Usuarios', path: '/usuarios', allowedPermissions: ['PERM_USUARIOS_ADMIN'] },
+        { name: 'Usuarios', path: '/usuarios', allowedPermissions: ['PERM_USUARIOS_ADMIN', 'PERM_USUARIOS_EDITAR', 'PERM_USUARIOS_BORRAR', 'PERM_USUARIOS_VER'] },
         { name: 'Solicitudes', path: '/solicitudes', allowedPermissions: ['PERM_SOLICITUDES_ADMIN', 'PERM_APROBACIONES_VER', 'PERM_SOLICITUDES_VER'] },
         { name: 'Presupuestos', path: '/presupuestos', allowedPermissions: ['PERM_PRESUPUESTOS'] },
         {
@@ -36,12 +36,12 @@ export default function Navbar() {
         { name: 'Documentación', path: '/documentacion', allowedPermissions: ['PERM_DOCUMENTACION'] },
         {
             name: 'Otros',
-            allowedPermissions: ['PERM_USUARIOS_ADMIN', 'PERM_PROVEEDORES_ADMIN', 'PERM_PRODUCTOS_ADMIN', 'PERM_PRIORIDADES_ADMIN'],
+            allowedPermissions: ['PERM_USUARIOS_ADMIN', 'PERM_PROVEEDORES_ADMIN', 'PERM_PRODUCTOS_ADMIN', 'PERM_PRODUCTOS_VER', 'PERM_PRIORIDADES_ADMIN', 'PERM_PRIORIDADES_VER'],
             subLinks: [
-                { name: 'Sector', path: '/sector', allowedPermissions: ['PERM_USUARIOS_ADMIN'] },
-                { name: 'Proveedor', path: '/proveedor', allowedPermissions: ['PERM_PROVEEDORES_ADMIN'] },
-                { name: 'Producto', path: '/producto', allowedPermissions: ['PERM_PRODUCTOS_ADMIN'] },
-                { name: 'Nivel Prioridad', path: '/nivelPrioridad', allowedPermissions: ['PERM_PRIORIDADES_ADMIN'] },
+                { name: 'Sector', path: '/sector', allowedPermissions: ['PERM_SECTOR_ADMIN', 'PERM_SECTOR_EDITAR', 'PERM_SECTOR_BORRAR', 'PERM_SECTOR_VER'] },
+                { name: 'Proveedor', path: '/proveedor', allowedPermissions: ['PERM_PROVEEDORES_ADMIN', 'PERM_PROVEEDORES_EDITAR', 'PERM_PROVEEDORES_BORRAR', 'PERM_PROVEEDORES_VER'] },
+                { name: 'Producto', path: '/producto', allowedPermissions: ['PERM_PRODUCTOS_ADMIN', 'PERM_PRODUCTOS_EDITAR', 'PERM_PRODUCTOS_BORRAR', 'PERM_PRODUCTOS_VER'] },
+                { name: 'Nivel Prioridad', path: '/nivelPrioridad', allowedPermissions: ['PERM_PRIORIDADES_ADMIN', 'PERM_PRIORIDADES_VER'] },
             ]
         }
     ];

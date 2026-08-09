@@ -4,8 +4,14 @@ import TablaProveedor from '../../../components/proveedor/TablaGestionProveedor'
 import { listarProveedoresPaginados, darDeBajaProveedor, modificarProveedor, crearProveedor } from '../../../services/proveedorService';
 // Usamos Truck (camión) para representar Proveedores
 import { Plus, Truck, AlertCircle, Check, X, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function ProveedorPage() {
+    const { user } = useAuth();
+    const permisos = user?.permisos || [];
+    const puedeEditar = permisos.includes('PERM_PROVEEDORES_EDITAR') || permisos.includes('PERM_PROVEEDORES_ADMIN');
+    const puedeBorrar = permisos.includes('PERM_PROVEEDORES_BORRAR') || permisos.includes('PERM_PROVEEDORES_ADMIN');
+    const puedeCrear = permisos.includes('PERM_PROVEEDORES_ADMIN');
     const [proveedores, setProveedores] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -22,7 +28,7 @@ export default function ProveedorPage() {
     const [showModal, setShowModal] = useState(false);
     const [modalError, setModalError] = useState("");
     const [editingId, setEditingId] = useState(null);
-    
+
     // Objeto inicial para el formulario
     const initialForm = {
         nombreEmpresa: "",
@@ -72,7 +78,7 @@ export default function ProveedorPage() {
 
     const confirmDeactivate = async () => {
         if (!proveedorToDeactivate) return;
-        
+
         try {
             await darDeBajaProveedor(proveedorToDeactivate);
             setSuccess("Proveedor dado de baja exitosamente.");
@@ -124,7 +130,7 @@ export default function ProveedorPage() {
                 await crearProveedor(dataToSend);
                 setSuccess("Proveedor registrado correctamente.");
             }
-            
+
             setShowModal(false);
             cargarProveedores(0, false);
             setTimeout(() => setSuccess(""), 3500);
@@ -140,12 +146,14 @@ export default function ProveedorPage() {
                     <h1 className="text-xl font-bold text-slate-900">Gestión de Proveedores</h1>
                     <p className="text-sm text-gray-500">Administre el directorio de empresas proveedoras.</p>
                 </div>
-                <button
-                    onClick={handleNuevoClick}
-                    className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm whitespace-nowrap"
-                >
-                    <Plus size={18} /> Nuevo Proveedor
-                </button>
+                {puedeCrear && (
+                    <button
+                        onClick={handleNuevoClick}
+                        className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm whitespace-nowrap"
+                    >
+                        <Plus size={18} /> Nuevo Proveedor
+                    </button>
+                )}
             </div>
 
             {error && (
@@ -170,6 +178,8 @@ export default function ProveedorPage() {
                     onLoadMore={handleLoadMore}
                     hasMore={hasMore}
                     isLoadingMore={isLoadingMore}
+                    canEdit={puedeEditar}
+                    canDelete={puedeBorrar}
                 />
             ) : !loading && (
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-20 flex flex-col items-center justify-center text-center">
@@ -210,7 +220,7 @@ export default function ProveedorPage() {
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nombre de Contacto</label>
                                     <input
-                                        type="text" 
+                                        type="text"
                                         placeholder="ej. Juan Pérez"
                                         className="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:border-emerald-500"
                                         value={formData.nombreContacto}
@@ -220,7 +230,7 @@ export default function ProveedorPage() {
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Correo Electrónico</label>
                                     <input
-                                        type="email" 
+                                        type="email"
                                         placeholder="ej. ventas@distribuidora.com"
                                         className="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:border-emerald-500"
                                         value={formData.mail}
@@ -230,7 +240,7 @@ export default function ProveedorPage() {
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Teléfono (Solo números)</label>
                                     <input
-                                        type="number" 
+                                        type="number"
                                         placeholder="ej. 1144556677"
                                         className="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:border-emerald-500"
                                         value={formData.telefono}
@@ -240,7 +250,7 @@ export default function ProveedorPage() {
                                 <div className="md:col-span-2">
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Dirección</label>
                                     <input
-                                        type="text" 
+                                        type="text"
                                         placeholder="ej. Av. Siempreviva 742, Springfield"
                                         className="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:border-emerald-500"
                                         value={formData.direccion}
@@ -268,14 +278,14 @@ export default function ProveedorPage() {
                         <h3 className="font-bold text-lg text-slate-800 mb-2">¿Dar de baja proveedor?</h3>
                         <p className="text-sm text-gray-500 mb-6">Esta acción cambiará el estado del proveedor a inactivo. Ya no podrá ser seleccionado en nuevos presupuestos.</p>
                         <div className="flex gap-3">
-                            <button 
-                                onClick={() => setProveedorToDeactivate(null)} 
+                            <button
+                                onClick={() => setProveedorToDeactivate(null)}
                                 className="flex-1 py-2.5 border border-slate-300 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-all"
                             >
                                 Cancelar
                             </button>
-                            <button 
-                                onClick={confirmDeactivate} 
+                            <button
+                                onClick={confirmDeactivate}
                                 className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 shadow-md transition-all"
                             >
                                 Sí, dar de baja

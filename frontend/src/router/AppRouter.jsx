@@ -30,7 +30,7 @@ function AppRouter() {
                 <Route
                     path="/solicitudes"
                     element={
-                        <ProtectRoute allowedPermission={['PERM_SOLICITUDES_ADMIN', 'PERM_APROBACIONES_VER', 'PERM_SOLICITUDES_VER']}>
+                        <ProtectRoute allowedPermission={['PERM_SOLICITUDES_ADMIN', 'PERM_SOLICITUDES_VER']}>
                             <SolicitudesWrapper />
                         </ProtectRoute>
                     }
@@ -118,7 +118,7 @@ function AppRouter() {
                 <Route
                     path="/usuarios"
                     element={
-                        <ProtectRoute allowedPermission="PERM_USUARIOS_ADMIN">
+                        <ProtectRoute allowedPermission={['PERM_USUARIOS_ADMIN', 'PERM_USUARIOS_EDITAR', 'PERM_USUARIOS_BORRAR', 'PERM_USUARIOS_VER']}>
                             <UsuarioPage />
                         </ProtectRoute>
                     }
@@ -126,7 +126,7 @@ function AppRouter() {
                 <Route
                     path="/sector"
                     element={
-                        <ProtectRoute allowedPermission="PERM_USUARIOS_ADMIN">
+                        <ProtectRoute allowedPermission={['PERM_SECTOR_ADMIN', 'PERM_SECTOR_EDITAR', 'PERM_SECTOR_BORRAR', 'PERM_SECTOR_VER']}>
                             <SectorPage />
                         </ProtectRoute>
                     }
@@ -134,7 +134,7 @@ function AppRouter() {
                 <Route
                     path="/proveedor"
                     element={
-                        <ProtectRoute allowedPermission="PERM_PROVEEDORES_ADMIN">
+                        <ProtectRoute allowedPermission={['PERM_PROVEEDORES_ADMIN', 'PERM_PROVEEDORES_EDITAR', 'PERM_PROVEEDORES_BORRAR', 'PERM_PROVEEDORES_VER']}>
                             <ProveedorPage />
                         </ProtectRoute>
                     }
@@ -142,7 +142,7 @@ function AppRouter() {
                 <Route
                     path="/producto"
                     element={
-                        <ProtectRoute allowedPermission="PERM_PRODUCTOS_ADMIN">
+                        <ProtectRoute allowedPermission={['PERM_PRODUCTOS_ADMIN', 'PERM_PRODUCTOS_EDITAR', 'PERM_PRODUCTOS_BORRAR', 'PERM_PRODUCTOS_VER']}>
                             <ProductoPage />
                         </ProtectRoute>
                     }
