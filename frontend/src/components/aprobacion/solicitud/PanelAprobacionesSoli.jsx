@@ -3,29 +3,22 @@ import { Clock, CheckCircle, XCircle, Search, Eye, AlertCircle, X } from 'lucide
 import { listarAprobacionesSoli } from '../../../services/aprobSoliService';
 import Loading from '../../Loading';
 import ModalGestionSolicitud from './GestionAprobSolicitud';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function PanelAprobacionesSoli() {
-    const [activeTab, setActiveTab] = useState('PENDIENTE');
-    const [aprobaciones, setAprobaciones] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
+    const { user } = useAuth();
+    const permisos = user?.permisos || [];
+    const puedeGestionar = permisos.includes('PERM_APROB_SOLI_GESTIONAR');
 
-    // --- ESTADOS DE FEEDBACK ---
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-
-    // --- ESTADOS DE PAGINACIÓN ---
-    const [page, setPage] = useState(0);
-    const [hasMore, setHasMore] = useState(true);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const PAGE_SIZE = 10; // Ajusta este valor según lo que devuelva tu backend
-
-    const tabs = [
-        { id: 'PENDIENTE', label: 'Pendientes', icon: Clock, color: 'text-orange-500' },
-        { id: 'APROBADA', label: 'Aprobadas', icon: CheckCircle, color: 'text-emerald-500' },
-        { id: 'RECHAZADA', label: 'Rechazadas', icon: XCircle, color: 'text-red-500' }
+    const TODOS_LOS_TABS = [
+        { id: 'PENDIENTE', label: 'Pendientes', icon: Clock, color: 'text-orange-500', permiso: ['PERM_APROB_SOLI_PENDIENTES_VER', 'PERM_APROB_SOLI_GESTIONAR'] },
+        { id: 'APROBADA', label: 'Aprobadas', icon: CheckCircle, color: 'text-emerald-500', permiso: ['PERM_APROB_SOLI_ACEPTADAS_VER'] },
+        { id: 'RECHAZADA', label: 'Rechazadas', icon: XCircle, color: 'text-red-500', permiso: ['PERM_APROB_SOLI_RECHAZADAS_VER'] }
     ];
+
+    const tabs = TODOS_LOS_TABS.filter(tab => tab.permiso.some(p => permisos.includes(p)));
+
+    const [activeTab, setActiveTab] = useState(tabs[0]?.id || 'PENDIENTE');
 
     const getPriorityBadge = (prioridadObj) => {
         const cat = prioridadObj?.categoria || "";
@@ -242,7 +235,7 @@ export default function PanelAprobacionesSoli() {
                                                     onClick={() => setSolicitudSeleccionada(item)}
                                                     className="inline-flex items-center gap-1 text-[#1C5B5A] font-bold text-xs hover:underline"
                                                 >
-                                                    <Eye size={14} /> {activeTab === 'PENDIENTE' ? 'Evaluar' : 'Ver Detalle'}
+                                                    <Eye size={14} /> {activeTab === 'PENDIENTE' && puedeGestionar ? 'Evaluar' : 'Ver Detalle'}
                                                 </button>
                                             </td>
                                         </tr>
@@ -281,17 +274,15 @@ export default function PanelAprobacionesSoli() {
                 )}
             </div>
 
-            {/* Modal de Gestión/Edición */}
             {solicitudSeleccionada && (
                 <ModalGestionSolicitud
                     aprobacion={solicitudSeleccionada}
-                    soloLectura={activeTab !== 'PENDIENTE'}
+                    soloLectura={activeTab !== 'PENDIENTE' || !puedeGestionar}
                     onClose={() => setSolicitudSeleccionada(null)}
                     onSuccess={(mensajeExito) => {
                         setSolicitudSeleccionada(null);
                         setSuccess(mensajeExito || "Operación realizada correctamente");
                         setTimeout(() => setSuccess(""), 3500);
-                        // Al modificar una, recargamos desde la página 0 para refrescar todo
                         cargarDatos(0, false);
                     }}
                 />

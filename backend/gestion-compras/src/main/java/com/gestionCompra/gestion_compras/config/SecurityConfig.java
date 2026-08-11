@@ -19,9 +19,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -97,12 +99,20 @@ public class SecurityConfig {
                 .hasAuthority("PERM_SOLICITUDES_CREAR")
                 .requestMatchers("/api/solicitudes/misSolicitudes")
                 .hasAuthority("PERM_SOLICITUDES_VER")
+                .requestMatchers(HttpMethod.GET, "/api/productos/listar")
+                .hasAuthority("PERM_PRODUCTOS_VER")
+                .requestMatchers(HttpMethod.POST, "/api/productos/")
+                .hasAuthority("PERM_PRODUCTOS_CREAR")
                 .requestMatchers(HttpMethod.PUT, "/api/productos/*")
                 .hasAuthority("PERM_PRODUCTOS_EDITAR")
                 .requestMatchers(HttpMethod.PATCH, "/api/productos/*")
                 .hasAuthority("PERM_PRODUCTOS_BORRAR")
                 .requestMatchers("/api/productos/**")
                 .hasAuthority("PERM_PRODUCTOS_ADMIN")
+                .requestMatchers("/api/sectores/combo")
+                .authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/sectores/")
+                .hasAuthority("PERM_SECTOR_CREAR")
                 .requestMatchers(HttpMethod.GET, "/api/sectores/listar", "/api/sectores/permisos", "/api/sectores/*")
                 .hasAuthority("PERM_SECTOR_VER")
                 .requestMatchers(HttpMethod.PUT, "/api/sectores/*")
@@ -131,6 +141,8 @@ public class SecurityConfig {
                 .hasAuthority("PERM_RECLAMOS")
                 .requestMatchers("/api/documentacion/**")
                 .hasAuthority("PERM_DOCUMENTACION")
+                .requestMatchers(HttpMethod.POST, "/api/usuarios/registrar")
+                .hasAuthority("PERM_USUARIOS_CREAR")
                 .requestMatchers(HttpMethod.GET, "/api/usuarios/", "/api/usuarios/*")
                 .hasAuthority("PERM_USUARIOS_VER")
                 .requestMatchers(HttpMethod.PUT, "/api/usuarios/*")
@@ -139,6 +151,8 @@ public class SecurityConfig {
                 .hasAuthority("PERM_USUARIOS_BORRAR")
                 .requestMatchers("/api/usuarios/**")
                 .hasAuthority("PERM_USUARIOS_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/proveedores/")
+                .hasAuthority("PERM_PROVEEDORES_CREAR")
                 .requestMatchers(HttpMethod.PUT, "/api/proveedores/*")
                 .hasAuthority("PERM_PROVEEDORES_EDITAR")
                 .requestMatchers(HttpMethod.PATCH, "/api/proveedores/*")
@@ -147,10 +161,18 @@ public class SecurityConfig {
                 .hasAuthority("PERM_PROVEEDORES_ADMIN")
                 .requestMatchers("/api/solicitudes/**")
                 .hasAuthority("PERM_SOLICITUDES_ADMIN")
+                .requestMatchers("/api/aprobaciones/solicitudes/**")
+                .authenticated()
                 .requestMatchers("/api/aprobaciones/**")
                 .hasAuthority("PERM_APROBACIONES_ADMIN")
                 .requestMatchers("/api/cierres/**")
                 .hasAuthority("PERM_CIERRES")
+                .requestMatchers(HttpMethod.POST, "/api/prioridades/")
+                .hasAuthority("PERM_PRIORIDADES_CREAR")
+                .requestMatchers(HttpMethod.PUT, "/api/prioridades/*")
+                .hasAuthority("PERM_PRIORIDADES_EDITAR")
+                .requestMatchers(HttpMethod.PATCH, "/api/prioridades/*")
+                .hasAuthority("PERM_PRIORIDADES_BORRAR")
                 .requestMatchers("/api/prioridades/**")
                 .hasAuthority("PERM_PRIORIDADES_ADMIN")
                 .anyRequest().authenticated()

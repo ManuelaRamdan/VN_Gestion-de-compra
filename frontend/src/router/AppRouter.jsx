@@ -46,7 +46,7 @@ function AppRouter() {
                 <Route
                     path="/usuario/nuevo"
                     element={
-                        <ProtectRoute allowedPermission="PERM_USUARIOS_ADMIN">
+                        <ProtectRoute allowedPermission={['PERM_USUARIOS_ADMIN', 'PERM_USUARIOS_CREAR']}>
                             <CrearUsuario />
                         </ProtectRoute>
                     }
@@ -86,7 +86,7 @@ function AppRouter() {
                 <Route
                     path="/aprobSolicitud"
                     element={
-                        <ProtectRoute allowedPermission="PERM_APROBACIONES_VER">
+                        <ProtectRoute allowedPermission={['PERM_APROB_SOLI_PENDIENTES_VER', 'PERM_APROB_SOLI_ACEPTADAS_VER', 'PERM_APROB_SOLI_RECHAZADAS_VER', 'PERM_APROB_SOLI_GESTIONAR']}>
                             <AprobSoliPage />
                         </ProtectRoute>
                     }
@@ -150,7 +150,7 @@ function AppRouter() {
                 <Route
                     path="/nivelPrioridad"
                     element={
-                        <ProtectRoute allowedPermission={['PERM_PRIORIDADES_ADMIN', 'PERM_PRIORIDADES_VER']}>
+                        <ProtectRoute allowedPermission={['PERM_PRIORIDADES_ADMIN', 'PERM_PRIORIDADES_EDITAR', 'PERM_PRIORIDADES_BORRAR', 'PERM_PRIORIDADES_VER']}>
                             <NivelPrioridadPage />
                         </ProtectRoute>
                     }

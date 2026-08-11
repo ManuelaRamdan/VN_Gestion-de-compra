@@ -60,4 +60,9 @@ public class SectorController {
         sectorService.bajaLogica(id);
         return ResponseEntity.ok(Map.of("message", "Sector desactivado correctamente"));
     }
+
+    @GetMapping("/combo")
+    public ResponseEntity<List<Sector>> listarParaCombo() {
+        return ResponseEntity.ok(sectorService.listarTodosActivosSimple());
+    }
 }

@@ -10,7 +10,7 @@ export default function ProductoPage() {
     const permisos = user?.permisos || [];
     const puedeEditar = permisos.includes('PERM_PRODUCTOS_EDITAR') || permisos.includes('PERM_PRODUCTOS_ADMIN');
     const puedeBorrar = permisos.includes('PERM_PRODUCTOS_BORRAR') || permisos.includes('PERM_PRODUCTOS_ADMIN');
-    const puedeCrear = permisos.includes('PERM_PRODUCTOS_ADMIN');
+    const puedeCrear = permisos.includes('PERM_PRODUCTOS_ADMIN') || permisos.includes('PERM_PRODUCTOS_CREAR');
 
     // ... resto de los states igual
     const [productos, setProductos] = useState([]);

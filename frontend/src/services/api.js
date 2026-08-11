@@ -1,19 +1,11 @@
 import axios from "axios";
 
 const api = axios.create({
-    //baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8081"
     baseURL: "http://localhost:8081"
 });
 
-/*
-Esos bloques son interceptores de Axios: código que se ejecuta automáticamente antes de cada petición y después de cada respuesta.
-*/
-//	Se ejecuta antes de cada petición HTTP hecha con api.
-//config -> Objeto con la petición (URL, método, headers, etc.).
 api.interceptors.request.use((config) => {
-
-    //	Lee el token JWT guardado al hacer login.
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (token && !config.url.includes("/login")) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -22,20 +14,18 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-
-//.interceptors.response.use(successFn, errorFn) -> successFn se usa con respuestas correctas, errorFn con errores.
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error?.response?.status;
-        const manualLogout = localStorage.getItem("MANUAL_LOGOUT");
+        const manualLogout = sessionStorage.getItem("MANUAL_LOGOUT");
 
         if (error.config?.url?.includes("login")) {
             return Promise.reject(error);
         }
 
-        if (status === 401  && !manualLogout) {
-            localStorage.setItem("SESSION_EXPIRED", "true");
+        if (status === 401 && !manualLogout) {
+            sessionStorage.setItem("SESSION_EXPIRED", "true");
             window.location.replace("/");
         }
 
@@ -44,27 +34,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-/*
-Petición (api.get, api.post...)
-         │
-         ▼
-┌─────────────────────────┐
-│  Interceptor REQUEST    │
-│  Añade token al header  │
-└─────────────────────────┘
-         │
-         ▼
-    Envía al servidor
-         │
-         ▼
-    Respuesta del servidor
-         │
-    ┌────┴────┐
-    │         │
-  200 OK   401/403
-    │         │
-    ▼         ▼
-  Pasa       Interceptor RESPONSE
-  tal cual   → Redirige a /
-             → Guarda SESSION_EXPIRED
-*/

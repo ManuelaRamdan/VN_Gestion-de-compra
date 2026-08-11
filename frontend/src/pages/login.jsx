@@ -19,9 +19,9 @@ function Login() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const expired = localStorage.getItem("SESSION_EXPIRED");
+    const expired = sessionStorage.getItem("SESSION_EXPIRED");
     if (expired) logout(true);
-    localStorage.removeItem("MANUAL_LOGOUT");
+    sessionStorage.removeItem("MANUAL_LOGOUT");
   }, []);
 
   const handleSubmit = async (e) => {
@@ -48,7 +48,7 @@ function Login() {
       }
     } catch (error) {
       setErrorMessage("Credenciales incorrectas");
-      localStorage.removeItem("SESSION_EXPIRED");
+      sessionStorage.removeItem("SESSION_EXPIRED");
     } finally {
       setLoading(false);
     }

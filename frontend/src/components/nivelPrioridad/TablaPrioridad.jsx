@@ -8,7 +8,8 @@ export default function TablaPrioridad({
     onLoadMore,
     hasMore,
     isLoadingMore,
-    canEdit = true
+    canEdit = true,
+    canDelete = true
 }) {
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -49,15 +50,13 @@ export default function TablaPrioridad({
 
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-[#F8F9FC] text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                            <th className="px-6 py-4">ID</th>
-                            <th className="px-6 py-4">CATEGORÍA</th>
-                            <th className="px-6 py-4">DÍAS LÍMITE</th>
-                            <th className="px-6 py-4">ESTADO</th>
-                            {canEdit && <th className="px-6 py-4 text-right">ACCIONES</th>}
-                        </tr>
-                    </thead>
+                    <tr className="bg-[#F8F9FC] text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                        <th className="px-6 py-4">ID</th>
+                        <th className="px-6 py-4">CATEGORÍA</th>
+                        <th className="px-6 py-4">DÍAS LÍMITE</th>
+                        <th className="px-6 py-4">ESTADO</th>
+                        {(canEdit || canDelete) && <th className="px-6 py-4 text-right">ACCIONES</th>}
+                    </tr>
 
                     <tbody className="divide-y divide-slate-50">
                         {filteredData.map((p) => (
@@ -76,16 +75,18 @@ export default function TablaPrioridad({
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {getEstadoBadge(p.activo)}
                                 </td>
-                                {canEdit && (
+                                {(canEdit || canDelete) && (
                                     <td className="px-6 py-4 text-right space-x-3 whitespace-nowrap">
-                                        <button
-                                            onClick={() => onEdit(p)}
-                                            className="inline-flex items-center gap-1 text-blue-600 font-bold text-xs hover:underline cursor-pointer"
-                                        >
-                                            <Pencil size={14} /> Editar
-                                        </button>
+                                        {canEdit && (
+                                            <button
+                                                onClick={() => onEdit(p)}
+                                                className="inline-flex items-center gap-1 text-blue-600 font-bold text-xs hover:underline cursor-pointer"
+                                            >
+                                                <Pencil size={14} /> Editar
+                                            </button>
+                                        )}
 
-                                        {p.activo && (
+                                        {canDelete && p.activo && (
                                             <button
                                                 onClick={() => onDeactivate(p.idNivelPrioridad)}
                                                 className="inline-flex items-center gap-1 text-red-600 font-bold text-xs hover:underline cursor-pointer"

@@ -13,6 +13,7 @@ import com.gestionCompra.gestion_compras.util.ABMGenerico;
 import com.gestionCompra.gestion_compras.util.ABMLogicoGenerico;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
@@ -120,5 +121,8 @@ public class SectorService extends ABMLogicoGenerico<Sector, Integer> {
         sectorRepo.save(sector);
     }
 
-    
+    public List<Sector> listarTodosActivosSimple() {
+        return sectorRepo.findByActivoTrue(Sort.by(Sort.Direction.ASC, "nombre"));
+    }
+
 }

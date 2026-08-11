@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,6 +44,7 @@ public class AprobacionController {
     @Autowired
     private UsuarioRepo usuarioRepo;
 
+    @PreAuthorize("hasAnyAuthority('PERM_APROB_SOLI_GESTIONAR')")
     @PostMapping("/solicitudes/{id}")
     public ResponseEntity<?> decidirSolicitud(
             @PathVariable Integer id,
@@ -54,7 +56,7 @@ public class AprobacionController {
 
         try {
             // El servicio procesa la solicitud
-            AprobacionSolicitud resultado = aprobacionService.procesarDecision(id, estado, gerente,  cometarios);
+            AprobacionSolicitud resultado = aprobacionService.procesarDecision(id, estado, gerente, cometarios);
 
             return ResponseEntity.ok(Map.of(
                     "mensaje", "Solicitud actualizada",
@@ -67,13 +69,18 @@ public class AprobacionController {
         }
     }
 
+    @PreAuthorize("""
+    (#estado.toUpperCase() == 'PENDIENTE' and hasAnyAuthority('PERM_APROB_SOLI_PENDIENTES_VER','PERM_APROB_SOLI_GESTIONAR'))
+    or (#estado.toUpperCase() == 'RECHAZADA' and hasAuthority('PERM_APROB_SOLI_RECHAZADAS_VER'))
+    or (#estado.toUpperCase() == 'APROBADA' and hasAuthority('PERM_APROB_SOLI_ACEPTADAS_VER'))
+""")
     @GetMapping("/solicitudes")
     public ResponseEntity<?> listarSolicitudSegunEstado(
             @RequestParam(defaultValue = "PENDIENTE") String estado,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-         Pageable pageable = PageRequest.of(
+        Pageable pageable = PageRequest.of(
                 page,
                 size,
                 Sort.by(Sort.Direction.ASC, "solicitud.fechaAdmisible")
@@ -96,7 +103,8 @@ public class AprobacionController {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
-    
+
+    @PreAuthorize("hasAuthority('PERM_APROB_SOLI_ACEPTADAS_VER')")
     @GetMapping("/solicitudes/aprobadas")
     public ResponseEntity<?> listarSolicitudAprobadas(
             @RequestParam(defaultValue = "0") int page,
@@ -127,13 +135,14 @@ public class AprobacionController {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
-    
+
+    @PreAuthorize("hasAnyAuthority('PERM_APROB_SOLI_PENDIENTES_VER','PERM_APROB_SOLI_ACEPTADAS_VER','PERM_APROB_SOLI_RECHAZADAS_VER','PERM_APROB_SOLI_GESTIONAR')")
     @GetMapping("/solicitudes/{id}")
     public ResponseEntity<AprobacionSolicitud> buscarByIdSoli(@PathVariable Integer id) {
         AprobacionSolicitud lista = aprobacionService.buscaridAprobSoli(id);
         return ResponseEntity.ok(lista);
     }
-    
+
     @GetMapping("/presupuestos/{id}")
     public ResponseEntity<AprobacionPresupuesto> buscarByIdPresu(@PathVariable Integer id) {
         AprobacionPresupuesto lista = aprobacionPService.buscaridAprobPresu(id);
@@ -146,10 +155,10 @@ public class AprobacionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-         Pageable pageable = PageRequest.of(
+        Pageable pageable = PageRequest.of(
                 page,
                 size,
-               Sort.by(Sort.Direction.ASC, "presupuesto.aprobacionSolicitud.solicitud.fechaAdmisible")
+                Sort.by(Sort.Direction.ASC, "presupuesto.aprobacionSolicitud.solicitud.fechaAdmisible")
         );
 
         try {
@@ -207,20 +216,19 @@ public class AprobacionController {
         return usuarioRepo.findByUsernameIgnoreCaseAndActivoTrue(username)
                 .orElseThrow(() -> new RuntimeException("Usuario gerente no encontrado"));
     }
-    
+
     @GetMapping("/sinAprobPresu")
     public ResponseEntity<?> ListarAprobPSinCompra(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(aprobacionPService.listarAprobPSinCompra(pageable));
     }
-    
-    
+
     @GetMapping("/presupuestos/aprobadas")
     public ResponseEntity<?> listarPresuAprobadas(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-       Pageable pageable = PageRequest.of(
+        Pageable pageable = PageRequest.of(
                 page,
                 size,
                 Sort.by(Sort.Direction.ASC, "presupuesto.aprobacionSolicitud.solicitud.fechaAdmisible")

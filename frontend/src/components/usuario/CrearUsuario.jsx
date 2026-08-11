@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Loading from '../../components/Loading';
-import { registrarUsuario, listarSectores } from '../../services/usuarioService';
+import { registrarUsuario, listarSectoresCombo } from '../../services/usuarioService';
 import { ArrowLeft, User, AlertCircle, Check } from 'lucide-react';
 
 export default function CrearUsuario() {
@@ -17,13 +17,13 @@ export default function CrearUsuario() {
     const [sectores, setSectores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [success, setSuccess] = useState(""); 
+    const [success, setSuccess] = useState("");
 
     useEffect(() => {
         const cargarDatos = async () => {
             try {
-                const res = await listarSectores();
-                setSectores(res.data?.contenido || res.data || []);
+                const res = await listarSectoresCombo();
+                setSectores(res.data || []);
             } catch (err) {
                 setError("Error cargando los sectores disponibles.");
             } finally {
@@ -40,8 +40,8 @@ export default function CrearUsuario() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");   
-        setSuccess(""); 
+        setError("");
+        setSuccess("");
 
         try {
             if (!formData.username || !formData.password || !formData.idSector) {
@@ -58,13 +58,13 @@ export default function CrearUsuario() {
             await registrarUsuario(payload);
 
             setSuccess("¡Usuario registrado exitosamente! Redirigiendo...");
-            
+
             setTimeout(() => {
                 navigate('/usuarios');
             }, 2000);
 
         } catch (err) {
-            setError(err.response?.data?.message ||err.response?.data?.error || "Hubo un error al registrar el usuario.");
+            setError(err.response?.data?.message || err.response?.data?.error || "Hubo un error al registrar el usuario.");
         }
     };
 
@@ -147,7 +147,7 @@ export default function CrearUsuario() {
                                 <option value="">Seleccione el sector correspondiente...</option>
                                 {sectores.map(sec => (
                                     <option key={sec.idSector} value={sec.idSector}>
-                                        {sec.nombre} 
+                                        {sec.nombre}
                                     </option>
                                 ))}
                             </select>
@@ -163,7 +163,7 @@ export default function CrearUsuario() {
                             </button>
                             <button
                                 type="submit"
-                                disabled={!!success} 
+                                disabled={!!success}
                                 className={`px-6 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-medium hover:bg-[#164a49] transition-colors flex items-center gap-2 shadow-sm ${success ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 {success ? 'Registrado' : 'Registrar Usuario'} <Check size={18} />

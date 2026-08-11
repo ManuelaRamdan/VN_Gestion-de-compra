@@ -30,4 +30,6 @@ public interface SolicitudRepo extends JpaRepository<Solicitud, Integer> {
     long countByUsuario_IdUsuarioAndAprobacion_EstadoAndCerradoFalse(Integer usuarioId, String estado);
     
     long countByAprobacion_EstadoAndCerradoFalse(String estado);
+    
+    
 }

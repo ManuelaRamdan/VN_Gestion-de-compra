@@ -19,7 +19,7 @@ export default function Navbar() {
             name: 'Aprobaciones',
             allowedPermissions: ['PERM_APROBACIONES_VER'],
             subLinks: [
-                { name: 'Aprob. Solicitud', path: '/aprobSolicitud', allowedPermissions: ['PERM_APROBACIONES_VER'] },
+                { name: 'Aprob. Solicitud', path: '/aprobSolicitud', allowedPermissions: ['PERM_APROB_SOLI_PENDIENTES_VER', 'PERM_APROB_SOLI_ACEPTADAS_VER', 'PERM_APROB_SOLI_RECHAZADAS_VER', 'PERM_APROB_SOLI_GESTIONAR'] },
                 { name: 'Aprob. Presupuesto', path: '/aprobPresupuesto', allowedPermissions: ['PERM_APROBACIONES_VER'] }
             ]
         },
@@ -38,11 +38,10 @@ export default function Navbar() {
             name: 'Otros',
             allowedPermissions: ['PERM_USUARIOS_ADMIN', 'PERM_PROVEEDORES_ADMIN', 'PERM_PRODUCTOS_ADMIN', 'PERM_PRODUCTOS_VER', 'PERM_PRIORIDADES_ADMIN', 'PERM_PRIORIDADES_VER'],
             subLinks: [
-                { name: 'Sector', path: '/sector', allowedPermissions: ['PERM_SECTOR_ADMIN', 'PERM_SECTOR_EDITAR', 'PERM_SECTOR_BORRAR', 'PERM_SECTOR_VER'] },
+                { name: 'Sector', path: '/sector', allowedPermissions: ['PERM_SECTOR_ADMIN', 'PERM_SECTOR_EDITAR', 'PERM_SECTOR_BORRAR', 'PERM_SECTOR_CREAR', 'PERM_SECTOR_VER'] },
                 { name: 'Proveedor', path: '/proveedor', allowedPermissions: ['PERM_PROVEEDORES_ADMIN', 'PERM_PROVEEDORES_EDITAR', 'PERM_PROVEEDORES_BORRAR', 'PERM_PROVEEDORES_VER'] },
                 { name: 'Producto', path: '/producto', allowedPermissions: ['PERM_PRODUCTOS_ADMIN', 'PERM_PRODUCTOS_EDITAR', 'PERM_PRODUCTOS_BORRAR', 'PERM_PRODUCTOS_VER'] },
-                { name: 'Nivel Prioridad', path: '/nivelPrioridad', allowedPermissions: ['PERM_PRIORIDADES_ADMIN', 'PERM_PRIORIDADES_VER'] },
-            ]
+                { name: 'Nivel Prioridad', path: '/nivelPrioridad', allowedPermissions: ['PERM_PRIORIDADES_ADMIN', 'PERM_PRIORIDADES_EDITAR', 'PERM_PRIORIDADES_BORRAR', 'PERM_PRIORIDADES_VER'] },]
         }
     ];
 
@@ -163,8 +162,7 @@ export default function Navbar() {
 
             {/* MOBILE MENU */}
             {isMenuOpen && (
-                <div className="xl:hidden bg-white border-t border-slate-200 shadow-xl absolute w-full left-0 top-full z-50">
-
+                <div className="xl:hidden bg-white border-t border-slate-200 shadow-xl absolute w-full left-0 top-full z-50 max-h-[calc(100vh-4rem)] overflow-y-auto">
                     <nav className="flex flex-col py-2">
 
                         {visibleLinks.map((link) => {

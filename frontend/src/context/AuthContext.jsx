@@ -10,9 +10,9 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const t = localStorage.getItem("token");
-        const u = localStorage.getItem("usuario");
-        const expired = localStorage.getItem("SESSION_EXPIRED");
+        const t = sessionStorage.getItem("token");
+        const u = sessionStorage.getItem("usuario");
+        const expired = sessionStorage.getItem("SESSION_EXPIRED");
 
         if (expired) {
             setSessionExpired(true); 
@@ -26,13 +26,11 @@ export function AuthProvider({ children }) {
     }, []);
 
     const login = (token, usuario) => {
-        localStorage.setItem("token", token);
-        //localStorage solo guarda strings. Al guardar un objeto usas JSON.stringify:
-        localStorage.setItem("usuario", JSON.stringify(usuario));
-        // usuario = { nombre: "Juan", email: "juan@mail.com", rol: "administracion" }
-        // Se guarda como: '{"nombre":"Juan","email":"juan@mail.com","rol":"administracion"}'
-        localStorage.removeItem("SESSION_EXPIRED");
-        localStorage.removeItem("MANUAL_LOGOUT");
+        sessionStorage.setItem("token", token);
+        //sessionStorage solo guarda strings. Al guardar un objeto usas JSON.stringify:
+        sessionStorage.setItem("usuario", JSON.stringify(usuario));
+        sessionStorage.removeItem("SESSION_EXPIRED");
+        sessionStorage.removeItem("MANUAL_LOGOUT");
 
         setToken(token);
         setUser(usuario);
@@ -44,13 +42,13 @@ export function AuthProvider({ children }) {
         setUser(null);
         setSessionExpired(expired);
     
-        localStorage.removeItem("token");
-        localStorage.removeItem("usuario");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("usuario");
     
-        localStorage.removeItem("SESSION_EXPIRED");
+        sessionStorage.removeItem("SESSION_EXPIRED");
     
         if (!expired) {
-            localStorage.setItem("MANUAL_LOGOUT", "true");
+            sessionStorage.setItem("MANUAL_LOGOUT", "true");
         }
     };;
 

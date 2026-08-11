@@ -8,9 +8,9 @@ import { useAuth } from '../../../context/AuthContext';
 export default function PrioridadPage() {
     const { user } = useAuth();
     const permisos = user?.permisos || [];
-    // Quien solo tenga PERM_PRIORIDADES_VER ve la tabla en modo lectura,
-    // sin poder crear, editar ni dar de baja niveles de prioridad.
-    const puedeAdministrar = permisos.includes('PERM_PRIORIDADES_ADMIN');
+    const puedeEditar = permisos.includes('PERM_PRIORIDADES_EDITAR') || permisos.includes('PERM_PRIORIDADES_ADMIN');
+    const puedeBorrar = permisos.includes('PERM_PRIORIDADES_BORRAR') || permisos.includes('PERM_PRIORIDADES_ADMIN');
+    const puedeCrear = permisos.includes('PERM_PRIORIDADES_ADMIN') || permisos.includes('PERM_PRIORIDADES_CREAR');
 
     const [prioridades, setPrioridades] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -25,7 +25,7 @@ export default function PrioridadPage() {
     const [success, setSuccess] = useState("");
 
     // Modal unificado (Crear / Editar)
-    const [showModal, setShowModal] = useState(false); 
+    const [showModal, setShowModal] = useState(false);
     const [modalError, setModalError] = useState("");
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({ categoria: "", dias: "" });
@@ -69,30 +69,30 @@ export default function PrioridadPage() {
 
     const confirmDeactivate = async () => {
         if (!prioridadToDeactivate) return;
-        
+
         try {
             await darDeBajaPrioridad(prioridadToDeactivate);
             setSuccess("Nivel de prioridad dado de baja exitosamente.");
             cargarPrioridades(0, false);
-            setPrioridadToDeactivate(null); 
+            setPrioridadToDeactivate(null);
             setTimeout(() => setSuccess(""), 3500);
         } catch (err) {
             setError(err.response?.data?.error || "Error al dar de baja el nivel de prioridad.");
-            setPrioridadToDeactivate(null); 
+            setPrioridadToDeactivate(null);
         }
     };
 
     // --- ACCIONES PARA ABRIR EL MODAL ---
     const handleNuevoClick = () => {
-        setEditingId(null); 
-        setFormData({ categoria: "", dias: "" }); 
+        setEditingId(null);
+        setFormData({ categoria: "", dias: "" });
         setModalError("");
         setShowModal(true);
     };
 
     const handleEditClick = (prioridad) => {
-        setEditingId(prioridad.idNivelPrioridad); 
-        setFormData({ categoria: prioridad.categoria, dias: prioridad.dias }); 
+        setEditingId(prioridad.idNivelPrioridad);
+        setFormData({ categoria: prioridad.categoria, dias: prioridad.dias });
         setModalError("");
         setShowModal(true);
     };
@@ -116,9 +116,9 @@ export default function PrioridadPage() {
                 await crearPrioridad(payload);
                 setSuccess("Nivel de prioridad registrado correctamente.");
             }
-            
+
             setShowModal(false);
-            cargarPrioridades(0, false); 
+            cargarPrioridades(0, false);
             setTimeout(() => setSuccess(""), 3500);
         } catch (err) {
             setModalError(err.response?.data?.message || err.response?.data?.error || "Error al guardar el nivel de prioridad.");
@@ -132,12 +132,14 @@ export default function PrioridadPage() {
                     <h1 className="text-xl font-bold text-slate-900">Niveles de Prioridad</h1>
                     <p className="text-sm text-gray-500">Gestione las categorías y tiempos límite de las solicitudes.</p>
                 </div>
-                <button
-                    onClick={handleNuevoClick}
-                    className={`bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm whitespace-nowrap ${!puedeAdministrar ? 'hidden' : ''}`}
-                >
-                    <Plus size={18} /> Nueva Prioridad
-                </button>
+                {puedeCrear && (
+                    <button
+                        onClick={handleNuevoClick}
+                        className="bg-[#1C5B5A] hover:bg-[#164a49] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm whitespace-nowrap"
+                    >
+                        <Plus size={18} /> Nueva Prioridad
+                    </button>
+                )}
             </div>
 
             {error && (
@@ -162,7 +164,8 @@ export default function PrioridadPage() {
                     onLoadMore={handleLoadMore}
                     hasMore={hasMore}
                     isLoadingMore={isLoadingMore}
-                    canEdit={puedeAdministrar}
+                    canEdit={puedeEditar}
+                    canDelete={puedeBorrar}
                 />
             ) : !loading && (
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-20 flex flex-col items-center justify-center text-center">
@@ -235,14 +238,14 @@ export default function PrioridadPage() {
                         <h3 className="font-bold text-lg text-slate-800 mb-2">¿Dar de baja prioridad?</h3>
                         <p className="text-sm text-gray-500 mb-6">Esta acción ocultará el nivel de prioridad para futuras solicitudes del sistema.</p>
                         <div className="flex gap-3">
-                            <button 
-                                onClick={() => setPrioridadToDeactivate(null)} 
+                            <button
+                                onClick={() => setPrioridadToDeactivate(null)}
                                 className="flex-1 py-2.5 border border-slate-300 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-all"
                             >
                                 Cancelar
                             </button>
-                            <button 
-                                onClick={confirmDeactivate} 
+                            <button
+                                onClick={confirmDeactivate}
                                 className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 shadow-md transition-all"
                             >
                                 Sí, dar de baja

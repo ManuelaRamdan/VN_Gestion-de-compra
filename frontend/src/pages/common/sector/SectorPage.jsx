@@ -1,17 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Layout from '../../../components/Layout';
 import TablaSector from '../../../components/sector/TablaSector';
 import { listarSectoresPaginados, darDeBajaSector, modificarSector, crearSector, obtenerPermisosDisponibles } from '../../../services/sectorService';
 // Agregamos AlertTriangle para el modal de confirmación
-import { Plus, Briefcase, AlertCircle, Check, X, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+
+import { Plus, Briefcase, AlertCircle, Check, X, AlertTriangle, Search } from 'lucide-react';
+
+const ORDEN_SUFIJO = { VER: 0, EDITAR: 1, BORRAR: 2, CREAR: 3, ADMIN: 4 };
+
+function getGrupoYOrden(nombrePermiso) {
+    const match = nombrePermiso?.match(/^PERM_(.+)_(VER|EDITAR|BORRAR|CREAR|ADMIN)$/);
+    if (match) {
+        return { grupo: match[1], orden: ORDEN_SUFIJO[match[2]] };
+    }
+    // Permisos sueltos que no siguen el patrón _VER/_EDITAR/... (ej. PERM_COMPRAS, PERM_CIERRES)
+    return { grupo: nombrePermiso?.replace('PERM_', '') || '', orden: 0 };
+}
 
 export default function SectorPage() {
     const { user } = useAuth();
     const permisos = user?.permisos || [];
     const puedeEditar = permisos.includes('PERM_SECTOR_EDITAR') || permisos.includes('PERM_SECTOR_ADMIN');
     const puedeBorrar = permisos.includes('PERM_SECTOR_BORRAR') || permisos.includes('PERM_SECTOR_ADMIN');
-    const puedeCrear = permisos.includes('PERM_SECTOR_ADMIN');
+    const puedeCrear = permisos.includes('PERM_SECTOR_ADMIN') || permisos.includes('PERM_SECTOR_CREAR');
     const [sectores, setSectores] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -36,6 +48,7 @@ export default function SectorPage() {
     // Nuevos estados (agregar junto a los existentes)
     const [permisosDisponibles, setPermisosDisponibles] = useState([]);
     const [permisosSeleccionados, setPermisosSeleccionados] = useState([]);
+    const [searchPermisos, setSearchPermisos] = useState("");
 
     // Cargar permisos disponibles al montar
     useEffect(() => {
@@ -147,6 +160,27 @@ export default function SectorPage() {
         }
     };
 
+    const permisosAgrupados = useMemo(() => {
+        const term = searchPermisos.toLowerCase();
+        const filtrados = permisosDisponibles.filter(p =>
+            p.descripcion?.toLowerCase().includes(term) ||
+            p.nombre?.toLowerCase().includes(term)
+        );
+
+        const grupos = {};
+        filtrados.forEach(p => {
+            const { grupo, orden } = getGrupoYOrden(p.nombre);
+            if (!grupos[grupo]) grupos[grupo] = [];
+            grupos[grupo].push({ ...p, orden });
+        });
+
+        Object.values(grupos).forEach(lista => lista.sort((a, b) => a.orden - b.orden));
+
+        return Object.keys(grupos)
+            .sort()
+            .map(grupo => ({ grupo, items: grupos[grupo] }));
+    }, [permisosDisponibles, searchPermisos]);
+
 
 
     return (
@@ -229,22 +263,46 @@ export default function SectorPage() {
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
                                         Permisos del Sector
                                     </label>
-                                    <div className="border border-slate-200 rounded-lg p-3 max-h-52 overflow-y-auto space-y-2">
-                                        {permisosDisponibles.map(p => (
-                                            <label key={p.nombre} className="flex items-start gap-2 cursor-pointer group">
-                                                <input
-                                                    type="checkbox"
-                                                    className="mt-0.5 accent-emerald-600"
-                                                    checked={permisosSeleccionados.includes(p.nombre)}
-                                                    onChange={() => togglePermiso(p.nombre)}
-                                                />
-                                                <span className="text-sm text-slate-700 group-hover:text-emerald-700 transition-colors">
-                                                    {p.descripcion}
-                                                </span>
-                                            </label>
+
+                                    <div className="relative mb-2">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar permiso..."
+                                            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            value={searchPermisos}
+                                            onChange={e => setSearchPermisos(e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="border border-slate-200 rounded-lg p-3 max-h-52 overflow-y-auto space-y-3">
+                                        {permisosAgrupados.map(({ grupo, items }) => (
+                                            <div key={grupo}>
+                                                <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide mb-1">
+                                                    {grupo.replace(/_/g, ' ')}
+                                                </p>
+                                                <div className="space-y-1 pl-1">
+                                                    {items.map(p => (
+                                                        <label key={p.nombre} className="flex items-start gap-2 cursor-pointer group">
+                                                            <input
+                                                                type="checkbox"
+                                                                className="mt-0.5 accent-emerald-600"
+                                                                checked={permisosSeleccionados.includes(p.nombre)}
+                                                                onChange={() => togglePermiso(p.nombre)}
+                                                            />
+                                                            <span className="text-sm text-slate-700 group-hover:text-emerald-700 transition-colors">
+                                                                {p.descripcion}
+                                                            </span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         ))}
-                                        {permisosDisponibles.length === 0 && (
-                                            <p className="text-xs text-gray-400 text-center py-2">Cargando permisos...</p>
+
+                                        {permisosAgrupados.length === 0 && (
+                                            <p className="text-xs text-gray-400 text-center py-2">
+                                                {permisosDisponibles.length === 0 ? "Cargando permisos..." : "Sin resultados."}
+                                            </p>
                                         )}
                                     </div>
                                 </div>

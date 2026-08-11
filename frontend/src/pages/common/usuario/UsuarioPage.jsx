@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import Loading from '../../../components/Loading';
 import TablaUsuario from '../../../components/usuario/TablaUsuario';
-import { listarUsuarios, darDeBajaUsuario, modificarUsuario, listarSectores } from '../../../services/usuarioService';
+import { listarUsuarios, darDeBajaUsuario, modificarUsuario, listarSectoresCombo } from '../../../services/usuarioService';
 // Agregamos AlertTriangle para el modal de confirmación
 import { Plus, Users, AlertCircle, Check, X, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
@@ -13,7 +13,7 @@ export default function UsuariosPanel() {
     const permisos = user?.permisos || [];
     const puedeEditar = permisos.includes('PERM_USUARIOS_EDITAR') || permisos.includes('PERM_USUARIOS_ADMIN');
     const puedeBorrar = permisos.includes('PERM_USUARIOS_BORRAR') || permisos.includes('PERM_USUARIOS_ADMIN');
-    const puedeCrear = permisos.includes('PERM_USUARIOS_ADMIN');
+    const puedeCrear = permisos.includes('PERM_USUARIOS_ADMIN') || permisos.includes('PERM_USUARIOS_CREAR');
 
     const navigate = useNavigate();
     const [usuarios, setUsuarios] = useState([]);
@@ -66,8 +66,8 @@ export default function UsuariosPanel() {
         const cargarInicial = async () => {
             try {
                 setLoading(true);
-                const resSectores = await listarSectores();
-                setSectores(resSectores.data?.contenido || resSectores.data || []);
+                const res = await listarSectoresCombo();
+                setSectores(res.data || []);
                 await cargarUsuarios(0, false);
             } catch (err) {
                 setError("Error al cargar datos.");

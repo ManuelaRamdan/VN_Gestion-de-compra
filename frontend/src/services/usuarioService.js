@@ -20,3 +20,6 @@ export const darDeBajaUsuario = async (idUsuario) => {
 export const listarSectores = async () => {
     return await api.get('/api/sectores/listar'); 
 };
+
+export const listarSectoresCombo = () =>
+    api.get('/api/sectores/combo');

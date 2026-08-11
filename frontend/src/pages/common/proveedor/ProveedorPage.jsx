@@ -11,7 +11,8 @@ export default function ProveedorPage() {
     const permisos = user?.permisos || [];
     const puedeEditar = permisos.includes('PERM_PROVEEDORES_EDITAR') || permisos.includes('PERM_PROVEEDORES_ADMIN');
     const puedeBorrar = permisos.includes('PERM_PROVEEDORES_BORRAR') || permisos.includes('PERM_PROVEEDORES_ADMIN');
-    const puedeCrear = permisos.includes('PERM_PROVEEDORES_ADMIN');
+    const puedeCrear = permisos.includes('PERM_PROVEEDORES_ADMIN') || permisos.includes('PERM_PROVEEDORES_CREAR');
+// (ajustar el prefijo según el módulo: PRODUCTOS, PROVEEDORES, PRIORIDADES)
     const [proveedores, setProveedores] = useState([]);
     const [loading, setLoading] = useState(true);
 
