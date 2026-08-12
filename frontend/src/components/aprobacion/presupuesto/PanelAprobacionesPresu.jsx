@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Clock, Archive, Search, Eye, AlertCircle, X, Package, CheckCircle } from 'lucide-react';
-import { listarAprobacionesPresupuesto } from '../../../services/aprobPresuService'; 
+import { listarAprobacionesPresupuesto } from '../../../services/aprobPresuService';
 import Loading from '../../Loading';
 import ModalGestionAprobPresu from './GestionAprobPresu';
+import { useAuth } from '../../../context/AuthContext';
 
 // Función para arreglar el problema de la zona horaria con LocalDate
 export const formatDateLocal = (dateString) => {
@@ -13,7 +14,17 @@ export const formatDateLocal = (dateString) => {
 };
 
 export default function PanelAprobacionesPresu() {
-    const [activeTab, setActiveTab] = useState('PENDIENTE');
+    const { user } = useAuth();
+    const permisos = user?.permisos || [];
+    const puedeGestionar = permisos.includes('PERM_APROB_PRESU_GESTIONAR');
+
+    const TODOS_LOS_TABS = [
+        { id: 'PENDIENTE', label: 'Pendientes', icon: Clock, color: 'text-orange-500', permiso: ['PERM_APROB_PRESU_PENDIENTES_VER', 'PERM_APROB_PRESU_GESTIONAR'] },
+        { id: 'EVALUADA', label: 'Evaluadas', icon: Archive, color: 'text-indigo-500', permiso: ['PERM_APROB_PRESU_EVALUADAS_VER'] }
+    ];
+    const tabs = TODOS_LOS_TABS.filter(tab => tab.permiso.some(p => permisos.includes(p)));
+
+    const [activeTab, setActiveTab] = useState(tabs[0]?.id || 'PENDIENTE');
     const [aprobacionesAgrupadas, setAprobacionesAgrupadas] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -25,17 +36,12 @@ export default function PanelAprobacionesPresu() {
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const PAGE_SIZE = 10; 
-
-    // Solo dos pestañas
-    const tabs = [
-        { id: 'PENDIENTE', label: 'Pendientes', icon: Clock, color: 'text-orange-500' },
-        { id: 'EVALUADA', label: 'Evaluadas', icon: Archive, color: 'text-indigo-500' }
-    ];
+    const PAGE_SIZE = 10;
+    
     const getPriorityBadge = (prioridadObj) => {
         const cat = prioridadObj?.categoria || "";
         const catLower = cat.toLowerCase();
-        
+
         if (catLower.includes('inmediata') || catLower.includes('alta')) {
             return <span className="px-2 py-1 text-[10px] font-bold text-red-600 bg-red-50 rounded border border-red-100 uppercase">{cat || 'ALTA'}</span>;
         }
@@ -108,7 +114,7 @@ export default function PanelAprobacionesPresu() {
                 const res = await listarAprobacionesPresupuesto(activeTab, numeroPagina, PAGE_SIZE);
                 const dataObj = res.data ? res.data : res;
                 rawList = dataObj.contenido ? dataObj.contenido : (Array.isArray(dataObj) ? dataObj : []);
-                
+
                 setHasMore(rawList.length === PAGE_SIZE);
             }
 
@@ -118,9 +124,9 @@ export default function PanelAprobacionesPresu() {
 
                 if (esCargaAdicional) {
                     prevGrupos.forEach(grupo => {
-                        grouped.set(grupo.solicitud.idSolicitud, { 
-                            ...grupo, 
-                            presupuestosAsociados: [...grupo.presupuestosAsociados] 
+                        grouped.set(grupo.solicitud.idSolicitud, {
+                            ...grupo,
+                            presupuestosAsociados: [...grupo.presupuestosAsociados]
                         });
                     });
                 }
@@ -208,8 +214,8 @@ export default function PanelAprobacionesPresu() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`pb-3 text-sm font-bold flex items-center gap-2 transition-all border-b-2 ${isActive
-                                    ? `border-[#1C5B5A] text-[#1C5B5A]`
-                                    : `border-transparent text-slate-400 hover:text-slate-600`
+                                ? `border-[#1C5B5A] text-[#1C5B5A]`
+                                : `border-transparent text-slate-400 hover:text-slate-600`
                                 }`}
                         >
                             <Icon size={18} className={isActive ? tab.color : 'text-slate-400'} />
@@ -281,8 +287,8 @@ export default function PanelAprobacionesPresu() {
                                                 {getPriorityBadge(grupo.solicitud?.nivelPrioridad)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap font-medium">
-                                        {renderFechaLimite(grupo.solicitud?.fechaAdmisible)}
-                                    </td>
+                                                {renderFechaLimite(grupo.solicitud?.fechaAdmisible)}
+                                            </td>
                                             {/* ------------------------------ */}
 
                                             <td className="px-6 py-4">
@@ -295,7 +301,7 @@ export default function PanelAprobacionesPresu() {
                                                     onClick={() => setGrupoSeleccionado(grupo)}
                                                     className="inline-flex items-center gap-1 text-[#1C5B5A] font-bold text-xs hover:underline"
                                                 >
-                                                    <Eye size={14} /> {activeTab === 'PENDIENTE' ? 'Comparar y Evaluar' : 'Ver Detalles'}
+                                                    <Eye size={14} /> {activeTab === 'PENDIENTE' && puedeGestionar ? 'Comparar y Evaluar' : 'Ver Detalles'}
                                                 </button>
                                             </td>
                                         </tr>
@@ -338,13 +344,13 @@ export default function PanelAprobacionesPresu() {
             {grupoSeleccionado && (
                 <ModalGestionAprobPresu
                     grupoSeleccionado={grupoSeleccionado}
-                    soloLectura={activeTab !== 'PENDIENTE'}
+                    soloLectura={activeTab !== 'PENDIENTE' || !puedeGestionar}
                     onClose={() => setGrupoSeleccionado(null)}
                     onSuccess={(mensajeExito) => {
                         setGrupoSeleccionado(null);
                         setSuccess(mensajeExito || "Operación realizada correctamente");
                         setTimeout(() => setSuccess(""), 3500);
-                        cargarDatos(0, false); 
+                        cargarDatos(0, false);
                     }}
                 />
             )}

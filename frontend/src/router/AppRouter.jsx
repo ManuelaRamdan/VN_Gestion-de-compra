@@ -54,7 +54,7 @@ function AppRouter() {
                 <Route
                     path="/presupuestos"
                     element={
-                        <ProtectRoute allowedPermission="PERM_PRESUPUESTOS">
+                        <ProtectRoute allowedPermission={['PERM_PRESUPUESTOS_VER', 'PERM_PRESUPUESTOS_GESTIONAR']}>
                             <PresupuestosPage />
                         </ProtectRoute>
                     }
@@ -62,7 +62,7 @@ function AppRouter() {
                 <Route
                     path="/compras"
                     element={
-                        <ProtectRoute allowedPermission="PERM_COMPRAS">
+                        <ProtectRoute allowedPermission={['PERM_COMPRAS_VER', 'PERM_COMPRAS_GESTIONAR']}>
                             <CompraPage />
                         </ProtectRoute>
                     }
@@ -70,7 +70,7 @@ function AppRouter() {
                 <Route
                     path="/evalEntrega"
                     element={
-                        <ProtectRoute allowedPermission="PERM_EVAL_ENTREGA">
+                        <ProtectRoute allowedPermission={['PERM_EVAL_ENTREGA_VER', 'PERM_EVAL_ENTREGA_EDITAR']}>
                             <EvalEntregasPage />
                         </ProtectRoute>
                     }
@@ -78,7 +78,7 @@ function AppRouter() {
                 <Route
                     path="/evalProveedor"
                     element={
-                        <ProtectRoute allowedPermission="PERM_EVAL_PROVEEDOR">
+                        <ProtectRoute allowedPermission={['PERM_EVAL_PROVEEDOR_VER', 'PERM_EVAL_PROVEEDOR_EDITAR', 'PERM_EVAL_PROVEEDOR_DESCARGAR']}>
                             <EvalProveedorPage />
                         </ProtectRoute>
                     }

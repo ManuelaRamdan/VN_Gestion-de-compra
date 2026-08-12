@@ -14,7 +14,7 @@ export default function Navbar() {
     const NAV_LINKS = [
         { name: 'Usuarios', path: '/usuarios', allowedPermissions: ['PERM_USUARIOS_ADMIN', 'PERM_USUARIOS_EDITAR', 'PERM_USUARIOS_BORRAR', 'PERM_USUARIOS_VER'] },
         { name: 'Solicitudes', path: '/solicitudes', allowedPermissions: ['PERM_SOLICITUDES_ADMIN', 'PERM_APROBACIONES_VER', 'PERM_SOLICITUDES_VER'] },
-        { name: 'Presupuestos', path: '/presupuestos', allowedPermissions: ['PERM_PRESUPUESTOS'] },
+        { name: 'Presupuestos', path: '/presupuestos', allowedPermissions: ['PERM_PRESUPUESTOS_VER', 'PERM_PRESUPUESTOS_GESTIONAR'] },
         {
             name: 'Aprobaciones',
             allowedPermissions: ['PERM_APROBACIONES_VER'],
@@ -23,13 +23,13 @@ export default function Navbar() {
                 { name: 'Aprob. Presupuesto', path: '/aprobPresupuesto', allowedPermissions: ['PERM_APROBACIONES_VER'] }
             ]
         },
-        { name: 'Compras', path: '/compras', allowedPermissions: ['PERM_COMPRAS'] },
+        { name: 'Compras', path: '/compras', allowedPermissions: ['PERM_COMPRAS_VER', 'PERM_COMPRAS_GESTIONAR'] },
         {
             name: 'Evaluaciones',
-            allowedPermissions: ['PERM_EVAL_ENTREGA', 'PERM_EVAL_PROVEEDOR'],
+            allowedPermissions: ['PERM_EVAL_ENTREGA_VER', 'PERM_EVAL_ENTREGA_EDITAR', 'PERM_EVAL_PROVEEDOR'],
             subLinks: [
-                { name: 'Eval. Entrega', path: '/evalEntrega', allowedPermissions: ['PERM_EVAL_ENTREGA'] },
-                { name: 'Eval. Proveedor', path: '/evalProveedor', allowedPermissions: ['PERM_EVAL_PROVEEDOR'] }
+                { name: 'Eval. Entrega', path: '/evalEntrega', allowedPermissions: ['PERM_EVAL_ENTREGA_VER', 'PERM_EVAL_ENTREGA_EDITAR'] },
+                { name: 'Eval. Proveedor', path: '/evalProveedor', allowedPermissions: ['PERM_EVAL_PROVEEDOR_VER', 'PERM_EVAL_PROVEEDOR_EDITAR', 'PERM_EVAL_PROVEEDOR_DESCARGAR'] }
             ]
         },
         { name: 'Cierre', path: '/cierre', allowedPermissions: ['PERM_CIERRES'] },

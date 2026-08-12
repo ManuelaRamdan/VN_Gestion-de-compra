@@ -36,3 +36,7 @@ export const obtenerUrlPdf = async (nombreArchivo) => {
     
     return objectUrl;
 };
+
+export const listarTodasLasCompras = async (page = 0, size = 10) => {
+    return api.get(`/api/compras/`, { params: { page, size } });
+};

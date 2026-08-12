@@ -143,12 +143,17 @@ public class AprobacionController {
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("hasAnyAuthority('PERM_APROB_PRESU_PENDIENTES_VER','PERM_APROB_PRESU_EVALUADAS_VER','PERM_APROB_PRESU_GESTIONAR')")
     @GetMapping("/presupuestos/{id}")
     public ResponseEntity<AprobacionPresupuesto> buscarByIdPresu(@PathVariable Integer id) {
         AprobacionPresupuesto lista = aprobacionPService.buscaridAprobPresu(id);
         return ResponseEntity.ok(lista);
     }
 
+    @PreAuthorize("""
+    (#estado.toUpperCase() == 'PENDIENTE' and hasAnyAuthority('PERM_APROB_PRESU_PENDIENTES_VER','PERM_APROB_PRESU_GESTIONAR'))
+    or (#estado.toUpperCase() != 'PENDIENTE' and hasAuthority('PERM_APROB_PRESU_EVALUADAS_VER'))
+""")
     @GetMapping("/presupuestos")
     public ResponseEntity<?> listarPresupuestoSegunEstado(
             @RequestParam(defaultValue = "PENDIENTE") String estado,
@@ -179,6 +184,7 @@ public class AprobacionController {
         }
     }
 
+    @PreAuthorize("hasAnyAuthority('PERM_APROB_PRESU_GESTIONAR')")
     @PostMapping("/presupuestos/{id}")
     public ResponseEntity<?> decidirPresupuesto(
             @PathVariable Integer id,
@@ -223,6 +229,7 @@ public class AprobacionController {
         return ResponseEntity.ok(aprobacionPService.listarAprobPSinCompra(pageable));
     }
 
+    @PreAuthorize("hasAuthority('PERM_APROB_PRESU_EVALUADAS_VER')")
     @GetMapping("/presupuestos/aprobadas")
     public ResponseEntity<?> listarPresuAprobadas(
             @RequestParam(defaultValue = "0") int page,

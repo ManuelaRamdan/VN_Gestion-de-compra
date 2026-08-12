@@ -50,13 +50,17 @@ export default function TablaPrioridad({
 
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
-                    <tr className="bg-[#F8F9FC] text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                        <th className="px-6 py-4">ID</th>
-                        <th className="px-6 py-4">CATEGORÍA</th>
-                        <th className="px-6 py-4">DÍAS LÍMITE</th>
-                        <th className="px-6 py-4">ESTADO</th>
-                        {(canEdit || canDelete) && <th className="px-6 py-4 text-right">ACCIONES</th>}
-                    </tr>
+                    <thead>
+                        <tr className="bg-[#F8F9FC] text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            <th className="px-6 py-4">ID</th>
+                            <th className="px-6 py-4">CATEGORÍA</th>
+                            <th className="px-6 py-4">DÍAS LÍMITE</th>
+                            <th className="px-6 py-4">ESTADO</th>
+                            {(canEdit || canDelete) && <th className="px-6 py-4 text-right">ACCIONES</th>}
+                        </tr>
+                    </thead>
+
+
 
                     <tbody className="divide-y divide-slate-50">
                         {filteredData.map((p) => (

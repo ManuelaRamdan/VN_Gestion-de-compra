@@ -117,7 +117,27 @@ public class Sector implements EntidadBase {
             efectivos.add("PERM_PRIORIDADES_VER");
         }
 
-        
+        if (efectivos.contains("PERM_APROB_PRESU_GESTIONAR")) {
+            efectivos.add("PERM_APROB_PRESU_PENDIENTES_VER");
+        }
+
+        if (efectivos.contains("PERM_PRESUPUESTOS_GESTIONAR")) {
+            efectivos.add("PERM_APROB_SOLI_ACEPTADAS_VER");
+        }
+
+        if (efectivos.contains("PERM_COMPRAS_GESTIONAR")) {
+            efectivos.add("PERM_APROB_PRESU_EVALUADAS_VER");
+        }
+
+        if (efectivos.contains("PERM_EVAL_ENTREGA_EDITAR")) {
+            efectivos.add("PERM_COMPRAS_VER");
+            efectivos.add("PERM_RECLAMOS");
+        }
+
+        if (efectivos.contains("PERM_EVAL_PROVEEDOR_EDITAR")) {
+            efectivos.add("PERM_PROVEEDORES_VER");
+        }
+
         return new ArrayList<>(efectivos);
     }
 }

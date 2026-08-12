@@ -19,6 +19,18 @@ export default function PanelAprobacionesSoli() {
     const tabs = TODOS_LOS_TABS.filter(tab => tab.permiso.some(p => permisos.includes(p)));
 
     const [activeTab, setActiveTab] = useState(tabs[0]?.id || 'PENDIENTE');
+    const [aprobaciones, setAprobaciones] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
+
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const PAGE_SIZE = 10;
 
     const getPriorityBadge = (prioridadObj) => {
         const cat = prioridadObj?.categoria || "";

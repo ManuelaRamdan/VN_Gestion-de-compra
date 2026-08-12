@@ -4,31 +4,31 @@ import { Download, X, AlertCircle } from 'lucide-react';
 import Layout from '../../../components/Layout';
 import SeleccionProveedor from '../../../components/evalProveedor/SeleccionProveedor';
 import GestionEvalProveedor from '../../../components/evalProveedor/GestionEvalProveedor';
+import ListaEvalProveedorSoloLectura from '../../../components/evalProveedor/ListaEvalProveedorSoloLectura';
 import { descargarEvaluacionesPorPeriodo } from '../../../services/evalProveedorService';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function EvalProveedorPage() {
+    const { user } = useAuth();
+    const permisos = user?.permisos || [];
+    const puedeEditar = permisos.includes('PERM_EVAL_PROVEEDOR_EDITAR');
+    const puedeDescargar = permisos.includes('PERM_EVAL_PROVEEDOR_DESCARGAR');
+
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Si venimos de otra pantalla (ej: un Cierre) con un proveedor ya
-    // elegido, arrancamos directo en su gestión de evaluación.
     const [proveedorSeleccionado, setProveedorSeleccionado] = useState(
         location.state?.proveedorPreseleccionado || null
     );
-
-    // Info para poder volver exactamente a donde estábamos (ej: el cierre
-    // de origen) en vez de volver siempre a la lista de proveedores.
     const [returnTo, setReturnTo] = useState(location.state?.returnTo || null);
-
     const [showDescargaModal, setShowDescargaModal] = useState(false);
 
     useEffect(() => {
         if (location.state?.proveedorPreseleccionado || location.state?.returnTo) {
-            window.history.replaceState({}, document.title); // evita que se repita en un refresh
+            window.history.replaceState({}, document.title);
         }
     }, []);
 
-    // Vuelve al origen (cierre) si vinimos desde ahí; si no, a la lista.
     const handleBack = () => {
         if (returnTo?.pathname) {
             navigate(returnTo.pathname, { state: returnTo.state });
@@ -37,13 +37,38 @@ export default function EvalProveedorPage() {
         setProveedorSeleccionado(null);
     };
 
-    // Después de guardar la evaluación: si veníamos de un cierre, volvemos
-    // directo ahí; si no, nos quedamos en la gestión del proveedor.
     const handleSaved = () => {
         if (returnTo?.pathname) {
             navigate(returnTo.pathname, { state: returnTo.state });
         }
     };
+
+    if (!puedeEditar) {
+        return (
+            <Layout>
+                <div className="animate-in fade-in duration-300">
+                    <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                        <div>
+                            <h1 className="text-xl font-bold text-slate-900">Evaluaciones de Proveedor</h1>
+                            <p className="text-sm text-gray-500">Consulte los resultados de evaluación de cada proveedor.</p>
+                        </div>
+                        {puedeDescargar && (
+                            <button
+                                onClick={() => setShowDescargaModal(true)}
+                                className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold text-sm hover:bg-[#164a49] shadow-md transition-all"
+                            >
+                                <Download size={16} /> Descargar evaluaciones por período
+                            </button>
+                        )}
+                    </div>
+                    <ListaEvalProveedorSoloLectura puedeDescargar={puedeDescargar} />
+                </div>
+                {showDescargaModal && (
+                    <DescargaPorPeriodoModal onClose={() => setShowDescargaModal(false)} />
+                )}
+            </Layout>
+        );
+    }
 
     return (
         <Layout>
@@ -55,12 +80,14 @@ export default function EvalProveedorPage() {
                                 <h1 className="text-xl font-bold text-slate-900">Gestión de evaluación de Proveedor</h1>
                                 <p className="text-sm text-gray-500">Seleccione un proveedor para registrar la evaluación.</p>
                             </div>
-                            <button
-                                onClick={() => setShowDescargaModal(true)}
-                                className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold text-sm hover:bg-[#164a49] shadow-md transition-all"
-                            >
-                                <Download size={16} /> Descargar evaluaciones por período
-                            </button>
+                            {puedeDescargar && (
+                                <button
+                                    onClick={() => setShowDescargaModal(true)}
+                                    className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold text-sm hover:bg-[#164a49] shadow-md transition-all"
+                                >
+                                    <Download size={16} /> Descargar evaluaciones por período
+                                </button>
+                            )}
                         </div>
                         <SeleccionProveedor onSelect={(prov) => setProveedorSeleccionado(prov)} />
                     </>
@@ -79,6 +106,7 @@ export default function EvalProveedorPage() {
         </Layout>
     );
 }
+
 
 function DescargaPorPeriodoModal({ onClose }) {
     const [modo, setModo] = useState('anio'); // 'anio' | 'rango'
