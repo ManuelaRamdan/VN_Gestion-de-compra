@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { X, Download, Package, FileSearch, ShoppingCart, Truck, Archive } from 'lucide-react';
 import { descargarExpedientePdf } from '../../services/documentacionService';
 
-export default function DetalleExpediente({ cierre, onClose }) {
+export default function DetalleExpediente({ cierre, onClose, puedeDescargar }) {
     const [isDownloading, setIsDownloading] = useState(false);
-    
+
     // Acceso simplificado mediante encadenamiento opcional
     const ev = cierre.evaluacionEntrega;
     const co = ev?.compra;
@@ -44,7 +44,7 @@ export default function DetalleExpediente({ cierre, onClose }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div className="bg-white w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                
+
                 <div className="bg-[#1C5B5A] px-6 py-4 flex justify-between items-center text-white">
                     <div>
                         <h3 className="font-bold text-lg">Historial del Expediente</h3>
@@ -55,43 +55,47 @@ export default function DetalleExpediente({ cierre, onClose }) {
 
                 <div className="p-8 overflow-y-auto bg-slate-50/50 flex-1">
                     <div className="flex justify-end mb-6">
-                        <button 
-                            onClick={handleDownload}
-                            disabled={isDownloading}
-                            className="flex items-center gap-2 bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold hover:bg-emerald-700 shadow-md transition-all disabled:opacity-50"
-                        >
-                            {isDownloading ? "Generando..." : <><Download size={18} /> Descargar PDF Completo</>}
-                        </button>
+                        {puedeDescargar ? (
+                            <button
+                                onClick={handleDownload}
+                                disabled={isDownloading}
+                                className="flex items-center gap-2 bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold hover:bg-emerald-700 shadow-md transition-all disabled:opacity-50"
+                            >
+                                {isDownloading ? "Generando..." : <><Download size={18} /> Descargar PDF Completo</>}
+                            </button>
+                        ) : (
+                            <span className="text-xs text-gray-400 italic">No tenés permiso para descargar documentos.</span>
+                        )}
                     </div>
 
                     <div className="space-y-2">
-                        <Step 
-                            icon={Package} 
-                            title="1. Solicitud de Compra" 
+                        <Step
+                            icon={Package}
+                            title="1. Solicitud de Compra"
                             date={so?.fecha}
                             desc={`Iniciada por ${so?.usuario?.username}. Cantidad: ${so?.cantidad} ${so?.producto?.nombre}.`}
                         />
-                        <Step 
-                            icon={FileSearch} 
-                            title="2. Presupuesto Seleccionado" 
+                        <Step
+                            icon={FileSearch}
+                            title="2. Presupuesto Seleccionado"
                             date={pr?.fechaRecepcion}
                             desc={`Proveedor: ${pr?.provider?.nombreEmpresa || pr?.proveedor?.nombreEmpresa}. Cotización validada como satisfactoria.`}
                         />
-                        <Step 
-                            icon={ShoppingCart} 
-                            title="3. Compra y Facturación" 
+                        <Step
+                            icon={ShoppingCart}
+                            title="3. Compra y Facturación"
                             date={co?.fechaRecepcion}
                             desc={`Factura registrada por ${co?.usuario?.username}.`}
                         />
-                        <Step 
-                            icon={Truck} 
-                            title="4. Evaluación de Entrega" 
+                        <Step
+                            icon={Truck}
+                            title="4. Evaluación de Entrega"
                             date={ev?.fechaEntrega}
                             desc={ev?.observaciones || "Sin observaciones en la entrega."}
                         />
-                        <Step 
-                            icon={Archive} 
-                            title="5. Cierre Administrativo" 
+                        <Step
+                            icon={Archive}
+                            title="5. Cierre Administrativo"
                             date={cierre?.fechaCierre}
                             desc={cierre?.observaciones || "Expediente auditado y archivado correctamente."}
                         />

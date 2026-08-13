@@ -32,8 +32,8 @@ export default function Navbar() {
                 { name: 'Eval. Proveedor', path: '/evalProveedor', allowedPermissions: ['PERM_EVAL_PROVEEDOR_VER', 'PERM_EVAL_PROVEEDOR_EDITAR', 'PERM_EVAL_PROVEEDOR_DESCARGAR'] }
             ]
         },
-        { name: 'Cierre', path: '/cierre', allowedPermissions: ['PERM_CIERRES'] },
-        { name: 'Documentación', path: '/documentacion', allowedPermissions: ['PERM_DOCUMENTACION'] },
+        { name: 'Cierre', path: '/cierre', allowedPermissions: ['PERM_CIERRES_VER', 'PERM_CIERRES_GESTIONAR'] },
+        { name: 'Documentación', path: '/documentacion', allowedPermissions: ['PERM_DOCUMENTACION_VER', 'PERM_DOCUMENTACION_DESCARGAR'] },
         {
             name: 'Otros',
             allowedPermissions: ['PERM_USUARIOS_ADMIN', 'PERM_PROVEEDORES_ADMIN', 'PERM_PRODUCTOS_ADMIN', 'PERM_PRODUCTOS_VER', 'PERM_PRIORIDADES_ADMIN', 'PERM_PRIORIDADES_VER'],

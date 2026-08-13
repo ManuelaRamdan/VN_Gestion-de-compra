@@ -102,7 +102,7 @@ function AppRouter() {
                 <Route
                     path="/cierre"
                     element={
-                        <ProtectRoute allowedPermission="PERM_CIERRES">
+                        <ProtectRoute allowedPermission={['PERM_CIERRES_VER', 'PERM_CIERRES_GESTIONAR']}>
                             <CierrePage />
                         </ProtectRoute>
                     }
@@ -110,7 +110,7 @@ function AppRouter() {
                 <Route
                     path="/documentacion"
                     element={
-                        <ProtectRoute allowedPermission="PERM_DOCUMENTACION">
+                        <ProtectRoute allowedPermission={['PERM_DOCUMENTACION_VER', 'PERM_DOCUMENTACION_DESCARGAR']}>
                             <DocPage />
                         </ProtectRoute>
                     }

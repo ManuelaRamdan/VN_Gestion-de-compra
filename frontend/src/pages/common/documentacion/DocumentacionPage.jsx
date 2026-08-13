@@ -4,8 +4,13 @@ import Loading from '../../../components/Loading';
 import { listarcierres, descargarExpedientesPorPeriodo } from '../../../services/documentacionService';
 import { Search, Eye, ChevronDown, Download, X, AlertCircle } from 'lucide-react';
 import ModalDetalleExpediente from '../../../components/documentacion/DetalleExpediente';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function DocumentacionPage() {
+    const { user } = useAuth();
+    const permisos = user?.permisos || [];
+    const puedeDescargar = permisos.includes('PERM_DOCUMENTACION_DESCARGAR');
+
     const [cierres, setCierres] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -71,13 +76,13 @@ export default function DocumentacionPage() {
     const filteredData = cierres.filter((c) => {
         if (!searchTerm) return true;
         const term = searchTerm.toLowerCase();
-        
+
         const idCierre = c.idCierre?.toString() || "";
         const proveedor = c.evaluacionEntrega?.compra?.aprobacionPresupuesto?.presupuesto?.proveedor?.nombreEmpresa?.toLowerCase() || "";
-        
+
         // 1. Formateamos la fecha a texto (ej: "25/2/2026") para poder buscar en ella
         const fecha = formatDateLocal(c.fechaCierre).toLowerCase();
-        
+
         // 2. Agregamos 'fecha' a la condición de retorno
         return idCierre.includes(term) || proveedor.includes(term) || fecha.includes(term);
     });
@@ -85,19 +90,21 @@ export default function DocumentacionPage() {
     return (
         <Layout>
             <div className="animate-in fade-in duration-300">
-                
+
                 {/* ENCABEZADO CON BOTÓN DE DESCARGA */}
                 <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                     <div>
                         <h1 className="text-xl font-bold text-slate-900">Documentación y Expedientes</h1>
                         <p className="text-sm text-gray-500">Consulte y descargue los expedientes de compras finalizadas.</p>
                     </div>
-                    <button
-                        onClick={() => setShowDescargaModal(true)}
-                        className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold text-sm hover:bg-[#164a49] shadow-md transition-all"
-                    >
-                        <Download size={16} /> Descargar expedientes (ZIP)
-                    </button>
+                    {puedeDescargar && (
+                        <button
+                            onClick={() => setShowDescargaModal(true)}
+                            className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold text-sm hover:bg-[#164a49] shadow-md transition-all"
+                        >
+                            <Download size={16} /> Descargar expedientes (ZIP)
+                        </button>
+                    )}
                 </div>
 
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
@@ -156,7 +163,7 @@ export default function DocumentacionPage() {
                                     ))}
                                 </tbody>
                             </table>
-                            
+
                             {/* --- BOTÓN VER MÁS --- */}
                             {hasMore && filteredData.length > 0 && (
                                 <div className="p-4 bg-white border-t border-slate-50 flex justify-center">
@@ -184,11 +191,11 @@ export default function DocumentacionPage() {
                 </div>
             </div>
 
-            {/* MODAL DE DETALLE DEL EXPEDIENTE */}
             {cierreSeleccionado && (
                 <ModalDetalleExpediente
                     cierre={cierreSeleccionado}
                     onClose={() => setCierreSeleccionado(null)}
+                    puedeDescargar={puedeDescargar}
                 />
             )}
 
@@ -205,7 +212,7 @@ export default function DocumentacionPage() {
 // =========================================================================
 
 function DescargaExpedientesModal({ onClose }) {
-    const [modo, setModo] = useState('anio'); 
+    const [modo, setModo] = useState('anio');
     const [anio, setAnio] = useState(new Date().getFullYear());
     const [desde, setDesde] = useState('');
     const [hasta, setHasta] = useState('');
@@ -230,8 +237,8 @@ function DescargaExpedientesModal({ onClose }) {
             }
             onClose();
         } catch (err) {
-            const errorMsg = err.response && err.response.data && err.response.data.error 
-                ? err.response.data.error 
+            const errorMsg = err.response && err.response.data && err.response.data.error
+                ? err.response.data.error
                 : 'No se pudo descargar el archivo.';
             setError(errorMsg);
         } finally {
@@ -258,18 +265,16 @@ function DescargaExpedientesModal({ onClose }) {
                         <button
                             type="button"
                             onClick={() => setModo('anio')}
-                            className={`flex-1 py-2 rounded-md text-sm font-bold transition-colors ${
-                                modo === 'anio' ? 'bg-white text-[#1C5B5A] shadow-sm' : 'text-slate-500'
-                            }`}
+                            className={`flex-1 py-2 rounded-md text-sm font-bold transition-colors ${modo === 'anio' ? 'bg-white text-[#1C5B5A] shadow-sm' : 'text-slate-500'
+                                }`}
                         >
                             Por año
                         </button>
                         <button
                             type="button"
                             onClick={() => setModo('rango')}
-                            className={`flex-1 py-2 rounded-md text-sm font-bold transition-colors ${
-                                modo === 'rango' ? 'bg-white text-[#1C5B5A] shadow-sm' : 'text-slate-500'
-                            }`}
+                            className={`flex-1 py-2 rounded-md text-sm font-bold transition-colors ${modo === 'rango' ? 'bg-white text-[#1C5B5A] shadow-sm' : 'text-slate-500'
+                                }`}
                         >
                             Por rango de fechas
                         </button>

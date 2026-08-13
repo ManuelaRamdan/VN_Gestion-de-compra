@@ -1,25 +1,40 @@
-// src/pages/CierresPage.jsx
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import SeleccionEvaluacion from '../../../components/cierre/SeleccionEvaluacion';
 import GestionCierre from '../../../components/cierre/GestionCierre';
+import ListaCierresSoloLectura from '../../../components/cierre/ListaCierresSoloLectura';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function CierresPage() {
-    const location = useLocation();
+    const { user } = useAuth();
+    const permisos = user?.permisos || [];
+    const puedeGestionar = permisos.includes('PERM_CIERRES_GESTIONAR');
 
-    // Si volvemos desde "Evaluar proveedor" (originado en un cierre), acá
-    // llega la evaluación de entrega que estábamos gestionando, para
-    // reabrir ese mismo cierre en vez de mostrar la lista.
+    const location = useLocation();
     const [evaluacionSeleccionada, setEvaluacionSeleccionada] = useState(
         location.state?.evaluacionPreseleccionada || null
     );
 
     useEffect(() => {
         if (location.state?.evaluacionPreseleccionada) {
-            window.history.replaceState({}, document.title); // evita que se repita en un refresh
+            window.history.replaceState({}, document.title);
         }
     }, []);
+
+    if (!puedeGestionar) {
+        return (
+            <Layout>
+                <div className="animate-in fade-in duration-300">
+                    <div className="mb-6">
+                        <h1 className="text-xl font-bold text-slate-900">Cierres Administrativos</h1>
+                        <p className="text-sm text-gray-500">Consulte los expedientes cerrados.</p>
+                    </div>
+                    <ListaCierresSoloLectura />
+                </div>
+            </Layout>
+        );
+    }
 
     return (
         <Layout>
@@ -33,9 +48,9 @@ export default function CierresPage() {
                         <SeleccionEvaluacion onSelect={(ev) => setEvaluacionSeleccionada(ev)} />
                     </>
                 ) : (
-                    <GestionCierre 
-                        evaluacion={evaluacionSeleccionada} 
-                        onBack={() => setEvaluacionSeleccionada(null)} 
+                    <GestionCierre
+                        evaluacion={evaluacionSeleccionada}
+                        onBack={() => setEvaluacionSeleccionada(null)}
                     />
                 )}
             </div>
