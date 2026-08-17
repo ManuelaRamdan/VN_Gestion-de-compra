@@ -4,20 +4,17 @@ import { listarPresupuestosPorAprobacion, guardarPresupuesto, actualizarPresupue
 import { listarProveedoresTodos } from '../../services/proveedorService';
 import Loading from '../Loading';
 
-export default function GestionPresupuestos({ aprobacion, onBack }) {
+export default function GestionPresupuestos({ aprobacion, onBack, puedeGestionar = true }) {
     const [presupuestos, setPresupuestos] = useState([]);
     const [proveedores, setProveedores] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Estados para el Modal
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState(null);
 
-    // Estados para el Archivo (Drag & Drop)
     const [file, setFile] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
 
-    // --- ESTADOS DE FEEDBACK (Mensajes) ---
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [modalError, setModalError] = useState("");
@@ -27,7 +24,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
         fechaSolicitud: new Date().toISOString().split('T')[0],
         fechaRecepcion: "",
         observaciones: ""
-        };
+    };
 
     const [formData, setFormData] = useState(initialForm);
 
@@ -53,15 +50,11 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
         }
     };
 
-    // --- LÓGICA DE BLOQUEO GLOBAL ---
-    // Si AL MENOS UNO de los presupuestos ya fue APROBADO o RECHAZADO, 
-    // significa que la gerencia ya tomó una decisión y se cierra todo.
     const hayDecisionTomada = presupuestos.some(p => {
         const estado = p.estadoAprobacion || 'PENDIENTE';
         return estado !== 'PENDIENTE';
     });
 
-    // ... (Manejo de archivos y funciones auxiliares igual que antes) ...
     const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
     const handleDragLeave = () => { setIsDragging(false); };
     const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); validarYSetearArchivo(e.dataTransfer.files[0]); };
@@ -88,13 +81,10 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
         }
     };
 
-    const limpiarMensajes = () => {
-        setModalError("");
-    };
+    const limpiarMensajes = () => setModalError("");
 
     const handleNuevo = () => {
-        // Bloqueo extra por si acaso
-        if (hayDecisionTomada) return;
+        if (hayDecisionTomada || !puedeGestionar) return;
 
         setEditingId(null);
         setFile(null);
@@ -111,7 +101,8 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
             fechaSolicitud: presupuesto.fechaSolicitud || "",
             fechaRecepcion: presupuesto.fechaRecepcion || "",
             archivoPdfPath: presupuesto.archivoPdfPath || "",
-            observaciones: presupuesto.observaciones || ""        });
+            observaciones: presupuesto.observaciones || ""        
+        });
         limpiarMensajes();
         setShowModal(true);
     };
@@ -149,8 +140,6 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
         }
     };
 
-    // if (loading) return <Loading fullScreen />;
-
     const slots = [0, 1, 2, 3];
 
     return (
@@ -177,7 +166,6 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                 </div>
             </div>
 
-            {/* Avisos */}
             {error && (
                 <div className="mb-6 bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center gap-2 border border-red-200 animate-in fade-in">
                     <AlertCircle size={16} /> {error}
@@ -192,7 +180,6 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                 </div>
             )}
 
-            {/* Aviso de Bloqueo */}
             {hayDecisionTomada && !success && (
                 <div className="mb-6 bg-blue-50 text-blue-700 p-3 rounded-lg text-sm flex items-center gap-2 border border-blue-100">
                     <Lock size={16} />
@@ -203,7 +190,6 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {/* Comentarios de la Solicitud */}
                 <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
                         <MessageSquare size={16} className="text-gray-400" />
@@ -214,7 +200,6 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                     </p>
                 </div>
 
-                {/* Comentarios de la Aprobación (Gerencia) */}
                 <div className="bg-emerald-50/30 border border-emerald-100 p-4 rounded-xl shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
                         <MessageSquare size={16} className="text-emerald-500" />
@@ -226,21 +211,19 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                 </div>
             </div>
 
-            {/* Grid de 4 Casillas */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {slots.map((index) => {
                     const item = presupuestos[index];
 
                     if (item) {
-                        // Lógica individual (sigue aplicando por si acaso)
                         const estadoAprobacion = item.estadoAprobacion || 'PENDIENTE';
-                        const isEditable = estadoAprobacion === 'PENDIENTE'; // Ya no se podrá editar si hay decisión
+                        // Solo es editable si es pendiente y además tiene el permiso global
+                        const isEditable = estadoAprobacion === 'PENDIENTE' && puedeGestionar; 
 
                         return (
                             <div key={item.idPresupuesto} className={`bg-white border border-slate-200 rounded-xl p-5 shadow-sm relative overflow-hidden group hover:shadow-md transition-all ${!isEditable ? 'opacity-90' : ''}`}>
                                 <div className={`absolute top-0 left-0 w-1 h-full ${item.cotizacionSatisfactoria ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
 
-                                {/* Badge de Estado */}
                                 {estadoAprobacion !== 'PENDIENTE' && (
                                     <div className="absolute top-3 right-3 z-20">
                                         <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase border ${estadoAprobacion === 'APROBADA'
@@ -252,7 +235,6 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                                     </div>
                                 )}
 
-                                {/* Botón Editar/Ver */}
                                 <button
                                     onClick={() => isEditable && handleEditar(item)}
                                     disabled={!isEditable}
@@ -292,8 +274,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                             </div>
                         );
                     } else {
-                        // --- CASILLA VACÍA (Botón Nuevo) ---
-                        // Si ya hay decisión tomada, mostramos la casilla bloqueada (Gris)
+                        // --- CASILLA VACÍA ---
                         if (hayDecisionTomada) {
                             return (
                                 <div
@@ -309,25 +290,39 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                             );
                         }
 
-                        // Si NO hay decisión, mostramos el botón habilitado
+                        if (puedeGestionar) {
+                            return (
+                                <button
+                                    key={index}
+                                    onClick={handleNuevo}
+                                    className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50/10 transition-all h-48"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2">
+                                        <Plus size={20} />
+                                    </div>
+                                    <span className="text-sm font-medium">Cargar Presupuesto</span>
+                                </button>
+                            );
+                        }
+
+                        // Vista de lectura si está vacío y no hay decisión aún
                         return (
-                            <button
+                            <div
                                 key={index}
-                                onClick={handleNuevo}
-                                className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50/10 transition-all h-48"
+                                className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-300 bg-slate-50 h-48"
                             >
-                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2">
-                                    <Plus size={20} />
+                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mb-2 text-slate-300">
+                                    <FileText size={20} />
                                 </div>
-                                <span className="text-sm font-medium">Cargar Presupuesto</span>
-                            </button>
+                                <span className="text-sm font-medium">Cotización Pendiente</span>
+                            </div>
                         );
                     }
                 })}
             </div>
 
             {/* Modal */}
-            {showModal && (
+            {showModal && puedeGestionar && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95">
                         <div className="bg-[#1C5B5A] px-6 py-4 flex justify-between items-center text-white">
@@ -349,7 +344,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                                     value={formData.idProveedor}
                                     onChange={e => setFormData({ ...formData, idProveedor: e.target.value })}
                                     required
-                                    disabled={hayDecisionTomada} // Bloqueo extra por seguridad
+                                    disabled={hayDecisionTomada}
                                 >
                                     <option value="">Seleccione proveedor...</option>
                                     {proveedores.map(p => (
@@ -375,7 +370,6 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
                                 </div>
                             </div>
 
-                            {/* ... (Drag & Drop y Observaciones siguen igual) ... */}
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Conversación (PDF)</label>
                                 {!file ? (
@@ -415,7 +409,7 @@ export default function GestionPresupuestos({ aprobacion, onBack }) {
 
                                 <button
                                     type="submit"
-                                    disabled={hayDecisionTomada} // Bloqueo final del botón guardar
+                                    disabled={hayDecisionTomada} 
                                     className={`flex-1 py-2.5 text-white rounded-lg text-sm font-medium shadow-md transition-all
                                         ${hayDecisionTomada
                                             ? 'bg-gray-400 cursor-not-allowed'

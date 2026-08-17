@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Plus, FileText, Calendar, UploadCloud, Pencil, X, Trash2, AlertCircle, Check, Lock } from 'lucide-react'; // Importar Lock
+import { ArrowLeft, Plus, FileText, Calendar, UploadCloud, Pencil, X, Trash2, AlertCircle, Check, Lock } from 'lucide-react';
 import {
     listarPresupuestosPorAprobacion,
     crearCompra,
@@ -8,19 +8,16 @@ import {
 } from '../../services/compraService';
 import Loading from '../Loading';
 
-export default function GestionCompra({ aprobacion, onBack }) {
+export default function GestionCompra({ aprobacion, onBack, puedeGestionar = true }) {
     const [compras, setCompras] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    // Estados del Modal
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState(null);
     
-    // Estados del Archivo
     const [file, setFile] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
 
-    // Estados de Feedback
     const [error, setError] = useState(""); 
     const [success, setSuccess] = useState(""); 
     const [modalError, setModalError] = useState(""); 
@@ -53,7 +50,6 @@ export default function GestionCompra({ aprobacion, onBack }) {
         }
     };
 
-    // --- MANEJO DE ARCHIVOS ---
     const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
     const handleDragLeave = () => { setIsDragging(false); };
     const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); validarYSetearArchivo(e.dataTransfer.files[0]); };
@@ -79,10 +75,7 @@ export default function GestionCompra({ aprobacion, onBack }) {
         }
     };
 
-    // --- GESTIÓN DEL MODAL ---
-    const limpiarMensajes = () => {
-        setModalError("");
-    };
+    const limpiarMensajes = () => setModalError("");
 
     const handleNuevo = () => {
         setEditingId(null);
@@ -93,7 +86,6 @@ export default function GestionCompra({ aprobacion, onBack }) {
     };
 
     const handleEditar = (compra) => {
-        // Bloqueo preventivo en Front
         if (compra.evaluada) return;
 
         setEditingId(compra.idCompra);
@@ -142,11 +134,8 @@ export default function GestionCompra({ aprobacion, onBack }) {
         }
     };
 
-    //if (loading) return <Loading fullScreen />;
-
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
-            {/* Header */}
             <div className="mb-6 flex items-center gap-4">
                 <button onClick={onBack} className="p-2 hover:bg-white rounded-full text-slate-500 transition-colors">
                     <ArrowLeft size={20} />
@@ -159,7 +148,6 @@ export default function GestionCompra({ aprobacion, onBack }) {
                 </div>
             </div>
 
-            {/* --- MENSAJES EN PANTALLA PRINCIPAL --- */}
             {error && (
                 <div className="mb-6 bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center gap-2 border border-red-200 animate-in fade-in">
                     <AlertCircle size={16} /> {error}
@@ -174,17 +162,14 @@ export default function GestionCompra({ aprobacion, onBack }) {
                 </div>
             )}
 
-            {/* Grid de Compras */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {compras.map((item) => {
-                    // --- AQUÍ ESTÁ LA LÓGICA DE BLOQUEO ---
-                    const isLocked = item.evaluada; // "evaluada" viene del Java isEvaluada()
+                    const isLocked = item.evaluada;
 
                     return (
                         <div key={item.idCompra} className={`bg-white border border-slate-200 rounded-xl p-5 shadow-sm relative group hover:shadow-md transition-all ${isLocked ? 'opacity-90' : ''}`}>
                             <div className={`absolute top-0 left-0 w-1 h-full ${isLocked ? 'bg-purple-500' : 'bg-blue-500'}`}></div>
                             
-                            {/* Badge de Evaluada */}
                             {isLocked && (
                                 <div className="absolute top-3 left-4 z-20">
                                     <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded border border-purple-200 font-bold uppercase flex items-center gap-1">
@@ -193,20 +178,21 @@ export default function GestionCompra({ aprobacion, onBack }) {
                                 </div>
                             )}
 
-                            {/* Botón Editar (Bloqueado si está evaluada) */}
-                            <button 
-                                onClick={() => !isLocked && handleEditar(item)} 
-                                disabled={isLocked}
-                                className={`absolute top-3 right-3 px-3 py-1 border shadow-sm rounded-md transition-all text-xs font-bold z-10 flex items-center gap-1
-                                    ${isLocked 
-                                        ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' 
-                                        : 'bg-white border-slate-200 text-slate-500 hover:text-blue-600 cursor-pointer'
-                                    }`}
-                                title={isLocked ? "No se puede editar: Ya tiene Evaluación de Entrega" : "Editar Factura"}
-                            >
-                                {isLocked ? <Lock size={14} /> : <Pencil size={14} />}
-                                {isLocked ? "Cerrada" : "Editar"}
-                            </button>
+                            {puedeGestionar && (
+                                <button 
+                                    onClick={() => !isLocked && handleEditar(item)} 
+                                    disabled={isLocked}
+                                    className={`absolute top-3 right-3 px-3 py-1 border shadow-sm rounded-md transition-all text-xs font-bold z-10 flex items-center gap-1
+                                        ${isLocked 
+                                            ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' 
+                                            : 'bg-white border-slate-200 text-slate-500 hover:text-blue-600 cursor-pointer'
+                                        }`}
+                                    title={isLocked ? "No se puede editar: Ya tiene Evaluación de Entrega" : "Editar Factura"}
+                                >
+                                    {isLocked ? <Lock size={14} /> : <Pencil size={14} />}
+                                    {isLocked ? "Cerrada" : "Editar"}
+                                </button>
+                            )}
                             
                             <h3 className="font-bold text-slate-800 truncate mb-1 mt-6">Compra #{item.idCompra}</h3>
                             <p className="text-xs text-gray-400 mb-3">Registrada por: {item.usuario?.username || 'Sistema'}</p>
@@ -229,20 +215,26 @@ export default function GestionCompra({ aprobacion, onBack }) {
                     );
                 })}
 
-                {/* Botón Nueva Compra (Solo visible si no hay compras activas) */}
-                {/* Nota: Si ya hay una compra, evaluada o no, no deberías poder crear otra si es relación 1:1 */}
-                {compras.length === 0 && (
-                    <button onClick={handleNuevo} className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50/10 transition-all h-48">
-                        <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2">
-                            <Plus size={20} />
+                {compras.length === 0 ? (
+                    puedeGestionar ? (
+                        <button onClick={handleNuevo} className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50/10 transition-all h-48">
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2">
+                                <Plus size={20} />
+                            </div>
+                            <span className="text-sm font-medium">Registrar Factura</span>
+                        </button>
+                    ) : (
+                        <div className="col-span-full bg-slate-50 border border-slate-200 rounded-xl p-10 flex flex-col items-center justify-center text-center text-slate-500 gap-3">
+                            <AlertCircle size={32} className="text-slate-300" />
+                            <div className="font-medium text-base">Sin Facturas Registradas</div>
+                            <p className="text-xs text-slate-400">Este presupuesto aún no tiene una compra o factura asociada.</p>
                         </div>
-                        <span className="text-sm font-medium">Registrar Factura</span>
-                    </button>
-                )}
+                    )
+                ) : null}
             </div>
 
             {/* Modal */}
-            {showModal && (
+            {showModal && puedeGestionar && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95">
                         <div className="bg-[#1C5B5A] px-6 py-4 flex justify-between items-center text-white">
@@ -251,8 +243,6 @@ export default function GestionCompra({ aprobacion, onBack }) {
                         </div>
                         
                         <form onSubmit={handleGuardar} className="p-6 space-y-4">
-                            
-                            {/* Feedback en Modal */}
                             {modalError && (
                                 <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center gap-2 border border-red-200 animate-in slide-in-from-top-2">
                                     <AlertCircle size={16} /> {modalError}
@@ -272,7 +262,6 @@ export default function GestionCompra({ aprobacion, onBack }) {
                                 </div>
                             </div>
 
-                            {/* Drag & Drop */}
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Adjuntar Factura (PDF)</label>
                                 {!file ? (

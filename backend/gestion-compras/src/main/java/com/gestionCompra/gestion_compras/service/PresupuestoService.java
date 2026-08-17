@@ -51,16 +51,10 @@ public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
     @Autowired
     private UsuarioService UsuarioService;
 
-    @Value("${pdf.storage.path}")
+    @Value("${pdf.storage.path:C:/gestion_compras/pdfs_locales}")
     private String storagePath;
 
     private Path rootLocation;
-
-    // 2. Inicializamos el Path una vez que se inyecta el valor
-    @PostConstruct
-    public void init() {
-        this.rootLocation = Paths.get(storagePath);
-    }
 
     @Transactional
     public Presupuesto crearPresupuesto(Presupuesto presupuesto) {
@@ -204,6 +198,16 @@ public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
         return new Paginacion<>(page);
     }
 
+  @PostConstruct
+public void init() {
+    this.rootLocation = Paths.get(storagePath);
+    try {
+        Files.createDirectories(rootLocation);
+    } catch (IOException e) {
+        throw new RuntimeException("No se pudo crear el directorio de almacenamiento: " + storagePath, e);
+    }
+}
+
     public String guardarArchivo(MultipartFile archivo) {
         try {
             if (archivo.isEmpty()) {
@@ -211,16 +215,31 @@ public class PresupuestoService extends ABMGenerico<Presupuesto, Integer> {
             }
 
             String nombreOriginal = archivo.getOriginalFilename();
+            if (nombreOriginal == null || nombreOriginal.isBlank()) {
+                nombreOriginal = "archivo.pdf";
+            }
+
+            // Sanitizar: sacamos tildes/ñ/espacios/caracteres raros para evitar problemas de encoding en Windows
+            String nombreSeguro = java.text.Normalizer.normalize(nombreOriginal, java.text.Normalizer.Form.NFD)
+                    .replaceAll("\\p{M}", "") // saca acentos (á -> a)
+                    .replaceAll("[^a-zA-Z0-9._-]", "_");    // reemplaza cualquier otro carácter raro
 
             String prefijoUnico = UUID.randomUUID().toString();
-            String nombreArchivoUnico = prefijoUnico + "_" + nombreOriginal;
+            String nombreArchivoUnico = prefijoUnico + "_" + nombreSeguro;
 
-            File destino = new File(storagePath, nombreArchivoUnico);
+            // Usamos rootLocation (Path), no storagePath (String) directo
+            Path destino = rootLocation.resolve(nombreArchivoUnico).normalize();
+
+            // Chequeo de seguridad: evita path traversal (../../)
+            if (!destino.startsWith(rootLocation)) {
+                throw new RuntimeException("Nombre de archivo inválido.");
+            }
+
             archivo.transferTo(destino);
 
             return nombreArchivoUnico;
         } catch (IOException e) {
-            throw new RuntimeException("Error al guardar el archivo: " + e.getMessage());
+            throw new RuntimeException("Error al guardar el archivo: " + e.getMessage(), e);
         }
     }
 

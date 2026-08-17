@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { listarAprobacionesPorEstado } from '../../services/presupuestoService';
-import { FileText, ChevronRight, Search, ChevronDown } from 'lucide-react'; // Agregamos ChevronDown
+import { FileText, ChevronRight, Search, ChevronDown } from 'lucide-react'; 
 import Loading from '../Loading';
 
-export default function SeleccionSolicitud({ onSelect }) {
+export default function SeleccionSolicitud({ onSelect, puedeGestionar = true }) {
     const [aprobaciones, setAprobaciones] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
 
-    // --- ESTADOS DE PAGINACIÓN ---
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -36,7 +35,6 @@ export default function SeleccionSolicitud({ onSelect }) {
         const limitDate = new Date(fechaString);
         const today = new Date();
 
-        // Igualamos las horas a cero para comparar solo los días
         limitDate.setHours(0, 0, 0, 0);
         today.setHours(0, 0, 0, 0);
 
@@ -54,19 +52,14 @@ export default function SeleccionSolicitud({ onSelect }) {
             );
         }
 
-        // Si no está vencida, se muestra normal
         return <span className="text-slate-500">{formattedDate}</span>;
     };
 
     const cargarDatos = async (pageToLoad = 0) => {
         try {
-            if (pageToLoad === 0) {
-                setLoading(true);
-            } else {
-                setIsLoadingMore(true);
-            }
+            if (pageToLoad === 0) setLoading(true);
+            else setIsLoadingMore(true);
 
-            // Pasamos la página al servicio
             const res = await listarAprobacionesPorEstado(pageToLoad);
             const data = res.data;
             const contenido = data?.contenido || data || [];
@@ -74,15 +67,12 @@ export default function SeleccionSolicitud({ onSelect }) {
             if (pageToLoad === 0) {
                 setAprobaciones(contenido);
             } else {
-                // Si es cargar más, concatenamos
                 setAprobaciones(prev => [...prev, ...contenido]);
             }
 
-            // Determinar si quedan más páginas (asumiendo estructura Spring Page<T>)
             if (data.ultima !== undefined) {
                 setHasMore(!data.ultima);
             } else {
-                // Fallback por si el backend devuelve array directo
                 setHasMore(contenido.length > 0);
             }
 
@@ -100,7 +90,6 @@ export default function SeleccionSolicitud({ onSelect }) {
         cargarDatos(nextPage);
     };
 
-    // --- LÓGICA DE FILTRADO (Aplica sobre lo cargado) ---
     const filteredData = aprobaciones.filter((item) => {
         if (!searchTerm) return true;
         const term = searchTerm.toLowerCase();
@@ -132,8 +121,6 @@ export default function SeleccionSolicitud({ onSelect }) {
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
-
-            {/* --- HEADER CON BUSCADOR --- */}
             <div className="p-6 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <h2 className="text-base font-bold text-slate-800">Seleccione una solicitud</h2>
 
@@ -149,7 +136,6 @@ export default function SeleccionSolicitud({ onSelect }) {
                 </div>
             </div>
 
-            {/* --- TABLA --- */}
             {filteredData.length > 0 ? (
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
@@ -157,10 +143,8 @@ export default function SeleccionSolicitud({ onSelect }) {
                             <tr>
                                 <th className="px-6 py-4">ID Aprob.</th>
                                 <th className="px-6 py-4">Producto</th>
-                                {/* --- NUEVAS COLUMNAS --- */}
                                 <th className="px-6 py-4">Prioridad</th>
                                 <th className="px-6 py-4">Límite</th>
-                                {/* ----------------------- */}
                                 <th className="px-6 py-4">Solicitante</th>
                                 <th className="px-6 py-4 text-right">Acción</th>
                             </tr>
@@ -173,16 +157,12 @@ export default function SeleccionSolicitud({ onSelect }) {
                                         <div className="font-medium text-slate-800">{item.solicitud?.producto?.nombre}</div>
                                         <div className="text-xs text-gray-400">{item.solicitud?.cantidad} unidades</div>
                                     </td>
-
-                                    {/* --- NUEVAS CELDAS DE DATOS --- */}
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         {getPriorityBadge(item.solicitud?.nivelPrioridad)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap font-medium">
                                         {renderFechaLimite(item.solicitud?.fechaAdmisible)}
                                     </td>
-                                    {/* ------------------------------ */}
-
                                     <td className="px-6 py-4 text-slate-500">
                                         {item.solicitud?.usuario?.username}
                                     </td>
@@ -191,7 +171,7 @@ export default function SeleccionSolicitud({ onSelect }) {
                                             onClick={() => onSelect(item)}
                                             className="text-emerald-700 font-bold hover:underline flex items-center justify-end gap-1 ml-auto"
                                         >
-                                            Gestionar <ChevronRight size={16} />
+                                            {puedeGestionar ? "Gestionar" : "Ver Detalles"} <ChevronRight size={16} />
                                         </button>
                                     </td>
                                 </tr>
@@ -199,7 +179,6 @@ export default function SeleccionSolicitud({ onSelect }) {
                         </tbody>
                     </table>
 
-                    {/* --- BOTÓN VER MÁS --- */}
                     {hasMore && (
                         <div className="p-4 bg-white border-t border-slate-50 flex justify-center">
                             <button
@@ -208,14 +187,9 @@ export default function SeleccionSolicitud({ onSelect }) {
                                 className="text-xs text-gray-400 hover:text-emerald-700 flex items-center gap-1 transition-colors font-medium disabled:opacity-50"
                             >
                                 {isLoadingMore ? (
-                                    <>
-                                        <div className="w-3 h-3 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                                        Cargando...
-                                    </>
+                                    <><div className="w-3 h-3 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div> Cargando...</>
                                 ) : (
-                                    <>
-                                        Ver más <ChevronDown size={12} />
-                                    </>
+                                    <>Ver más <ChevronDown size={12} /></>
                                 )}
                             </button>
                         </div>

@@ -13,6 +13,7 @@ import java.util.Map;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/proveedores")
@@ -65,6 +66,7 @@ public class ProveedorController {
         return ResponseEntity.ok(Map.of("message", "Proveedor desactivado (Baja lógica)"));
     }
 
+    @PreAuthorize("hasAnyAuthority('PERM_PROVEEDORES_VER', 'PERM_EVAL_PROVEEDOR_EDITAR', 'PERM_EVAL_PROVEEDOR_VER', 'PERM_PRESUPUESTOS_GESTIONAR', 'PERM_PRESUPUESTOS_VER')")
     @GetMapping("/todos")
     public ResponseEntity<List<Proveedor>> listarTodosSinPaginar() {
         return ResponseEntity.ok(proveedorService.listarTodosActivos());

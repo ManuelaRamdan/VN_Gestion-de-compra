@@ -104,7 +104,7 @@ public class AprobacionController {
         }
     }
 
-    @PreAuthorize("hasAuthority('PERM_APROB_SOLI_ACEPTADAS_VER')")
+    @PreAuthorize("hasAnyAuthority('PERM_APROB_SOLI_ACEPTADAS_VER', 'PERM_APROBACIONES_VER', 'PERM_COMPRAS_GESTIONAR', 'PERM_COMPRAS_VER', 'PERM_PRESUPUESTOS_GESTIONAR', 'PERM_PRESUPUESTOS_VER')")
     @GetMapping("/solicitudes/aprobadas")
     public ResponseEntity<?> listarSolicitudAprobadas(
             @RequestParam(defaultValue = "0") int page,
@@ -229,7 +229,7 @@ public class AprobacionController {
         return ResponseEntity.ok(aprobacionPService.listarAprobPSinCompra(pageable));
     }
 
-    @PreAuthorize("hasAuthority('PERM_APROB_PRESU_EVALUADAS_VER')")
+    @PreAuthorize("hasAnyAuthority('PERM_APROB_PRESU_EVALUADAS_VER', 'PERM_APROBACIONES_VER', 'PERM_COMPRAS_GESTIONAR', 'PERM_COMPRAS_VER', 'PERM_PRESUPUESTOS_GESTIONAR', 'PERM_PRESUPUESTOS_VER')")
     @GetMapping("/presupuestos/aprobadas")
     public ResponseEntity<?> listarPresuAprobadas(
             @RequestParam(defaultValue = "0") int page,

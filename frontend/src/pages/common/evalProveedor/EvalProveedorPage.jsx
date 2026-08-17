@@ -4,7 +4,6 @@ import { Download, X, AlertCircle } from 'lucide-react';
 import Layout from '../../../components/Layout';
 import SeleccionProveedor from '../../../components/evalProveedor/SeleccionProveedor';
 import GestionEvalProveedor from '../../../components/evalProveedor/GestionEvalProveedor';
-import ListaEvalProveedorSoloLectura from '../../../components/evalProveedor/ListaEvalProveedorSoloLectura';
 import { descargarEvaluacionesPorPeriodo } from '../../../services/evalProveedorService';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -13,7 +12,6 @@ export default function EvalProveedorPage() {
     const permisos = user?.permisos || [];
     
     const puedeEditar = permisos.includes('PERM_EVAL_PROVEEDOR_EDITAR');
-    // 1. Extraemos el permiso de descarga
     const puedeDescargar = permisos.includes('PERM_EVAL_PROVEEDOR_DESCARGAR');
 
     const location = useLocation();
@@ -56,11 +54,10 @@ export default function EvalProveedorPage() {
                         <p className="text-sm text-gray-500">
                             {proveedorSeleccionado 
                                 ? "Consulte o gestione la evaluación de este proveedor." 
-                                : "Consulte los resultados de evaluación de cada proveedor."}
+                                : "Seleccione un proveedor de la lista."}
                         </p>
                     </div>
                     
-                    {/* 2. LA MAGIA ESTÁ AQUÍ: Solo muestra el botón grande si NO hay un proveedor seleccionado y TIENE permiso */}
                     {puedeDescargar && !proveedorSeleccionado && (
                         <button
                             onClick={() => setShowDescargaModal(true)}
@@ -71,19 +68,18 @@ export default function EvalProveedorPage() {
                     )}
                 </div>
 
+                {/* SIEMPRE MOSTRAMOS LA LISTA DE PROVEEDORES COMO BASE */}
                 {!proveedorSeleccionado ? (
-                    puedeEditar ? (
-                        <SeleccionProveedor onSelect={(prov) => setProveedorSeleccionado(prov)} />
-                    ) : (
-                        <ListaEvalProveedorSoloLectura puedeDescargar={puedeDescargar} />
-                    )
+                    <SeleccionProveedor 
+                        onSelect={(prov) => setProveedorSeleccionado(prov)} 
+                        puedeEditar={puedeEditar}
+                    />
                 ) : (
                     <GestionEvalProveedor
                         proveedor={proveedorSeleccionado}
                         onBack={handleBack}
                         onSaved={handleSaved}
                         puedeEditar={puedeEditar}
-                        // 3. Le pasamos el permiso de descarga al detalle
                         puedeDescargar={puedeDescargar} 
                     />
                 )}
@@ -96,6 +92,7 @@ export default function EvalProveedorPage() {
     );
 }
 
+// ================= MODAL DESCARGA =================
 function DescargaPorPeriodoModal({ onClose }) {
     const [modo, setModo] = useState('anio'); 
     const [anio, setAnio] = useState(new Date().getFullYear());

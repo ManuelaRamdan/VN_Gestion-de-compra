@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     // Inyectamos la variable desde application.properties
-    @Value("${pdf.storage.path}")
+    @Value("${pdf.storage.path:C:/gestion_compras/pdfs_locales}")
     private String storagePath;
 
     @Override

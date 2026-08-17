@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { listarProveedores, verificarAlertaEventual } from '../../services/evalProveedorService'; // Importamos el servicio de alerta
-import { FileText, ChevronRight, Search, ChevronDown, AlertCircle } from 'lucide-react'; // Agregamos AlertCircle
+import { listarProveedores, verificarAlertaEventual } from '../../services/evalProveedorService'; 
+import { FileText, ChevronRight, Search, ChevronDown, AlertCircle } from 'lucide-react'; 
 import Loading from '../Loading';
 
-export default function SeleccionProveedor({ onSelect }) {
+export default function SeleccionProveedor({ onSelect, puedeEditar = true }) {
     const [proveedores, setProveedores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
 
-    // --- ESTADOS DE PAGINACIÓN ---
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -19,18 +18,13 @@ export default function SeleccionProveedor({ onSelect }) {
 
     const cargarDatos = async (pageToLoad = 0) => {
         try {
-            if (pageToLoad === 0) {
-                setLoading(true);
-            } else {
-                setIsLoadingMore(true);
-            }
+            if (pageToLoad === 0) setLoading(true);
+            else setIsLoadingMore(true);
 
-            // 1. Llamamos al servicio con la página
             const res = await listarProveedores(pageToLoad);
             const data = res.data;
             const contenidoOriginal = data?.contenido || data || [];
 
-            // 2. Por cada proveedor en esta página, verificamos si requiere alerta
             const contenidoConAlerta = await Promise.all(
                 contenidoOriginal.map(async (prov) => {
                     try {
@@ -45,18 +39,14 @@ export default function SeleccionProveedor({ onSelect }) {
             if (pageToLoad === 0) {
                 setProveedores(contenidoConAlerta);
             } else {
-                // Concatenamos si es "Cargar más"
                 setProveedores(prev => [...prev, ...contenidoConAlerta]);
             }
 
-            // Validamos si es la última página
             if (data.ultima !== undefined) {
                 setHasMore(!data.ultima);
             } else {
-                // Fallback por si el backend devuelve array directo
                 setHasMore(contenidoOriginal.length > 0);
             }
-
         } catch (error) {
             console.error("Error cargando proveedores:", error);
         } finally {
@@ -71,19 +61,15 @@ export default function SeleccionProveedor({ onSelect }) {
         cargarDatos(nextPage);
     };
 
-    // --- FUNCIÓN SEGURA PARA LIMPIAR TEXTO ---
     const safeText = (text) => {
         return String(text || "")
             .toLowerCase()
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     };
 
-    // --- LÓGICA DE FILTRADO ---
     const filteredData = proveedores.filter((prov) => {
         if (!searchTerm) return true;
-        
         const term = safeText(searchTerm);
-
         const id = safeText(prov.idProveedor);
         const empresa = safeText(prov.nombreEmpresa);
         const email = safeText(prov.email);
@@ -113,7 +99,6 @@ export default function SeleccionProveedor({ onSelect }) {
     return (
         <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
             
-            {/* HEADER CON BUSCADOR */}
             <div className="p-6 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <h2 className="text-base font-bold text-slate-800">Seleccione un proveedor</h2>
 
@@ -129,7 +114,6 @@ export default function SeleccionProveedor({ onSelect }) {
                 </div>
             </div>
 
-            {/* TABLA */}
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 text-slate-500 font-medium uppercase text-xs">
@@ -152,7 +136,6 @@ export default function SeleccionProveedor({ onSelect }) {
                                     <td className="px-6 py-4">
                                         <div className="font-bold text-slate-800 flex items-center gap-2">
                                             {prov.nombreEmpresa}
-                                            {/* --- BADGE DE ALERTA --- */}
                                             {prov.requiereAlerta && (
                                                 <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase border border-amber-200" title="Proveedor eventual con gestión reciente sin evaluar">
                                                     <AlertCircle size={10} />
@@ -172,7 +155,7 @@ export default function SeleccionProveedor({ onSelect }) {
                                             onClick={() => onSelect(prov)}
                                             className="text-emerald-700 font-bold hover:underline flex items-center justify-end gap-1 ml-auto"
                                         >
-                                            Evaluar <ChevronRight size={16} />
+                                            {puedeEditar ? "Evaluar" : "Ver Detalles"} <ChevronRight size={16} />
                                         </button>
                                     </td>
                                 </tr>
@@ -187,7 +170,6 @@ export default function SeleccionProveedor({ onSelect }) {
                     </tbody>
                 </table>
 
-                {/* --- BOTÓN VER MÁS --- */}
                 {hasMore && (
                     <div className="p-4 bg-white border-t border-slate-50 flex justify-center">
                         <button

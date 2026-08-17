@@ -178,7 +178,7 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved, puede
 
             {/* TARJETA */}
             {evaluacion ? (
-                <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm relative w-full max-w-md hover:shadow-md transition-shadow">
+                <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm relative w-full max-w-2xl hover:shadow-md transition-shadow">
 
                     {/* BOTONES DE ACCIÓN */}
                     <div className="absolute top-4 right-4 flex gap-2">
@@ -205,32 +205,59 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved, puede
                         )}
                     </div>
 
-                    <h3 className="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Resumen de Evaluación</h3>
+                    <h3 className="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2 pr-20">
+                        Resumen de Evaluación
+                    </h3>
 
-                    <div className="space-y-3 text-sm text-slate-600">
-                        <div className="flex justify-between">
-                            <span className="font-medium">Periodo Evaluado:</span>
-                            <span>{evaluacion.periodoEvaluado}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="font-medium">Resultado Final:</span>
-                            <span className={`font-bold ${evaluacion.resultado >= 70 ? 'text-emerald-600' : 'text-orange-500'}`}>
-                                {evaluacion.resultado}%
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="font-medium">Estado:</span>
-                            <span className={`px-2 py-1 rounded text-xs font-bold ${evaluacion.aprobado ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                                {evaluacion.aprobado ? "APROBADO" : "NO APROBADO"}
-                            </span>
-                        </div>
-
-                        {evaluacion.comentarios && (
-                            <div className="mt-4 pt-3 border-t border-slate-50">
-                                <span className="block text-xs font-bold text-gray-400 mb-1 uppercase">Comentarios</span>
-                                <p className="italic text-slate-500 bg-slate-50 p-2 rounded">{evaluacion.comentarios}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* COLUMNA IZQUIERDA: RESUMEN Y COMENTARIOS */}
+                        <div className="space-y-3 text-sm text-slate-600">
+                            <div className="flex justify-between">
+                                <span className="font-medium">Periodo Evaluado:</span>
+                                <span>{evaluacion.periodoEvaluado}</span>
                             </div>
-                        )}
+                            <div className="flex justify-between">
+                                <span className="font-medium">Resultado Final:</span>
+                                <span className={`font-bold ${evaluacion.resultado >= 70 ? 'text-emerald-600' : 'text-orange-500'}`}>
+                                    {evaluacion.resultado}%
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="font-medium">Estado:</span>
+                                <span className={`px-2 py-1 rounded text-xs font-bold ${evaluacion.aprobado ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                    {evaluacion.aprobado ? "APROBADO" : "NO APROBADO"}
+                                </span>
+                            </div>
+
+                            {evaluacion.comentarios && (
+                                <div className="mt-4 pt-3 border-t border-slate-50">
+                                    <span className="block text-xs font-bold text-gray-400 mb-1 uppercase">Comentarios</span>
+                                    <p className="italic text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100">{evaluacion.comentarios}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* COLUMNA DERECHA: DESGLOSE DE CRITERIOS */}
+                        <div className="md:border-l md:border-slate-100 md:pl-8">
+                            <h4 className="text-xs font-bold text-slate-400 uppercase mb-3">Criterios Evaluados</h4>
+                            <div className="space-y-2.5">
+                                {[
+                                    ["Calidad del producto", evaluacion.calidadproducto],
+                                    ["Cumplimiento de plazos", evaluacion.cumplimientoplazos],
+                                    ["Atención al cliente", evaluacion.atencioncliente],
+                                    ["Respuesta a reclamos", evaluacion.respuestareclamos],
+                                    ["Precio del servicio", evaluacion.precioservicio],
+                                    ["Gestión administrativa", evaluacion.gestionadministrativa],
+                                ].map(([label, valor]) => (
+                                    <div key={label} className="flex justify-between items-center text-sm border-b border-slate-50 pb-2 last:border-0">
+                                        <span className="text-slate-500">{label}</span>
+                                        <span className="font-bold text-slate-700 text-[10px] uppercase px-2 py-0.5 bg-slate-100 rounded-md tracking-wide">
+                                            {valor}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             ) : (

@@ -86,15 +86,27 @@ function AppRouter() {
                 <Route
                     path="/aprobSolicitud"
                     element={
-                        <ProtectRoute allowedPermission={['PERM_APROB_SOLI_PENDIENTES_VER', 'PERM_APROB_SOLI_ACEPTADAS_VER', 'PERM_APROB_SOLI_RECHAZADAS_VER', 'PERM_APROB_SOLI_GESTIONAR']}>
+                        <ProtectRoute allowedPermission={[
+                            'PERM_APROBACIONES_VER', 
+                            'PERM_APROB_SOLI_PENDIENTES_VER', 
+                            'PERM_APROB_SOLI_ACEPTADAS_VER', 
+                            'PERM_APROB_SOLI_RECHAZADAS_VER', 
+                            'PERM_APROB_SOLI_GESTIONAR'
+                        ]}>
                             <AprobSoliPage />
                         </ProtectRoute>
                     }
                 />
+
                 <Route
                     path="/aprobPresupuesto"
                     element={
-                        <ProtectRoute allowedPermission="PERM_APROBACIONES_VER">
+                        <ProtectRoute allowedPermission={[
+                            'PERM_APROBACIONES_VER', 
+                            'PERM_APROB_PRESU_GESTIONAR', 
+                            'PERM_APROB_PRESU_PENDIENTES_VER', 
+                            'PERM_APROB_PRESU_EVALUADAS_VER'
+                        ]}>
                             <AprobPresuPage />
                         </ProtectRoute>
                     }

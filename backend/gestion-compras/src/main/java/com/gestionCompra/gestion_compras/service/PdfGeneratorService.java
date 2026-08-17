@@ -46,7 +46,7 @@ public class PdfGeneratorService {
     @Autowired
     private EvalProveedorRepo evalProveedorRepo;
 
-    @Value("${pdf.storage.path}")
+    @Value("${pdf.storage.path:C:/gestion_compras/pdfs_locales}")
     private String storagePath;
 
     private final DateTimeFormatter formateo = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");

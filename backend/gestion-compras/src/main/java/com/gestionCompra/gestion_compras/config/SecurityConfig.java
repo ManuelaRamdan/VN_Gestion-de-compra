@@ -94,9 +94,17 @@ public class SecurityConfig {
                 // Público / CORS preflight
                 .requestMatchers(PUBLIC_ROUTES).permitAll()
                 .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                // Uploads
+                // ==========================================
+                // Uploads (Archivos, PDFs de Cotizaciones y Facturas)
+                // ==========================================
+                // 1. Permitir VER (GET) a todos los involucrados en la cadena de compras
+                .requestMatchers(HttpMethod.GET, "/api/uploads/**")
+                .hasAnyAuthority("PERM_UPLOADS", "PERM_PRESUPUESTOS_VER", "PERM_PRESUPUESTOS_GESTIONAR", "PERM_COMPRAS_VER", "PERM_COMPRAS_GESTIONAR", "PERM_CIERRES_VER", "PERM_CIERRES_GESTIONAR", "PERM_DOCUMENTACION_VER", "PERM_DOCUMENTACION_DESCARGAR")
+                // 2. Permitir SUBIR a quienes gestionan compras y presupuestos
                 .requestMatchers("/api/uploads/**")
-                .hasAuthority("PERM_UPLOADS")
+                .hasAnyAuthority("PERM_UPLOADS", "PERM_PRESUPUESTOS_GESTIONAR", "PERM_COMPRAS_GESTIONAR")
+                // ==========================================
+
                 // Solicitudes
                 .requestMatchers("/api/solicitudes/crear")
                 .hasAuthority("PERM_SOLICITUDES_CREAR")
@@ -108,7 +116,7 @@ public class SecurityConfig {
                 .hasAuthority("PERM_SOLICITUDES_ADMIN")
                 // Productos
                 .requestMatchers(HttpMethod.GET, "/api/productos/listar")
-                .hasAnyAuthority("PERM_PRODUCTOS_VER", "PERM_SOLICITUDES_CREAR")
+                .hasAnyAuthority("PERM_PRODUCTOS_VER", "PERM_SOLICITUDES_CREAR", "PERM_APROB_SOLI_PENDIENTES_VER", "PERM_APROB_SOLI_ACEPTADAS_VER", "PERM_APROB_SOLI_RECHAZADAS_VER", "PERM_APROB_SOLI_GESTIONAR")
                 .requestMatchers(HttpMethod.POST, "/api/productos/")
                 .hasAuthority("PERM_PRODUCTOS_CREAR")
                 .requestMatchers(HttpMethod.PUT, "/api/productos/*")
@@ -132,7 +140,7 @@ public class SecurityConfig {
                 .hasAuthority("PERM_SECTOR_ADMIN")
                 // Prioridades
                 .requestMatchers(HttpMethod.GET, "/api/prioridades/listar")
-                .hasAnyAuthority("PERM_PRIORIDADES_VER", "PERM_SOLICITUDES_CREAR")
+                .hasAnyAuthority("PERM_PRIORIDADES_VER", "PERM_SOLICITUDES_CREAR", "PERM_APROB_SOLI_PENDIENTES_VER", "PERM_APROB_SOLI_ACEPTADAS_VER", "PERM_APROB_SOLI_RECHAZADAS_VER", "PERM_APROB_SOLI_GESTIONAR")
                 .requestMatchers(HttpMethod.POST, "/api/prioridades/")
                 .hasAuthority("PERM_PRIORIDADES_CREAR")
                 .requestMatchers(HttpMethod.PUT, "/api/prioridades/*")
@@ -142,8 +150,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/prioridades/**")
                 .hasAuthority("PERM_PRIORIDADES_ADMIN")
                 // Proveedores
-                .requestMatchers("/api/proveedores/listar")
-                .hasAnyAuthority("PERM_PROVEEDORES_VER", "PERM_EVAL_PROVEEDOR_EDITAR")
+                .requestMatchers(HttpMethod.GET, "/api/proveedores/listar", "/api/proveedores/todos")
+                .hasAnyAuthority("PERM_PROVEEDORES_VER", "PERM_EVAL_PROVEEDOR_EDITAR", "PERM_EVAL_PROVEEDOR_VER", "PERM_PRESUPUESTOS_GESTIONAR", "PERM_PRESUPUESTOS_VER")
                 .requestMatchers(HttpMethod.POST, "/api/proveedores/")
                 .hasAuthority("PERM_PROVEEDORES_CREAR")
                 .requestMatchers(HttpMethod.PUT, "/api/proveedores/*")
@@ -152,15 +160,21 @@ public class SecurityConfig {
                 .hasAuthority("PERM_PROVEEDORES_BORRAR")
                 .requestMatchers("/api/proveedores/**")
                 .hasAuthority("PERM_PROVEEDORES_ADMIN")
+                // ===============================
                 // Aprobaciones
-                .requestMatchers("/api/aprobaciones/solicitudes/aprobadas", "/api/aprobaciones/presupuestos/aprobadas")
-                .hasAuthority("PERM_APROBACIONES_VER")
-                .requestMatchers("/api/aprobaciones/solicitudes/**")
-                .authenticated()
-                .requestMatchers("/api/aprobaciones/presupuestos/**")
-                .authenticated()
-                .requestMatchers("/api/aprobaciones/**")
-                .hasAuthority("PERM_APROBACIONES_ADMIN")
+                // ===============================
+
+                // 1. Lo que necesita el módulo de PRESUPUESTOS (Solicitudes Aprobadas)
+                .requestMatchers(HttpMethod.GET, "/api/aprobaciones/solicitudes/aprobadas")
+                .hasAnyAuthority("PERM_APROB_SOLI_ACEPTADAS_VER", "PERM_PRESUPUESTOS_GESTIONAR", "PERM_PRESUPUESTOS_VER")
+                // 2. Lo que necesita el módulo de COMPRAS y APROBACIONES DE PRESUPUESTO
+                .requestMatchers(HttpMethod.GET, "/api/aprobaciones/presupuestos/aprobadas", "/api/aprobaciones/presupuestos")
+                .hasAnyAuthority("PERM_APROB_PRESU_EVALUADAS_VER", "PERM_APROB_PRESU_PENDIENTES_VER", "PERM_APROB_PRESU_GESTIONAR", "PERM_COMPRAS_GESTIONAR", "PERM_COMPRAS_VER") // <-- ¡Agregamos PERM_APROB_PRESU_GESTIONAR aquí!
+
+                // 3. Resto de Aprobaciones
+                .requestMatchers("/api/aprobaciones/solicitudes/**").authenticated()
+                .requestMatchers("/api/aprobaciones/presupuestos/**").authenticated()
+                .requestMatchers("/api/aprobaciones/**").hasAuthority("PERM_APROBACIONES_ADMIN")
                 // Presupuestos
                 .requestMatchers(HttpMethod.GET, "/api/presupuestos/**")
                 .hasAnyAuthority("PERM_PRESUPUESTOS_VER", "PERM_PRESUPUESTOS_GESTIONAR")
@@ -168,7 +182,7 @@ public class SecurityConfig {
                 .hasAuthority("PERM_PRESUPUESTOS_GESTIONAR")
                 // Compras
                 .requestMatchers(HttpMethod.GET, "/api/compras/**")
-                .hasAnyAuthority("PERM_COMPRAS_VER", "PERM_COMPRAS_GESTIONAR", "PERM_EVAL_ENTREGA_EDITAR")
+                .hasAnyAuthority("PERM_COMPRAS_VER", "PERM_COMPRAS_GESTIONAR", "PERM_EVAL_ENTREGA_EDITAR", "PERM_EVAL_ENTREGA_VER")
                 .requestMatchers("/api/compras/**")
                 .hasAuthority("PERM_COMPRAS_GESTIONAR")
                 // Cierres
@@ -190,9 +204,9 @@ public class SecurityConfig {
                 .hasAuthority("PERM_EVAL_ENTREGA_EDITAR")
                 // Reclamos
                 .requestMatchers(HttpMethod.GET, "/api/reclamos/**")
-                .hasAnyAuthority("PERM_RECLAMOS", "PERM_CIERRES_VER", "PERM_CIERRES_GESTIONAR", "PERM_DOCUMENTACION_VER")
+                .hasAnyAuthority("PERM_RECLAMOS", "PERM_CIERRES_VER", "PERM_CIERRES_GESTIONAR", "PERM_DOCUMENTACION_VER", "PERM_EVAL_ENTREGA_VER", "PERM_EVAL_ENTREGA_EDITAR")
                 .requestMatchers("/api/reclamos/**")
-                .hasAuthority("PERM_RECLAMOS")
+                .hasAnyAuthority("PERM_RECLAMOS", "PERM_EVAL_ENTREGA_EDITAR")
                 // Documentación
                 .requestMatchers(HttpMethod.GET, "/api/documentacion/descargar/**", "/api/documentacion/descargar-periodo")
                 .hasAuthority("PERM_DOCUMENTACION_DESCARGAR")
