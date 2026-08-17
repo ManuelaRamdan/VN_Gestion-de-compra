@@ -12,22 +12,25 @@
  * también matchearlos.
  */
 const RUTAS_POR_RECURSO = [
-    { prefijo: 'PERM_SOLICITUDES_ADMIN',  ruta: '/solicitudes' },
-    { prefijo: 'PERM_APROBACIONES_VER',   ruta: '/aprobSolicitud' },
-    { prefijo: 'PERM_SOLICITUDES_VER',    ruta: '/solicitudes' },
-    { prefijo: 'PERM_SOLICITUDES_CREAR',  ruta: '/solicitudes/nueva' },
-    { prefijo: 'PERM_PRIORIDADES_',       ruta: '/nivelPrioridad' },
-    { prefijo: 'PERM_PRODUCTOS_',         ruta: '/producto' },
-    { prefijo: 'PERM_PROVEEDORES_',       ruta: '/proveedor' },
-    { prefijo: 'PERM_PRESUPUESTOS',       ruta: '/presupuestos' },
-    { prefijo: 'PERM_COMPRAS',            ruta: '/compras' },
-    { prefijo: 'PERM_EVAL_PROVEEDOR',     ruta: '/evalProveedor' },
-    { prefijo: 'PERM_EVAL_ENTREGA',       ruta: '/evalEntrega' },
-    { prefijo: 'PERM_RECLAMOS',           ruta: '/reclamos' },
-    { prefijo: 'PERM_DOCUMENTACION',      ruta: '/documentacion' },
-    { prefijo: 'PERM_CIERRES',            ruta: '/cierre' },
-    { prefijo: 'PERM_USUARIOS_',          ruta: '/usuarios' },
-    { prefijo: 'PERM_UPLOADS',            ruta: '/uploads' },
+    { prefijo: 'PERM_SOLICITUDES_ADMIN', ruta: '/solicitudes' },
+    { prefijo: 'PERM_APROBACIONES_VER', ruta: '/aprobSolicitud' },
+    { prefijo: 'PERM_SOLICITUDES_VER', ruta: '/solicitudes' },
+    { prefijo: 'PERM_SOLICITUDES_CREAR', ruta: '/solicitudes/nueva' },
+    { prefijo: 'PERM_PRIORIDADES_', ruta: '/nivelPrioridad' },
+    { prefijo: 'PERM_PRODUCTOS_', ruta: '/producto' },
+    { prefijo: 'PERM_PROVEEDORES_', ruta: '/proveedor' },
+    { prefijo: 'PERM_PRESUPUESTOS', ruta: '/presupuestos' },
+    { prefijo: 'PERM_COMPRAS', ruta: '/compras' },
+    { prefijo: 'PERM_EVAL_PROVEEDOR', ruta: '/evalProveedor' },
+    { prefijo: 'PERM_EVAL_ENTREGA', ruta: '/evalEntrega' },
+    { prefijo: 'PERM_RECLAMOS', ruta: '/reclamos' },
+    { prefijo: 'PERM_DOCUMENTACION', ruta: '/documentacion' },
+    { prefijo: 'PERM_CIERRES', ruta: '/cierre' },
+    { prefijo: 'PERM_USUARIOS_', ruta: '/usuarios' },
+    { prefijo: 'PERM_UPLOADS', ruta: '/uploads' },
+    { prefijo: 'PERM_SECTOR_', ruta: '/sector' },
+    { prefijo: 'PERM_APROB_SOLI_', ruta: '/aprobSolicitud' },
+    { prefijo: 'PERM_APROB_PRESU_', ruta: '/aprobPresupuesto' }
 ];
 
 /**

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-// CORRECCIÓN: Agregado icono AlertTriangle para la advertencia
 import { ArrowLeft, Plus, Pencil, X, Check, AlertCircle, CheckCircle, FileText, AlertTriangle } from "lucide-react";
 import {
     crearEvaluacion,
@@ -10,16 +9,14 @@ import {
 } from "../../services/evalProveedorService";
 import Loading from "../Loading";
 
-export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
+export default function GestionEvalProveedor({ proveedor, onBack, onSaved, puedeEditar = true, puedeDescargar = false }) {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [evaluacion, setEvaluacion] = useState(null);
     
-    // Estado para la alerta
     const [esCompraEventual, setEsCompraEventual] = useState(false);
     
-    // Estados de Feedback
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [modalError, setModalError] = useState("");
@@ -185,21 +182,27 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
 
                     {/* BOTONES DE ACCIÓN */}
                     <div className="absolute top-4 right-4 flex gap-2">
-                        <button
-                            onClick={handleDescargar}
-                            className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
-                            title="Descargar Planilla PDF"
-                        >
-                            <FileText size={20} />
-                        </button>
+                        {/* ICONO INDIVIDUAL: Se muestra si tiene el permiso */}
+                        {puedeDescargar && (
+                            <button
+                                onClick={handleDescargar}
+                                className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                                title="Descargar Planilla PDF"
+                            >
+                                <FileText size={20} />
+                            </button>
+                        )}
 
-                        <button
-                            onClick={handleOpenModal}
-                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                            title="Editar evaluación"
-                        >
-                            <Pencil size={20} />
-                        </button>
+                        {/* ICONO DE EDITAR: Se muestra si tiene el permiso */}
+                        {puedeEditar && (
+                            <button
+                                onClick={handleOpenModal}
+                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                title="Editar evaluación"
+                            >
+                                <Pencil size={20} />
+                            </button>
+                        )}
                     </div>
 
                     <h3 className="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Resumen de Evaluación</h3>
@@ -231,24 +234,32 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
                     </div>
                 </div>
             ) : (
-                <button
-                    onClick={handleOpenModal}
-                    className="w-full max-w-md border-2 border-dashed border-slate-300 rounded-xl p-10 flex flex-col items-center justify-center text-slate-400 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50/30 transition-all gap-3"
-                >
-                    <div className="bg-slate-100 p-4 rounded-full group-hover:bg-emerald-100 transition-colors">
-                        <Plus size={32} />
+                puedeEditar ? (
+                    // Si NO hay evaluación y PUEDE EDITAR -> Mostramos botón de crear
+                    <button
+                        onClick={handleOpenModal}
+                        className="w-full max-w-md border-2 border-dashed border-slate-300 rounded-xl p-10 flex flex-col items-center justify-center text-slate-400 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50/30 transition-all gap-3"
+                    >
+                        <div className="bg-slate-100 p-4 rounded-full group-hover:bg-emerald-100 transition-colors">
+                            <Plus size={32} />
+                        </div>
+                        <div className="font-medium text-lg">Registrar Primera Evaluación</div>
+                        <p className="text-xs text-gray-400">Evalúa el desempeño de este proveedor</p>
+                    </button>
+                ) : (
+                    // Si NO hay evaluación y es SOLO LECTURA -> Cartel de aviso
+                    <div className="w-full max-w-md bg-slate-50 border border-slate-200 rounded-xl p-10 flex flex-col items-center justify-center text-center text-slate-500 gap-3">
+                        <AlertCircle size={32} className="text-slate-300" />
+                        <div className="font-medium text-base">Sin Evaluación</div>
+                        <p className="text-xs text-slate-400">Este proveedor todavía no cuenta con una evaluación registrada.</p>
                     </div>
-                    <div className="font-medium text-lg">Registrar Primera Evaluación</div>
-                    <p className="text-xs text-gray-400">Evalúa el desempeño de este proveedor</p>
-                </button>
+                )
             )}
 
-            {/* ================= MODAL ================= */}
-            {showModal && (
+            {/* ================= MODAL DE EDICION ================= */}
+            {showModal && puedeEditar && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in p-4">
                     <div className="bg-white w-full max-w-xl max-h-[90vh] rounded-xl shadow-2xl flex flex-col animate-in zoom-in-95">
-
-                        {/* HEADER */}
                         <div className="bg-[#1C5B5A] text-white px-6 py-4 flex justify-between items-center rounded-t-xl">
                             <h3 className="font-bold text-lg">
                                 {editingId ? "Modificar" : "Nueva"} Evaluación
@@ -257,13 +268,7 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
                                 <X size={20} />
                             </button>
                         </div>
-
-                        {/* BODY CON SCROLL */}
-                        <form
-                            onSubmit={handleGuardar}
-                            className="p-6 space-y-5 overflow-y-auto custom-scrollbar"
-                        >
-                            {/* Error del Modal */}
+                        <form onSubmit={handleGuardar} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
                             {modalError && (
                                 <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center gap-2 border border-red-200">
                                     <AlertCircle size={16} /> {modalError}
@@ -330,17 +335,8 @@ export default function GestionEvalProveedor({ proveedor, onBack, onSaved }) {
                             </div>
 
                             <div className="flex gap-3 pt-2 border-t border-slate-100">
-                                <button
-                                    type="button"
-                                    onClick={handleCloseModal}
-                                    className="flex-1 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-medium hover:bg-slate-50 transition-colors"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="flex-1 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-medium hover:bg-[#164a49] shadow-md transition-all flex items-center justify-center gap-2"
-                                >
+                                <button type="button" onClick={handleCloseModal} className="flex-1 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-medium hover:bg-slate-50 transition-colors">Cancelar</button>
+                                <button type="submit" className="flex-1 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-medium hover:bg-[#164a49] shadow-md transition-all flex items-center justify-center gap-2">
                                     <Check size={18} /> Guardar Evaluación
                                 </button>
                             </div>

@@ -85,6 +85,7 @@ public class Sector implements EntidadBase {
     private static final String SUFIJO_BORRAR = "_BORRAR";
     private static final String SUFIJO_VER = "_VER";
     private static final String SUFIJO_CREAR = "_CREAR";
+    private static final String SUFIJO_DESCARGAR = "_DESCARGAR"; // <-- 1. NUEVA CONSTANTE
 
     private List<String> expandirPermisos(List<String> base) {
         Set<String> efectivos = new LinkedHashSet<>(base);
@@ -109,43 +110,10 @@ public class Sector implements EntidadBase {
             } else if (permiso.endsWith(SUFIJO_CREAR)) {
                 String recurso = permiso.substring(0, permiso.length() - SUFIJO_CREAR.length());
                 efectivos.add(recurso + SUFIJO_VER);
+            } else if (permiso.endsWith(SUFIJO_DESCARGAR)) { // <-- 2. NUEVA CONDICIÓN
+                String recurso = permiso.substring(0, permiso.length() - SUFIJO_DESCARGAR.length());
+                efectivos.add(recurso + SUFIJO_VER);
             }
-        }
-
-        if (efectivos.contains("PERM_SOLICITUDES_CREAR")) {
-            efectivos.add("PERM_PRODUCTOS_VER");
-            efectivos.add("PERM_PRIORIDADES_VER");
-        }
-
-        if (efectivos.contains("PERM_APROB_PRESU_GESTIONAR")) {
-            efectivos.add("PERM_APROB_PRESU_PENDIENTES_VER");
-        }
-
-        if (efectivos.contains("PERM_PRESUPUESTOS_GESTIONAR")) {
-            efectivos.add("PERM_APROB_SOLI_ACEPTADAS_VER");
-        }
-
-        if (efectivos.contains("PERM_COMPRAS_GESTIONAR")) {
-            efectivos.add("PERM_APROB_PRESU_EVALUADAS_VER");
-        }
-
-        if (efectivos.contains("PERM_EVAL_ENTREGA_EDITAR")) {
-            efectivos.add("PERM_COMPRAS_VER");
-            efectivos.add("PERM_RECLAMOS");
-        }
-
-        if (efectivos.contains("PERM_EVAL_PROVEEDOR_EDITAR")) {
-            efectivos.add("PERM_PROVEEDORES_VER");
-        }
-
-        if (efectivos.contains("PERM_CIERRES_GESTIONAR")) {
-            efectivos.add("PERM_EVAL_ENTREGA_VER");
-            efectivos.add("PERM_EVAL_PROVEEDOR_EDITAR");
-            efectivos.add("PERM_RECLAMOS");
-        }
-
-        if (efectivos.contains("PERM_DOCUMENTACION_VER")) {
-            efectivos.add("PERM_CIERRES_VER");
         }
 
         return new ArrayList<>(efectivos);

@@ -4,10 +4,10 @@ import { listarEvaluaciones } from '../../services/cierreService'; // Asegúrate
 import { Archive, ChevronRight, Search, ChevronDown, CheckCircle, AlertTriangle } from 'lucide-react';
 import Loading from '../Loading';
 
-export default function SeleccionEvaluacion({ onSelect }) {
+export default function SeleccionEvaluacion({ onSelect, puedeGestionar = true }) {
     const [evaluaciones, setEvaluaciones] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState(""); 
+    const [searchTerm, setSearchTerm] = useState("");
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -76,7 +76,7 @@ export default function SeleccionEvaluacion({ onSelect }) {
             </div>
 
             <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+                <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 text-slate-500 font-medium uppercase text-xs">
                         <tr>
                             <th className="px-6 py-4">ID Eval.</th>
@@ -91,11 +91,11 @@ export default function SeleccionEvaluacion({ onSelect }) {
                         {filteredData.map((item) => (
                             <tr key={item.idEvaluacionEntrega} className="hover:bg-slate-50 transition-colors">
                                 <td className="px-6 py-4 font-bold text-slate-700">#{item.idEvaluacionEntrega}</td>
-                                
+
                                 {/* --- NUEVA CELDA DE DATOS --- */}
                                 <td className="px-6 py-4 text-slate-500 font-medium whitespace-nowrap">
-                                    {item.fechaEntrega 
-                                        ? new Date(item.fechaEntrega + 'T00:00:00').toLocaleDateString() 
+                                    {item.fechaEntrega
+                                        ? new Date(item.fechaEntrega + 'T00:00:00').toLocaleDateString()
                                         : 'Sin fecha'}
                                 </td>
 
@@ -108,17 +108,17 @@ export default function SeleccionEvaluacion({ onSelect }) {
                                 <td className="px-6 py-4">
                                     {item.cumpleCondiciones ? (
                                         <span className="flex items-center gap-1 text-emerald-600 font-medium text-xs bg-emerald-50 px-2 py-1 rounded w-max border border-emerald-100">
-                                            <CheckCircle size={14}/> Conforme
+                                            <CheckCircle size={14} /> Conforme
                                         </span>
                                     ) : (
                                         <span className="flex items-center gap-1 text-red-600 font-medium text-xs bg-red-50 px-2 py-1 rounded w-max border border-red-100">
-                                            <AlertTriangle size={14}/> No Conforme
+                                            <AlertTriangle size={14} /> No Conforme
                                         </span>
                                     )}
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <button onClick={() => onSelect(item)} className="text-emerald-700 font-bold hover:underline flex items-center justify-end gap-1 ml-auto">
-                                        Gestionar Cierre <ChevronRight size={16} />
+                                        {puedeGestionar ? "Gestionar Cierre" : "Ver Estado"} <ChevronRight size={16} />
                                     </button>
                                 </td>
                             </tr>

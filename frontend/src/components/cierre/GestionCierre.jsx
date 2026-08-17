@@ -2,14 +2,21 @@
 import React, { useEffect, useState } from "react";
 import { ArrowLeft, Plus, Pencil, X, Calendar, CheckCircle, AlertCircle, Check, Archive, Lock, AlertTriangle, FileText, ExternalLink } from "lucide-react";
 import { crearCierre, modificarCierre, buscarCierrePorEvaluacion } from "../../services/cierreService";
-import { getReclamoPorEvaluacion } from "../../services/evalEntregaService"; // IMPORTAMOS EL SERVICIO DE RECLAMOS
+import { getReclamoPorEvaluacion } from "../../services/evalEntregaService"; 
 import { tieneEvaluacionesProveedor } from "../../services/evalProveedorService";
 import Loading from "../Loading";
 import { useNavigate, useLocation } from "react-router-dom";
 
-export default function GestionCierre({ evaluacion, onBack }) {
+export default function GestionCierre({ 
+    evaluacion, 
+    onBack, 
+    puedeGestionar = true,
+    puedeVerEvalProv = false,
+    puedeEditarEvalProv = false,
+    puedeVerReclamos = false 
+}) {
     const [cierre, setCierre] = useState(null);
-    const [reclamo, setReclamo] = useState(null); // NUEVO ESTADO PARA EL RECLAMO
+    const [reclamo, setReclamo] = useState(null); 
     const [loading, setLoading] = useState(true);
 
     // Estados del Modal
@@ -31,13 +38,24 @@ export default function GestionCierre({ evaluacion, onBack }) {
     const location = useLocation();
     const proveedor = evaluacion.compra?.aprobacionPresupuesto?.presupuesto?.proveedor;
 
-    // Navega a la pantalla de Evaluación de Proveedor con el proveedor ya
-    // seleccionado, y le pasa la info necesaria para volver exactamente a
-    // este cierre (misma ruta + la evaluación de entrega actual) al terminar.
+    // Navega a la pantalla de Evaluación de Proveedor
     const irAEvaluarProveedor = () => {
         navigate('/evalProveedor', {
             state: {
                 proveedorPreseleccionado: proveedor,
+                returnTo: {
+                    pathname: location.pathname,
+                    state: { evaluacionPreseleccionada: evaluacion }
+                }
+            }
+        });
+    };
+
+    // Navega a la pantalla de Reclamos
+    const irAVerReclamo = () => {
+        navigate('/reclamos', {
+            state: {
+                reclamoPreseleccionado: reclamo,
                 returnTo: {
                     pathname: location.pathname,
                     state: { evaluacionPreseleccionada: evaluacion }
@@ -62,8 +80,6 @@ export default function GestionCierre({ evaluacion, onBack }) {
                         const resEval = await tieneEvaluacionesProveedor(idProveedor);
                         setProveedorSinEvaluar(!resEval.data?.tieneEvaluaciones);
                     } catch {
-                        // El bloqueo es obligatorio: si no podemos confirmar que el proveedor
-                        // tiene evaluación, bloqueamos por precaución (fail-safe) en vez de dejar pasar el cierre.
                         setProveedorSinEvaluar(true);
                         setError("No se pudo verificar si el proveedor tiene evaluaciones registradas. Reintenta o contacta a soporte.");
                     }
@@ -81,7 +97,7 @@ export default function GestionCierre({ evaluacion, onBack }) {
                     const resReclamo = await getReclamoPorEvaluacion(evaluacion.idEvaluacionEntrega);
                     setReclamo(resReclamo.data);
                 } catch (err) {
-                    setReclamo(null); // Si no hay reclamo o da 404, no pasa nada
+                    setReclamo(null); 
                 }
             }
 
@@ -99,8 +115,6 @@ export default function GestionCierre({ evaluacion, onBack }) {
         e.preventDefault();
         setModalError("");
 
-        // Guardia defensiva: nunca crear un cierre nuevo si el proveedor no tiene evaluación.
-        // (La edición de un cierre ya existente sí se permite.)
         if (!editingId && proveedorSinEvaluar) {
             setModalError("No se puede generar el cierre: el proveedor todavía no tiene una Evaluación de Proveedor registrada.");
             return;
@@ -108,12 +122,10 @@ export default function GestionCierre({ evaluacion, onBack }) {
 
         try {
             if (editingId) {
-                // PUT /api/cierres/{id}
                 const dataToUpdate = { observaciones: formData.observaciones };
                 await modificarCierre(editingId, dataToUpdate);
                 triggerSuccess("Cierre actualizado correctamente");
             } else {
-                // POST /api/cierres/
                 const dataToCreate = {
                     idEvalEntrega: evaluacion.idEvaluacionEntrega,
                     observaciones: formData.observaciones
@@ -138,7 +150,7 @@ export default function GestionCierre({ evaluacion, onBack }) {
         return `${dia}/${mes}/${anio}`;
     };
 
-    // if (loading) return <Loading fullScreen />;
+    if (loading) return <Loading fullScreen />;
 
     return (
         <div className="pb-10 animate-in fade-in duration-500">
@@ -197,7 +209,7 @@ export default function GestionCierre({ evaluacion, onBack }) {
                                 <p className="text-slate-800 font-medium">
                                     {proveedor?.nombreEmpresa}
                                 </p>
-                                {!proveedorSinEvaluar && (
+                                {!proveedorSinEvaluar && puedeVerEvalProv && (
                                     <button
                                         type="button"
                                         onClick={irAEvaluarProveedor}
@@ -236,23 +248,28 @@ export default function GestionCierre({ evaluacion, onBack }) {
                                         <b>Proveedor sin evaluación registrada:</b> {proveedor?.nombreEmpresa} todavía no tiene ninguna Evaluación de Proveedor cargada. Te recomendamos evaluarlo antes de cerrar esta compra.
                                     </span>
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={irAEvaluarProveedor}
-                                    className="self-start ml-6 px-3 py-1.5 bg-amber-600 text-white rounded-md text-xs font-bold hover:bg-amber-700 transition-colors"
-                                >
-                                    Evaluar proveedor ahora
-                                </button>
+                                {puedeEditarEvalProv && (
+                                    <button
+                                        type="button"
+                                        onClick={irAEvaluarProveedor}
+                                        className="self-start ml-6 px-3 py-1.5 bg-amber-600 text-white rounded-md text-xs font-bold hover:bg-amber-700 transition-colors"
+                                    >
+                                        Evaluar proveedor ahora
+                                    </button>
+                                )}
                             </div>
                         )}
 
                         {/* SECCIÓN DEL RECLAMO ASOCIADO */}
                         {reclamo && (
                             <div className="pt-4 border-t border-slate-200 mt-4 animate-in fade-in">
-                                <p className="text-xs text-orange-600 font-bold mb-2 uppercase flex items-center gap-1">
-                                    <FileText size={14} className="text-orange-500" />
-                                    Reclamo Generado
-                                </p>
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="text-xs text-orange-600 font-bold uppercase flex items-center gap-1">
+                                        <FileText size={14} className="text-orange-500" />
+                                        Reclamo Generado
+                                    </p>
+                                    
+                                </div>
                                 <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg shadow-sm">
                                     <div className="flex justify-between items-start mb-2">
                                         <span className="font-bold text-slate-800 text-sm">Reclamo #{reclamo.idReclamo}</span>
@@ -278,7 +295,6 @@ export default function GestionCierre({ evaluacion, onBack }) {
                                                 {reclamo.respuestaProveedor || "PENDIENTE"}
                                             </span>
                                         </div>
-                                        {/* Si hubo nueva entrega, mostramos si la nueva estuvo bien */}
                                         {reclamo.entregaNueva && (
                                             <div className="flex justify-between items-center mt-1">
                                                 <span className="text-xs font-bold text-gray-500 uppercase">Estado Reemplazo:</span>
@@ -300,18 +316,20 @@ export default function GestionCierre({ evaluacion, onBack }) {
                         <div className="bg-white border border-emerald-100 rounded-xl p-6 shadow-sm relative animate-in fade-in">
                             <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 rounded-l-xl"></div>
 
-                            <button
-                                onClick={() => {
-                                    setEditingId(cierre.idCierre);
-                                    setFormData({ observaciones: cierre.observaciones || "" });
-                                    setModalError("");
-                                    setShowModal(true);
-                                }}
-                                className="absolute top-4 right-4 text-slate-400 hover:text-blue-600 transition-colors p-1"
-                                title="Editar Observaciones de Cierre"
-                            >
-                                <Pencil size={18} />
-                            </button>
+                            {puedeGestionar && (
+                                <button
+                                    onClick={() => {
+                                        setEditingId(cierre.idCierre);
+                                        setFormData({ observaciones: cierre.observaciones || "" });
+                                        setModalError("");
+                                        setShowModal(true);
+                                    }}
+                                    className="absolute top-4 right-4 text-slate-400 hover:text-blue-600 transition-colors p-1"
+                                    title="Editar Observaciones de Cierre"
+                                >
+                                    <Pencil size={18} />
+                                </button>
+                            )}
 
                             <div className="flex items-center gap-3 mb-5">
                                 <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
@@ -352,40 +370,52 @@ export default function GestionCierre({ evaluacion, onBack }) {
                                     Al generar el cierre administrativo, la <b>Solicitud de Compra original</b> cambiará su estado a "Cerrado" y concluirá el circuito.
                                 </p>
 
-                                {/* Si hay un reclamo, mostramos una advertencia amigable */}
                                 {reclamo && (
                                     <div className="mb-4 bg-orange-100/50 text-orange-800 text-xs p-3 rounded border border-orange-200">
                                         <b>Nota:</b> Estás por cerrar un expediente que tuvo un reclamo. Asegúrate de que el conflicto haya sido resuelto.
                                     </div>
                                 )}
 
-                                {proveedorSinEvaluar ? (
-                                    <>
-                                        <div className="mb-4 bg-red-50 text-red-700 text-xs p-3 rounded border border-red-200 flex items-start gap-2 text-left">
-                                            <Lock size={16} className="shrink-0 mt-0.5" />
-                                            <span>
-                                                <b>Cierre bloqueado.</b> No podés cerrar esta compra hasta registrar la Evaluación de Proveedor de <b>{proveedor?.nombreEmpresa}</b>, ya que aún no tiene ninguna evaluación cargada.
-                                            </span>
-                                        </div>
+                                {puedeGestionar ? (
+                                    proveedorSinEvaluar ? (
+                                        <>
+                                            <div className="mb-4 bg-red-50 text-red-700 text-xs p-3 rounded border border-red-200 flex items-start gap-2 text-left">
+                                                <Lock size={16} className="shrink-0 mt-0.5" />
+                                                <span>
+                                                    <b>Cierre bloqueado.</b> No podés cerrar esta compra hasta registrar la Evaluación de Proveedor de <b>{proveedor?.nombreEmpresa}</b>.
+                                                </span>
+                                            </div>
+                                            {puedeEditarEvalProv ? (
+                                                <button
+                                                    onClick={irAEvaluarProveedor}
+                                                    className="px-6 py-2.5 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700 shadow-md transition-all flex items-center gap-2"
+                                                >
+                                                    <AlertTriangle size={18} /> Evaluar proveedor para continuar
+                                                </button>
+                                            ) : (
+                                                <div className="text-xs text-red-600 font-bold ml-6">
+                                                    * No tienes permisos para evaluar al proveedor. Solicita a Calidad que lo haga.
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
                                         <button
-                                            onClick={irAEvaluarProveedor}
-                                            className="px-6 py-2.5 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700 shadow-md transition-all flex items-center gap-2"
+                                            onClick={() => {
+                                                setEditingId(null);
+                                                setFormData({ observaciones: "" });
+                                                setModalError("");
+                                                setShowModal(true);
+                                            }}
+                                            className="px-6 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold hover:bg-[#164a49] shadow-md transition-all flex items-center gap-2"
                                         >
-                                            <AlertTriangle size={18} /> Evaluar proveedor para continuar
+                                            <CheckCircle size={18} /> Procesar Cierre
                                         </button>
-                                    </>
+                                    )
                                 ) : (
-                                    <button
-                                        onClick={() => {
-                                            setEditingId(null);
-                                            setFormData({ observaciones: "" });
-                                            setModalError("");
-                                            setShowModal(true);
-                                        }}
-                                        className="px-6 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold hover:bg-[#164a49] shadow-md transition-all flex items-center gap-2"
-                                    >
-                                        <CheckCircle size={18} /> Procesar Cierre
-                                    </button>
+                                    <div className="mb-4 bg-slate-100 text-slate-600 text-sm p-4 rounded-lg border border-slate-200 w-full text-left">
+                                        <b className="flex items-center gap-2 mb-1 text-slate-700"><Lock size={16}/> Acceso de Solo Lectura</b>
+                                        No cuentas con los permisos necesarios para ejecutar el cierre administrativo de este expediente.
+                                    </div>
                                 )}
                             </div>
                         </div>

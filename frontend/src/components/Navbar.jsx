@@ -26,7 +26,13 @@ export default function Navbar() {
         { name: 'Compras', path: '/compras', allowedPermissions: ['PERM_COMPRAS_VER', 'PERM_COMPRAS_GESTIONAR'] },
         {
             name: 'Evaluaciones',
-            allowedPermissions: ['PERM_EVAL_ENTREGA_VER', 'PERM_EVAL_ENTREGA_EDITAR', 'PERM_EVAL_PROVEEDOR'],
+            allowedPermissions: [
+                'PERM_EVAL_ENTREGA_VER', 
+                'PERM_EVAL_ENTREGA_EDITAR', 
+                'PERM_EVAL_PROVEEDOR_VER',      // <-- Ahora sí lo va a detectar
+                'PERM_EVAL_PROVEEDOR_EDITAR', 
+                'PERM_EVAL_PROVEEDOR_DESCARGAR'
+            ],
             subLinks: [
                 { name: 'Eval. Entrega', path: '/evalEntrega', allowedPermissions: ['PERM_EVAL_ENTREGA_VER', 'PERM_EVAL_ENTREGA_EDITAR'] },
                 { name: 'Eval. Proveedor', path: '/evalProveedor', allowedPermissions: ['PERM_EVAL_PROVEEDOR_VER', 'PERM_EVAL_PROVEEDOR_EDITAR', 'PERM_EVAL_PROVEEDOR_DESCARGAR'] }

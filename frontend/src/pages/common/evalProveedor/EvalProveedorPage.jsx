@@ -11,7 +11,9 @@ import { useAuth } from '../../../context/AuthContext';
 export default function EvalProveedorPage() {
     const { user } = useAuth();
     const permisos = user?.permisos || [];
+    
     const puedeEditar = permisos.includes('PERM_EVAL_PROVEEDOR_EDITAR');
+    // 1. Extraemos el permiso de descarga
     const puedeDescargar = permisos.includes('PERM_EVAL_PROVEEDOR_DESCARGAR');
 
     const location = useLocation();
@@ -43,59 +45,46 @@ export default function EvalProveedorPage() {
         }
     };
 
-    if (!puedeEditar) {
-        return (
-            <Layout>
-                <div className="animate-in fade-in duration-300">
-                    <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                        <div>
-                            <h1 className="text-xl font-bold text-slate-900">Evaluaciones de Proveedor</h1>
-                            <p className="text-sm text-gray-500">Consulte los resultados de evaluación de cada proveedor.</p>
-                        </div>
-                        {puedeDescargar && (
-                            <button
-                                onClick={() => setShowDescargaModal(true)}
-                                className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold text-sm hover:bg-[#164a49] shadow-md transition-all"
-                            >
-                                <Download size={16} /> Descargar evaluaciones por período
-                            </button>
-                        )}
-                    </div>
-                    <ListaEvalProveedorSoloLectura puedeDescargar={puedeDescargar} />
-                </div>
-                {showDescargaModal && (
-                    <DescargaPorPeriodoModal onClose={() => setShowDescargaModal(false)} />
-                )}
-            </Layout>
-        );
-    }
-
     return (
         <Layout>
             <div className="animate-in fade-in duration-300">
+                <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                    <div>
+                        <h1 className="text-xl font-bold text-slate-900">
+                            {proveedorSeleccionado ? "Detalle de Evaluación" : "Evaluaciones de Proveedor"}
+                        </h1>
+                        <p className="text-sm text-gray-500">
+                            {proveedorSeleccionado 
+                                ? "Consulte o gestione la evaluación de este proveedor." 
+                                : "Consulte los resultados de evaluación de cada proveedor."}
+                        </p>
+                    </div>
+                    
+                    {/* 2. LA MAGIA ESTÁ AQUÍ: Solo muestra el botón grande si NO hay un proveedor seleccionado y TIENE permiso */}
+                    {puedeDescargar && !proveedorSeleccionado && (
+                        <button
+                            onClick={() => setShowDescargaModal(true)}
+                            className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold text-sm hover:bg-[#164a49] shadow-md transition-all"
+                        >
+                            <Download size={16} /> Descargar evaluaciones por período
+                        </button>
+                    )}
+                </div>
+
                 {!proveedorSeleccionado ? (
-                    <>
-                        <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                            <div>
-                                <h1 className="text-xl font-bold text-slate-900">Gestión de evaluación de Proveedor</h1>
-                                <p className="text-sm text-gray-500">Seleccione un proveedor para registrar la evaluación.</p>
-                            </div>
-                            {puedeDescargar && (
-                                <button
-                                    onClick={() => setShowDescargaModal(true)}
-                                    className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#1C5B5A] text-white rounded-lg font-bold text-sm hover:bg-[#164a49] shadow-md transition-all"
-                                >
-                                    <Download size={16} /> Descargar evaluaciones por período
-                                </button>
-                            )}
-                        </div>
+                    puedeEditar ? (
                         <SeleccionProveedor onSelect={(prov) => setProveedorSeleccionado(prov)} />
-                    </>
+                    ) : (
+                        <ListaEvalProveedorSoloLectura puedeDescargar={puedeDescargar} />
+                    )
                 ) : (
                     <GestionEvalProveedor
                         proveedor={proveedorSeleccionado}
                         onBack={handleBack}
                         onSaved={handleSaved}
+                        puedeEditar={puedeEditar}
+                        // 3. Le pasamos el permiso de descarga al detalle
+                        puedeDescargar={puedeDescargar} 
                     />
                 )}
             </div>
@@ -107,9 +96,8 @@ export default function EvalProveedorPage() {
     );
 }
 
-
 function DescargaPorPeriodoModal({ onClose }) {
-    const [modo, setModo] = useState('anio'); // 'anio' | 'rango'
+    const [modo, setModo] = useState('anio'); 
     const [anio, setAnio] = useState(new Date().getFullYear());
     const [desde, setDesde] = useState('');
     const [hasta, setHasta] = useState('');
