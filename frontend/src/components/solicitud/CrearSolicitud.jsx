@@ -9,6 +9,16 @@ export default function CrearSolicitud() {
     const navigate = useNavigate();
     const { user } = useAuth();
 
+    // 1. Función para obtener la fecha/hora local exacta sin desfasar días por UTC
+    const getLocalNow = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
 
     // Estados para datos del formulario
     const [formData, setFormData] = useState({
@@ -16,11 +26,10 @@ export default function CrearSolicitud() {
         cantidad: 1,
         idNivelPrioridad: "",
         comentarios: "",
-        fecha: "" // <-- NUEVO CAMPO
+        fecha: getLocalNow() // Inicializa con la fecha y hora local exacta de hoy
     });
 
-    // Calcular la fecha/hora actual en formato local (YYYY-MM-DDTHH:mm) para el atributo 'max'
-    const maxDateLocal = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    const maxDateLocal = getLocalNow();
     // Estados para listas y UI
     const [productos, setProductos] = useState([]);
     const [prioridades, setPrioridades] = useState([]);

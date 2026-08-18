@@ -27,7 +27,6 @@ const RUTAS_POR_RECURSO = [
     { prefijo: 'PERM_DOCUMENTACION', ruta: '/documentacion' },
     { prefijo: 'PERM_CIERRES', ruta: '/cierre' },
     { prefijo: 'PERM_USUARIOS_', ruta: '/usuarios' },
-    { prefijo: 'PERM_UPLOADS', ruta: '/uploads' },
     { prefijo: 'PERM_SECTOR_', ruta: '/sector' },
     { prefijo: 'PERM_APROB_SOLI_', ruta: '/aprobSolicitud' },
     { prefijo: 'PERM_APROB_PRESU_', ruta: '/aprobPresupuesto' }

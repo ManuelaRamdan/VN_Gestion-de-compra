@@ -164,16 +164,15 @@ public class SecurityConfig {
                 // Aprobaciones
                 // ===============================
 
-                // 1. Lo que necesita el módulo de PRESUPUESTOS (Solicitudes Aprobadas)
-                .requestMatchers(HttpMethod.GET, "/api/aprobaciones/solicitudes/aprobadas")
-                .hasAnyAuthority("PERM_APROB_SOLI_ACEPTADAS_VER", "PERM_PRESUPUESTOS_GESTIONAR", "PERM_PRESUPUESTOS_VER")
-                // 2. Lo que necesita el módulo de COMPRAS y APROBACIONES DE PRESUPUESTO
+                // 1. Solicitudes (Aprobadas para Presupuestos, y Base para Panel de Aprobación)
+                .requestMatchers(HttpMethod.GET, "/api/aprobaciones/solicitudes/aprobadas", "/api/aprobaciones/solicitudes")
+                .hasAnyAuthority("PERM_APROB_SOLI_ACEPTADAS_VER", "PERM_APROB_SOLI_PENDIENTES_VER", "PERM_APROB_SOLI_RECHAZADAS_VER", "PERM_APROB_SOLI_GESTIONAR", "PERM_PRESUPUESTOS_GESTIONAR", "PERM_PRESUPUESTOS_VER")
+                // 2. Presupuestos (Aprobados para Compras, y Base para Panel de Aprobación)
                 .requestMatchers(HttpMethod.GET, "/api/aprobaciones/presupuestos/aprobadas", "/api/aprobaciones/presupuestos")
-                .hasAnyAuthority("PERM_APROB_PRESU_EVALUADAS_VER", "PERM_APROB_PRESU_PENDIENTES_VER", "PERM_APROB_PRESU_GESTIONAR", "PERM_COMPRAS_GESTIONAR", "PERM_COMPRAS_VER") // <-- ¡Agregamos PERM_APROB_PRESU_GESTIONAR aquí!
-
-                // 3. Resto de Aprobaciones
-                .requestMatchers("/api/aprobaciones/solicitudes/**").authenticated()
-                .requestMatchers("/api/aprobaciones/presupuestos/**").authenticated()
+                .hasAnyAuthority("PERM_APROB_PRESU_EVALUADAS_VER", "PERM_APROB_PRESU_PENDIENTES_VER", "PERM_APROB_PRESU_GESTIONAR", "PERM_COMPRAS_GESTIONAR", "PERM_COMPRAS_VER")
+                // 3. Resto de Aprobaciones (POST, etc)
+                .requestMatchers("/api/aprobaciones/solicitudes/**").hasAnyAuthority("PERM_APROB_SOLI_GESTIONAR", "PERM_APROBACIONES_ADMIN")
+                .requestMatchers("/api/aprobaciones/presupuestos/**").hasAnyAuthority("PERM_APROB_PRESU_GESTIONAR", "PERM_APROBACIONES_ADMIN")
                 .requestMatchers("/api/aprobaciones/**").hasAuthority("PERM_APROBACIONES_ADMIN")
                 // Presupuestos
                 .requestMatchers(HttpMethod.GET, "/api/presupuestos/**")

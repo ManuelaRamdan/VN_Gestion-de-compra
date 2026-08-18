@@ -71,9 +71,9 @@ public class AprobacionController {
 
     @PreAuthorize("""
     (#estado.toUpperCase() == 'PENDIENTE' and hasAnyAuthority('PERM_APROB_SOLI_PENDIENTES_VER','PERM_APROB_SOLI_GESTIONAR'))
-    or (#estado.toUpperCase() == 'RECHAZADA' and hasAuthority('PERM_APROB_SOLI_RECHAZADAS_VER'))
-    or (#estado.toUpperCase() == 'APROBADA' and hasAuthority('PERM_APROB_SOLI_ACEPTADAS_VER'))
-""")
+    or (#estado.toUpperCase() == 'RECHAZADA' and hasAnyAuthority('PERM_APROB_SOLI_RECHAZADAS_VER','PERM_APROB_SOLI_GESTIONAR'))
+    or (#estado.toUpperCase() == 'APROBADA' and hasAnyAuthority('PERM_APROB_SOLI_ACEPTADAS_VER','PERM_APROB_SOLI_GESTIONAR'))
+    """)
     @GetMapping("/solicitudes")
     public ResponseEntity<?> listarSolicitudSegunEstado(
             @RequestParam(defaultValue = "PENDIENTE") String estado,
@@ -152,8 +152,8 @@ public class AprobacionController {
 
     @PreAuthorize("""
     (#estado.toUpperCase() == 'PENDIENTE' and hasAnyAuthority('PERM_APROB_PRESU_PENDIENTES_VER','PERM_APROB_PRESU_GESTIONAR'))
-    or (#estado.toUpperCase() != 'PENDIENTE' and hasAuthority('PERM_APROB_PRESU_EVALUADAS_VER'))
-""")
+    or (#estado.toUpperCase() != 'PENDIENTE' and hasAnyAuthority('PERM_APROB_PRESU_EVALUADAS_VER','PERM_APROB_PRESU_GESTIONAR'))
+    """)
     @GetMapping("/presupuestos")
     public ResponseEntity<?> listarPresupuestoSegunEstado(
             @RequestParam(defaultValue = "PENDIENTE") String estado,
