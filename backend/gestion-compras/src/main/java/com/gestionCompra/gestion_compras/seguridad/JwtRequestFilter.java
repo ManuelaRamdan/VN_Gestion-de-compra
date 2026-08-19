@@ -21,7 +21,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import org.springframework.http.HttpStatus;
 
-
 @Component
 
 // intercepta las peticiones http y verifica que el token sea valido y no este expirado
@@ -35,46 +34,46 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private JwtUtil jwtUtil;
 
     @Override
-protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-        throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
 
-    final String authorizationHeader = request.getHeader("Authorization");
+        final String authorizationHeader = request.getHeader("Authorization");
 
-    String username = null;
-    String jwt = null;
+        String username = null;
+        String jwt = null;
 
-    try {
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
-            username = jwtUtil.extractUsername(jwt);
-        }
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-
-            if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                jwt = authorizationHeader.substring(7);
+                username = jwtUtil.extractUsername(jwt);
             }
-        }
-    } catch (io.jsonwebtoken.ExpiredJwtException e) {
-        enviarError(response, HttpStatus.UNAUTHORIZED, "Token expirado");
-    return;
-        // No seteamos el contexto de seguridad, simplemente dejamos que siga
-        // Así Spring Security devolverá un 401 si la ruta es protegida.
-    } catch (Exception e) {
-        enviarError(response, HttpStatus.UNAUTHORIZED, "Token inválido");
-        return;
-    }
-    
-    chain.doFilter(request, response);
-}
 
-     private void enviarError(HttpServletResponse response,
-                             HttpStatus status,
-                             String mensaje) throws IOException {
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+
+                if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            enviarError(response, HttpStatus.UNAUTHORIZED, "Token expirado");
+            return;
+            // No seteamos el contexto de seguridad, simplemente dejamos que siga
+            // Así Spring Security devolverá un 401 si la ruta es protegida.
+        } catch (Exception e) {
+            enviarError(response, HttpStatus.UNAUTHORIZED, "Token inválido");
+            return;
+        }
+
+        chain.doFilter(request, response);
+    }
+
+    private void enviarError(HttpServletResponse response,
+            HttpStatus status,
+            String mensaje) throws IOException {
 
         response.setStatus(status.value());
         response.setContentType("application/json");
@@ -87,5 +86,13 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
 
         ObjectMapper mapper = new ObjectMapper();
         response.getWriter().write(mapper.writeValueAsString(error));
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        return path.equals("/api/usuarios/login")
+                || path.equals("/error")
+                || request.getMethod().equals("OPTIONS");
     }
 }

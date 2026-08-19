@@ -9,25 +9,24 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    // Inyectamos la variable desde application.properties
     @Value("${pdf.storage.path:C:/gestion_compras/pdfs_locales}")
     private String storagePath;
 
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Aseguramos que la ruta termine con una barra para que Spring la resuelva bien como directorio
         String location = "file:" + storagePath + (storagePath.endsWith("/") ? "" : "/");
-        
-        // Mapea la URL "/api/uploads/**" a la carpeta definida en Docker (/app/pdfs/)
         registry.addResourceHandler("/api/uploads/**")
                 .addResourceLocations(location);
     }
-    
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/uploads/**")
-                .allowedOrigins("http://localhost:5173") 
-                .allowedMethods("GET") 
+        registry.addMapping("/api/**")
+                .allowedOrigins(allowedOrigins.split(","))
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
