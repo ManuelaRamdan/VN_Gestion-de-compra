@@ -37,11 +37,9 @@ services:
     networks:
       - red_privada
       - red_publica
-    ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
 
   frontend:
-    build: 
+    build:
       context: ./frontend
       args:
         - VITE_API_BASE_URL=${VITE_API_BASE_URL}
@@ -49,8 +47,22 @@ services:
     restart: always
     depends_on:
       - backend
+    networks:
+      - red_publica
+
+  nginx:
+    image: nginx:alpine
+    container_name: gestion_nginx
+    restart: always
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
     ports:
       - "80:80"
+      - "443:443"
     networks:
       - red_publica
 

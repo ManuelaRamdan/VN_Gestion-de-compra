@@ -11,3 +11,6 @@ build/
 .idea/
 .vscode/
 .DS_Store
+# Certificados TLS
+nginx/certs/
+*.pem
