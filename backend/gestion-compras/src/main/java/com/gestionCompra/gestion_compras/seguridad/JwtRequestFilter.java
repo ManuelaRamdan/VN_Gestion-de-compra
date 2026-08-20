@@ -1,13 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.gestionCompra.gestion_compras.seguridad;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gestionCompra.gestion_compras.dto.ErrorResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +19,10 @@ import java.io.IOException;
 import org.springframework.http.HttpStatus;
 
 @Component
-
-// intercepta las peticiones http y verifica que el token sea valido y no este expirado
-// OncePerRequestFilter -> hace que esto se ejetute una vez por peticion
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     @Autowired
-    private UserDetailsService userDetailsService; // Inyecta la interfaz, no la clase concreta
+    private UserDetailsService userDetailsService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -37,14 +31,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        final String authorizationHeader = request.getHeader("Authorization");
-
         String username = null;
-        String jwt = null;
+        String jwt = extractTokenFromCookie(request);
 
         try {
-            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-                jwt = authorizationHeader.substring(7);
+            if (jwt != null) {
                 username = jwtUtil.extractUsername(jwt);
             }
 
@@ -61,14 +52,25 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
             enviarError(response, HttpStatus.UNAUTHORIZED, "Token expirado");
             return;
-            // No seteamos el contexto de seguridad, simplemente dejamos que siga
-            // Así Spring Security devolverá un 401 si la ruta es protegida.
         } catch (Exception e) {
             enviarError(response, HttpStatus.UNAUTHORIZED, "Token inválido");
             return;
         }
 
         chain.doFilter(request, response);
+    }
+
+    private String extractTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        for (Cookie cookie : cookies) {
+            if ("token".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 
     private void enviarError(HttpServletResponse response,

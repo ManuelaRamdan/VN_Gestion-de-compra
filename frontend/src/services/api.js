@@ -1,17 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8081"
-});
-
-api.interceptors.request.use((config) => {
-    const token = sessionStorage.getItem("token");
-
-    if (token && !config.url.includes("/login")) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
+    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8081",
+    //baseURL: "http://localhost:8081",
+    withCredentials: true // Manda la cookie httpOnly automáticamente en cada request
 });
 
 api.interceptors.response.use(

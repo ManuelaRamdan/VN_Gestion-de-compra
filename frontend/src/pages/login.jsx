@@ -33,9 +33,9 @@ function Login() {
 
     try {
       const response = await loginRequest(username, password);
-      const { token, rol, permisos, username: usernameResponse } = response.data;
+      const { rol, permisos, username: usernameResponse } = response.data;
 
-      login(token, { username: usernameResponse, rol, permisos });
+      login({ username: usernameResponse, rol, permisos });
 
       const rutaDestino = getRutaLanding(rol, permisos);
 

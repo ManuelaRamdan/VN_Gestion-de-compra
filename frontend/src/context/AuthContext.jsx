@@ -1,62 +1,62 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import api from "../services/api"; // ajustá la ruta según donde tengas tu instancia de axios
 
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
 
     const [user, setUser] = useState(null);
-    const [token, setToken] = useState(null);
     const [sessionExpired, setSessionExpired] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const t = sessionStorage.getItem("token");
         const u = sessionStorage.getItem("usuario");
         const expired = sessionStorage.getItem("SESSION_EXPIRED");
 
         if (expired) {
-            setSessionExpired(true); 
+            setSessionExpired(true);
         }
-        if (t && u) {
-            setToken(t);
+        if (u) {
             setUser(JSON.parse(u));
         }
 
         setLoading(false);
     }, []);
 
-    const login = (token, usuario) => {
-        sessionStorage.setItem("token", token);
-        //sessionStorage solo guarda strings. Al guardar un objeto usas JSON.stringify:
+    // Ya no recibe "token" como parámetro: el backend lo setea solo,
+    // como cookie httpOnly, en la respuesta del login.
+    const login = (usuario) => {
         sessionStorage.setItem("usuario", JSON.stringify(usuario));
         sessionStorage.removeItem("SESSION_EXPIRED");
         sessionStorage.removeItem("MANUAL_LOGOUT");
 
-        setToken(token);
         setUser(usuario);
         setSessionExpired(false);
     };
 
-    const logout = (expired = false) => {
-        setToken(null);
+    const logout = async (expired = false) => {
         setUser(null);
         setSessionExpired(expired);
-    
-        sessionStorage.removeItem("token");
+
         sessionStorage.removeItem("usuario");
-    
         sessionStorage.removeItem("SESSION_EXPIRED");
-    
+
         if (!expired) {
             sessionStorage.setItem("MANUAL_LOGOUT", "true");
+            try {
+                // Le avisamos al backend que borre la cookie.
+                // Si falla (ej: ya estaba vencida), no importa, igual limpiamos localmente.
+                await api.post("/api/usuarios/logout");
+            } catch (e) {
+                console.error("Error al cerrar sesión en el servidor:", e);
+            }
         }
-    };;
+    };
 
     return (
         <AuthContext.Provider
             value={{
                 user,
-                token,
                 login,
                 logout,
                 sessionExpired,

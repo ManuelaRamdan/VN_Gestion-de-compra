@@ -212,6 +212,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/documentacion/**")
                 .hasAuthority("PERM_DOCUMENTACION_VER")
                 // Usuarios
+                .requestMatchers(HttpMethod.POST, "/api/usuarios/logout")
+                .authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/usuarios/registrar")
                 .hasAuthority("PERM_USUARIOS_CREAR")
                 .requestMatchers(HttpMethod.GET, "/api/usuarios/", "/api/usuarios/*")

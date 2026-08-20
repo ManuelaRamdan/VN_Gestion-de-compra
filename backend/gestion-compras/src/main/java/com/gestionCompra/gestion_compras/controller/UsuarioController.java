@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.gestionCompra.gestion_compras.controller;
 
 import com.gestionCompra.gestion_compras.dto.RegistroRequest;
@@ -12,11 +8,14 @@ import com.gestionCompra.gestion_compras.repository.UsuarioRepo;
 import com.gestionCompra.gestion_compras.seguridad.JwtUtil;
 import com.gestionCompra.gestion_compras.seguridad.UsuarioDetalles;
 import com.gestionCompra.gestion_compras.service.UsuarioService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,10 +41,15 @@ public class UsuarioController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    // true en el servidor real (HTTPS). Se puede parametrizar por .env si querés
+    // usar el mismo código en local sin HTTPS.
+    @Value("${app.cookie.secure:true}")
+    private boolean cookieSecure;
+
     @PostMapping("/login")
-    public ResponseEntity<?> crearAutenticacionToken(@RequestBody Map<String, String> request) throws Exception {
+    public ResponseEntity<?> crearAutenticacionToken(@RequestBody Map<String, String> request,
+                                                       HttpServletResponse response) throws Exception {
         try {
-            // Spring busca al usuario y compara la contraseña automáticamente
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.get("username"), request.get("password"))
             );
@@ -53,20 +57,41 @@ public class UsuarioController {
             throw new ManejoErrores(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas o usuario inactivo");
         }
 
-        // Si llegó aquí, los datos están bien. Generamos el token.
         final UsuarioDetalles userDetails = (UsuarioDetalles) usuarioService.loadUserByUsername(request.get("username"));
         final String jwt = jwtUtil.generateToken(userDetails);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", jwt);
-        response.put("username", userDetails.getUsername());
-        response.put("rol", userDetails.getSector());
-        response.put("permisos", userDetails.getAuthorities()
+        // Seteamos el JWT como cookie httpOnly en vez de devolverlo en el body
+        ResponseCookie cookie = ResponseCookie.from("token", jwt)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(60 * 60) // 1 hora, igual que la expiración del JWT
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("username", userDetails.getUsername());
+        body.put("rol", userDetails.getSector());
+        body.put("permisos", userDetails.getAuthorities()
                 .stream()
                 .map(a -> a.getAuthority())
                 .collect(java.util.stream.Collectors.toList()));
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(body);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("token", "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(0) // Expira inmediatamente
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.ok(Map.of("message", "Sesión cerrada"));
     }
 
     @PostMapping("/registrar")
@@ -85,33 +110,26 @@ public class UsuarioController {
             @RequestParam(defaultValue = "10") int size) {
 
         try {
-            // Spring Data JPA usa PageRequest para manejar el LIMIT y OFFSET de SQL
             Pageable pageable = PageRequest.of(
                     page,
                     size,
                     Sort.by(Sort.Direction.DESC, "idUsuario")
             );
-            // El repo devuelve un objeto Page con contenido y metadatos de paginación
             Page<Usuario> usuariosPage = usuarioService.listarUsuariosActivos(pageable);
 
             return ResponseEntity.ok(new Paginacion<>(usuariosPage));
         } catch (Exception e) {
             throw new ManejoErrores(HttpStatus.INTERNAL_SERVER_ERROR, "Error al listar usuarios: " + e.getMessage());
-
         }
     }
 
     @GetMapping("/{id_usuario}")
-    public ResponseEntity<?> listarByIdUsuario(
-            @PathVariable Integer id_usuario) {
-
+    public ResponseEntity<?> listarByIdUsuario(@PathVariable Integer id_usuario) {
         try {
             Usuario usuarioBuscado = usuarioService.buscarUsuario(id_usuario);
-
             return ResponseEntity.ok(usuarioBuscado);
         } catch (Exception e) {
             throw new ManejoErrores(HttpStatus.INTERNAL_SERVER_ERROR, "Usuario no encontrado");
-
         }
     }
 

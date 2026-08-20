@@ -1,16 +1,4 @@
--- ==========================================
--- 1. Estructura: Tipos y Casts nuevos
--- ==========================================
-CREATE TYPE public.respuestaproveedor AS ENUM (
-    'POSITIVA',
-    'NEGATIVA',
-    'PENDIENTE'
-);
 
-ALTER TYPE public.respuestaproveedor OWNER TO postgres;
-
-CREATE CAST (public.respuestaproveedor AS character varying) WITH INOUT AS IMPLICIT;
-CREATE CAST (character varying AS public.respuestaproveedor) WITH INOUT AS IMPLICIT;
 
 
 -- ==========================================
