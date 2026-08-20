@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Clock, CheckCircle, XCircle, Search, Eye, AlertCircle, X, MessageSquare } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Search, Eye, Pencil, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
-import api from '../../../services/api'; // O importa tus funciones de aprobSoliService
+import api from '../../../services/api';
 import Loading from '../../Loading';
+// Ajusta la ruta si GestionAprobSolicitud.jsx no está en la misma carpeta que este archivo
+import GestionAprobSolicitud from './GestionAprobSolicitud';
 
 export default function PanelAprobacionesSoli() {
     const { user } = useAuth();
@@ -12,16 +14,17 @@ export default function PanelAprobacionesSoli() {
     const [activeTab, setActiveTab] = useState('PENDIENTE');
     const [solicitudes, setSolicitudes] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+
     // Paginación y búsqueda
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
 
-    // Modal de evaluación
+    // Modal de gestión (ver / editar / evaluar)
     const [selectedItem, setSelectedItem] = useState(null);
-    const [comentariosDecision, setComentariosDecision] = useState("");
-    const [procesando, setProcesando] = useState(false);
+
+    // Feedback transitorio tras guardar/evaluar
+    const [toast, setToast] = useState("");
 
     const TABS = [
         { id: 'PENDIENTE', label: 'Pendientes', icon: Clock, color: 'text-orange-500', bg: 'bg-orange-50', border: 'border-orange-200' },
@@ -33,10 +36,15 @@ export default function PanelAprobacionesSoli() {
         cargarDatos(0, true);
     }, [activeTab]);
 
+    useEffect(() => {
+        if (!toast) return;
+        const t = setTimeout(() => setToast(""), 4000);
+        return () => clearTimeout(t);
+    }, [toast]);
+
     const cargarDatos = async (pageToLoad = 0, reset = false) => {
         try {
             setLoading(true);
-            // Reemplaza con tu función del service: listarAprobacionesSolicitud(activeTab, pageToLoad)
             const res = await api.get(`/api/aprobaciones/solicitudes?estado=${activeTab}&page=${pageToLoad}&size=10`);
             const data = res.data?.contenido || res.data || [];
 
@@ -45,7 +53,7 @@ export default function PanelAprobacionesSoli() {
             } else {
                 setSolicitudes(prev => [...prev, ...data]);
             }
-            
+
             setHasMore(res.data?.ultima === false || data.length === 10);
         } catch (error) {
             console.error("Error cargando solicitudes", error);
@@ -55,35 +63,38 @@ export default function PanelAprobacionesSoli() {
         }
     };
 
-    const handleDecidir = async (estadoDecision) => {
-        if (!selectedItem) return;
-        try {
-            setProcesando(true);
-            // Reemplaza con tu función: decidirAprobacionSolicitud(selectedItem.idAprobSolicitud, estadoDecision, comentariosDecision)
-            await api.post(`/api/aprobaciones/solicitudes/${selectedItem.idAprobSolicitud || selectedItem.id}`, {
-                estado: estadoDecision,
-                comentarios: comentariosDecision
-            });
-            
-            setSelectedItem(null);
-            setComentariosDecision("");
-            cargarDatos(0, true); // Recargar la lista
-        } catch (error) {
-            alert("Error al procesar: " + (error.response?.data?.error || error.message));
-        } finally {
-            setProcesando(false);
-        }
+    // Se llama desde GestionAprobSolicitud tanto al guardar cambios de la solicitud
+    // como al aprobar/rechazar. En ambos casos refrescamos la lista.
+    const handleSuccess = (mensaje) => {
+        setToast(mensaje || "Operación realizada con éxito.");
+        setSelectedItem(null);
+        cargarDatos(0, true);
     };
 
     const filtradas = solicitudes.filter(s => {
         if (!searchTerm) return true;
         const term = searchTerm.toLowerCase();
-        return s.solicitud?.producto?.nombre?.toLowerCase().includes(term) || 
+        return s.solicitud?.producto?.nombre?.toLowerCase().includes(term) ||
                s.solicitud?.usuario?.username?.toLowerCase().includes(term);
     });
 
+    // Un ítem es "gestionable" (editar + evaluar) si está PENDIENTE y el usuario tiene el permiso.
+    // Si no, se abre en modo solo lectura.
+    const esGestionable = (item) => {
+        const estado = item.estado || activeTab;
+        return estado === 'PENDIENTE' && puedeGestionar;
+    };
+
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative">
+            {/* TOAST */}
+            {toast && (
+                <div className="absolute top-4 right-4 z-40 bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in">
+                    <CheckCircle size={16} /> {toast}
+                    <button onClick={() => setToast("")} className="ml-2 hover:opacity-80"><X size={14} /></button>
+                </div>
+            )}
+
             {/* TABS HEADER */}
             <div className="flex flex-wrap border-b border-slate-200 bg-slate-50">
                 {TABS.map(tab => {
@@ -139,106 +150,53 @@ export default function PanelAprobacionesSoli() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {filtradas.map((item) => (
-                                <tr key={item.idAprobSolicitud || item.id} className="hover:bg-slate-50 transition-colors">
-                                    <td className="px-6 py-4 font-bold text-slate-700">#{item.idAprobSolicitud || item.id}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="font-bold text-slate-800">{item.solicitud?.producto?.nombre}</div>
-                                        <div className="text-xs text-gray-500">{item.solicitud?.cantidad} unidades</div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase rounded border border-slate-200">
-                                            {item.solicitud?.nivelPrioridad?.categoria || 'NORMAL'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-slate-600">{item.solicitud?.usuario?.username}</td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button
-                                            onClick={() => setSelectedItem(item)}
-                                            className="inline-flex items-center gap-1 text-[#1C5B5A] font-bold text-xs hover:underline bg-emerald-50 px-3 py-1.5 rounded border border-emerald-100"
-                                        >
-                                            <Eye size={14} /> {activeTab === 'PENDIENTE' && puedeGestionar ? 'Evaluar' : 'Ver Detalles'}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                            {filtradas.map((item) => {
+                                const gestionable = esGestionable(item);
+                                return (
+                                    <tr key={item.idAprobSolicitud || item.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-6 py-4 font-bold text-slate-700">#{item.idAprobSolicitud || item.id}</td>
+                                        <td className="px-6 py-4">
+                                            <div className="font-bold text-slate-800">{item.solicitud?.producto?.nombre}</div>
+                                            <div className="text-xs text-gray-500">{item.solicitud?.cantidad} unidades</div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase rounded border border-slate-200">
+                                                {item.solicitud?.nivelPrioridad?.categoria || 'NORMAL'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-slate-600">{item.solicitud?.usuario?.username}</td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button
+                                                onClick={() => setSelectedItem(item)}
+                                                className={`inline-flex items-center gap-1 font-bold text-xs px-3 py-1.5 rounded border transition-colors ${
+                                                    gestionable
+                                                        ? 'text-[#1C5B5A] bg-emerald-50 border-emerald-100 hover:bg-emerald-100'
+                                                        : 'text-slate-600 bg-slate-50 border-slate-200 hover:bg-slate-100'
+                                                }`}
+                                            >
+                                                {gestionable ? (
+                                                    <><Pencil size={14} /> Editar / Evaluar</>
+                                                ) : (
+                                                    <><Eye size={14} /> Ver Detalles</>
+                                                )}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 )}
             </div>
 
-            {/* MODAL DE DETALLES / EVALUACIÓN */}
+            {/* MODAL DE GESTIÓN (ver / editar / evaluar) */}
             {selectedItem && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
-                    <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95">
-                        <div className={`px-6 py-4 flex justify-between items-center text-white ${
-                            activeTab === 'APROBADA' ? 'bg-emerald-600' : 
-                            activeTab === 'RECHAZADA' ? 'bg-red-600' : 'bg-[#1C5B5A]'
-                        }`}>
-                            <h3 className="font-bold text-lg">
-                                {activeTab === 'PENDIENTE' && puedeGestionar ? 'Evaluar Solicitud' : 'Detalles de Solicitud'}
-                            </h3>
-                            <button onClick={() => setSelectedItem(null)} className="hover:opacity-80"><X size={20} /></button>
-                        </div>
-
-                        <div className="p-6 space-y-4 overflow-y-auto">
-                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                                <p className="text-xs font-bold text-slate-400 uppercase mb-1">Producto Solicitado</p>
-                                <p className="text-lg font-bold text-slate-800">{selectedItem.solicitud?.producto?.nombre}</p>
-                                <p className="text-sm text-slate-600 mt-1">Cantidad: {selectedItem.solicitud?.cantidad} unidades</p>
-                            </div>
-
-                            {selectedItem.solicitud?.comentarios && (
-                                <div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase mb-1">Justificación del Solicitante</p>
-                                    <p className="text-sm text-slate-700 bg-blue-50 p-3 rounded-lg italic border border-blue-100">
-                                        "{selectedItem.solicitud.comentarios}"
-                                    </p>
-                                </div>
-                            )}
-
-                            {activeTab !== 'PENDIENTE' && selectedItem.comentarios && (
-                                <div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase mb-1">Comentario de Gerencia</p>
-                                    <p className="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg italic border border-slate-200">
-                                        "{selectedItem.comentarios}"
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* ZONA DE EVALUACIÓN (Solo si está pendiente y tiene permiso) */}
-                            {activeTab === 'PENDIENTE' && puedeGestionar && (
-                                <div className="mt-4 pt-4 border-t border-slate-200">
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Comentarios de Evaluación (Opcional)</label>
-                                    <textarea
-                                        className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:border-[#1C5B5A] outline-none resize-none"
-                                        rows="3"
-                                        placeholder="Escribe el motivo de la aprobación o rechazo..."
-                                        value={comentariosDecision}
-                                        onChange={(e) => setComentariosDecision(e.target.value)}
-                                    ></textarea>
-
-                                    <div className="flex gap-3 mt-4">
-                                        <button
-                                            onClick={() => handleDecidir('RECHAZADA')}
-                                            disabled={procesando}
-                                            className="flex-1 py-3 bg-red-100 text-red-700 font-bold rounded-lg border border-red-200 hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <XCircle size={18} /> Rechazar
-                                        </button>
-                                        <button
-                                            onClick={() => handleDecidir('APROBADA')}
-                                            disabled={procesando}
-                                            className="flex-1 py-3 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 shadow-md transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <CheckCircle size={18} /> Aprobar
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                <GestionAprobSolicitud
+                    aprobacion={selectedItem}
+                    soloLectura={!puedeGestionar}
+                    onClose={() => setSelectedItem(null)}
+                    onSuccess={handleSuccess}
+                />
             )}
         </div>
     );

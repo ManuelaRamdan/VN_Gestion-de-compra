@@ -375,7 +375,7 @@ public class PdfGeneratorService {
                     }
 
                     document.add(new Paragraph("\n"));
-                    addSectionTitle(document, "9. EVALUACIÓN DEL PROVEEDOR", sectionFont);
+                    //addSectionTitle(document, "9. EVALUACIÓN DEL PROVEEDOR", sectionFont);
 
                     if (evalProv != null) {
                         if (esFallbackPosterior) {

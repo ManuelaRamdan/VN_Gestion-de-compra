@@ -8,13 +8,27 @@ export default function GestionAprobPresu({ grupoSeleccionado, soloLectura, onCl
     const [loadingId, setLoadingId] = useState(null);
     const [error, setError] = useState('');
 
-    const handleVerPdf = async (nombreArchivo) => {
-        try {
-            const url = await obtenerUrlPdf(nombreArchivo);
-            window.open(url, '_blank');
-        } catch (error) {
-            setError("No se pudo cargar el archivo PDF.");
-        }
+    const handleVerPdf = (nombreArchivo) => {
+        // OJO: la pestaña se abre ACÁ, de forma síncrona con el click.
+        // Si esperamos a que resuelva obtenerUrlPdf() (que hace un GET al backend)
+        // antes de llamar a window.open(), el navegador pierde el "gesto de usuario"
+        // asociado al click y bloquea el popup en silencio (sin tirar ningún error).
+        const nuevaVentana = window.open('', '_blank');
+
+        obtenerUrlPdf(nombreArchivo)
+            .then((url) => {
+                if (nuevaVentana) {
+                    nuevaVentana.location.href = url;
+                } else {
+                    // El navegador bloqueó igual el popup (o el usuario los tiene deshabilitados
+                    // para este sitio). Avisamos en vez de fallar en silencio.
+                    setError("El navegador bloqueó la ventana emergente. Habilitá los popups para este sitio e intentá de nuevo.");
+                }
+            })
+            .catch(() => {
+                if (nuevaVentana) nuevaVentana.close();
+                setError("No se pudo cargar el archivo PDF.");
+            });
     };
 
     const formatDateLocal = (dateString) => {
